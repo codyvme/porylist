@@ -645,13 +645,13 @@ export function PokemonModal({ pokemonName, game, onClose }: PokemonModalProps) 
 
   const homeSprite = pokemon
     ? showShiny
-      ? `/poke-sprites/sprites/pokemon/other/home/shiny/${pokemon.id}.png`
-      : `/poke-sprites/sprites/pokemon/other/home/${pokemon.id}.png`
+      ? `https://sprites.porylist.com/sprites/pokemon/other/home/shiny/${pokemon.id}.png`
+      : `https://sprites.porylist.com/sprites/pokemon/other/home/${pokemon.id}.png`
     : null;
   const gameSprite =
     game?.spriteVersion && pokemon
       ? showShiny
-        ? `/poke-sprites/sprites/pokemon/versions/${game.spriteVersion}/shiny/${pokemon.id}.png`
+        ? `https://sprites.porylist.com/sprites/pokemon/versions/${game.spriteVersion}/shiny/${pokemon.id}.png`
         : spriteUrl(pokemon.id, game.spriteVersion)
       : null;
   const showGameSprite = gameSprite && gameSprite !== homeSprite;
@@ -742,7 +742,7 @@ export function PokemonModal({ pokemonName, game, onClose }: PokemonModalProps) 
                       onError={(e) => {
                         const img = e.target as HTMLImageElement;
                         if (pokemon) {
-                          img.src = `/poke-sprites/sprites/pokemon/${pokemon.id}.png`;
+                          img.src = `https://sprites.porylist.com/sprites/pokemon/${pokemon.id}.png`;
                         }
                       }}
                     />
