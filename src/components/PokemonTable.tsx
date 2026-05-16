@@ -621,7 +621,7 @@ export function PokemonTable() {
               }
 
               // Variant row
-              const { formName, parentName } = dRow;
+              const { formName } = dRow;
               const detail = formDetailsMap?.[formName];
               const isLoadingDetail = !detail;
               const types = detail ? typesForGeneration(detail, generation) : [];
