@@ -100,7 +100,7 @@ export function App() {
       <div className="min-h-screen bg-background">
         <header className="border-b">
           <div className="container flex items-center justify-between py-4">
-            <div className="flex items-center gap-1">
+            <div className="flex items-center">
               <img
                 src="https://sprites.porylist.com/sprites/pokemon/versions/generation-iv/diamond-pearl/137.png"
                 alt="Porygon"
