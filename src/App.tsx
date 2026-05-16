@@ -102,7 +102,7 @@ export function App() {
           <div className="container flex items-center justify-between py-4">
             <div className="flex items-center gap-1">
               <img
-                src="/poke-sprites/sprites/pokemon/versions/generation-iv/diamond-pearl/137.png"
+                src="https://sprites.porylist.com/sprites/pokemon/versions/generation-iv/diamond-pearl/137.png"
                 alt="Porygon"
                 className="h-10 w-10 object-contain"
                 style={{ imageRendering: "pixelated" }}
