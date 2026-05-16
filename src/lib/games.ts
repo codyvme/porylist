@@ -7,7 +7,7 @@ export interface GameOption {
   genMax: number;
   /** Release generation (1-9). Determines retconned typings (e.g. pre-Fairy). */
   generation: number;
-  /** Sprite version folder under /poke-sprites/sprites/pokemon/versions/. Falls back to modern HOME render. */
+  /** Sprite version folder under sprites.porylist.com/sprites/pokemon/versions/. Falls back to modern HOME render. */
   spriteVersion?: string;
 }
 
@@ -224,7 +224,7 @@ export function regionalNumber(
   return 0;
 }
 
-const SPRITES_ROOT = "/poke-sprites/sprites/pokemon";
+const SPRITES_ROOT = "https://sprites.porylist.com/sprites/pokemon";
 
 export function spriteUrl(id: number, spriteVersion?: string): string {
   if (spriteVersion) {
