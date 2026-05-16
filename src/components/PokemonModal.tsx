@@ -183,6 +183,30 @@ function buildMethodMap(details: LocationAreaEncounter["version_details"][number
       });
     }
   }
+  // Merge entries that differ only by time-of-day condition but have identical stats
+  const TIME_CONDITIONS = new Set(["time-morning", "time-day", "time-night"]);
+  const groups = new Map<string, { keys: string[]; entries: MethodData[] }>();
+  for (const [key, data] of map) {
+    const nonTime = data.conditions.filter((c) => !TIME_CONDITIONS.has(c));
+    const groupKey = `${data.method}|${nonTime.sort().join(",")}`;
+    const g = groups.get(groupKey);
+    if (g) { g.keys.push(key); g.entries.push(data); }
+    else groups.set(groupKey, { keys: [key], entries: [data] });
+  }
+  for (const { keys, entries } of groups.values()) {
+    if (entries.length < 2) continue;
+    const first = entries[0];
+    const allSame = entries.every(
+      (e) => e.minLevel === first.minLevel && e.maxLevel === first.maxLevel && e.chance === first.chance,
+    );
+    if (allSame) {
+      for (const k of keys) map.delete(k);
+      const nonTime = first.conditions.filter((c) => !TIME_CONDITIONS.has(c));
+      const mergedKey = `${first.method}|${nonTime.join(",")}`;
+      map.set(mergedKey, { ...first, conditions: nonTime });
+    }
+  }
+
   return map;
 }
 
