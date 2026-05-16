@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Porylist — Pokédex Filter & Sorter</title>
+    <meta name="description" content="Browse and sort all 1,025 Pokémon by game, type, and base stats. Filter to any game with accurate typings and sprites, then dive into moves, abilities, and locations." />
+    <link rel="canonical" href="https://porylist.com" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://porylist.com" />
+    <meta property="og:title" content="Porylist — Pokédex Filter & Sorter" />
+    <meta property="og:description" content="Browse and sort all 1,025 Pokémon by game, type, and base stats. Filter to any game with accurate typings and sprites, then dive into moves, abilities, and locations." />
+    <meta property="og:image" content="https://porylist.com/og-image.png" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Porylist — Pokédex Filter & Sorter" />
+    <meta name="twitter:description" content="Browse and sort all 1,025 Pokémon by game, type, and base stats. Filter to any game with accurate typings and sprites, then dive into moves, abilities, and locations." />
+    <meta name="twitter:image" content="https://porylist.com/og-image.png" />
+
+    <script>
+      if (localStorage.getItem("theme") === "dark") {
+        document.documentElement.classList.add("dark");
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
