@@ -73,55 +73,59 @@ export function TeamBuilder({ team, onRemove, onClear }: Props) {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-30 border-t bg-background shadow-[0_-2px_16px_rgba(0,0,0,0.12)]">
       {/* Always-visible header */}
-      <div className="container flex h-14 items-center gap-3">
-        <button
-          onClick={() => setExpanded(e => !e)}
-          className="flex items-center gap-2 text-sm font-semibold hover:text-primary transition-colors"
-          aria-label={expanded ? "Collapse team builder" : "Expand team builder"}
-        >
-          <Swords className="h-4 w-4" />
-          Team Builder
-          {expanded
-            ? <ChevronDown className="h-3.5 w-3.5" />
-            : <ChevronUp className="h-3.5 w-3.5" />}
-        </button>
+      <div
+        className="container flex h-14 cursor-pointer items-center justify-between gap-3"
+        onClick={() => setExpanded(e => !e)}
+        role="button"
+        aria-label={expanded ? "Collapse team builder" : "Expand team builder"}
+      >
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 text-sm font-semibold">
+            <Swords className="h-4 w-4" />
+            Team Builder
+          </div>
 
-        {/* 6 mini slots */}
-        <div className="flex items-center gap-1.5">
-          {Array.from({ length: 6 }).map((_, i) => {
-            const m = members[i];
-            return (
-              <div
-                key={i}
-                className={cn(
-                  "relative flex h-10 w-10 items-center justify-center rounded border",
-                  m ? "border-border bg-muted/30" : "border-dashed border-muted-foreground/25",
-                )}
-              >
-                {m ? (
-                  <>
-                    <img src={spriteUrl(m.id, undefined)} alt={m.name} className="h-9 w-9 object-contain" />
-                    <button
-                      onClick={() => onRemove(m.name)}
-                      className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] text-white shadow"
-                      aria-label={`Remove ${m.name}`}
-                    >×</button>
-                  </>
-                ) : (
-                  <span className="font-mono text-[10px] text-muted-foreground/30">{i + 1}</span>
-                )}
-              </div>
-            );
-          })}
+          {/* 6 mini slots */}
+          <div className="flex items-center gap-1.5">
+            {Array.from({ length: 6 }).map((_, i) => {
+              const m = members[i];
+              return (
+                <div
+                  key={i}
+                  className={cn(
+                    "relative flex h-10 w-10 items-center justify-center rounded border",
+                    m ? "border-border bg-muted/30" : "border-dashed border-muted-foreground/25",
+                  )}
+                >
+                  {m ? (
+                    <>
+                      <img src={spriteUrl(m.id, undefined)} alt={m.name} className="h-9 w-9 object-contain" />
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onRemove(m.name); }}
+                        className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] text-white shadow"
+                        aria-label={`Remove ${m.name}`}
+                      >×</button>
+                    </>
+                  ) : (
+                    <span className="font-mono text-[10px] text-muted-foreground/30">{i + 1}</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          <span className="text-xs text-muted-foreground">{team.length}/6</span>
+
+          {team.length > 0 && (
+            <button onClick={(e) => { e.stopPropagation(); onClear(); }} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+              Clear all
+            </button>
+          )}
         </div>
 
-        <span className="text-xs text-muted-foreground">{team.length}/6</span>
-
-        {team.length > 0 && (
-          <button onClick={onClear} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-            Clear all
-          </button>
-        )}
+        <div className="text-muted-foreground">
+          {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+        </div>
       </div>
 
       {/* Expanded analysis */}
