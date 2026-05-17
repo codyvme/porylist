@@ -11,9 +11,9 @@ function typeIconUrl(type: string) {
 }
 
 function multClass(mult: number) {
-  if (mult === 0) return "bg-slate-700 text-slate-300";
-  if (mult === 0.25) return "bg-sky-700 text-sky-100";
-  if (mult === 0.5) return "bg-sky-500/60 text-sky-100";
+  if (mult === 0) return "bg-black text-white";
+  if (mult === 0.25) return "bg-slate-600 text-slate-100";
+  if (mult === 0.5) return "bg-slate-400/60 text-slate-900";
   if (mult === 2) return "bg-orange-500 text-white";
   if (mult === 4) return "bg-red-600 text-white";
   return "";
@@ -21,8 +21,8 @@ function multClass(mult: number) {
 
 function multLabel(mult: number) {
   if (mult === 0) return "0×";
-  if (mult === 0.25) return "¼×";
-  if (mult === 0.5) return "½×";
+  if (mult === 0.25) return ".25×";
+  if (mult === 0.5) return ".5×";
   if (mult === 2) return "2×";
   if (mult === 4) return "4×";
   return "";
@@ -145,7 +145,7 @@ export function TeamBuilder({ team, onRemove, onClear }: Props) {
                         <tr>
                           <th className="w-28 pr-3" />
                           {ALL_TYPES.map(t => (
-                            <th key={t} className="w-9 pb-1 text-center">
+                            <th key={t} className="w-9 border-l border-border/60 pb-1 text-center">
                               <img
                                 src={typeIconUrl(t)}
                                 alt={t}
@@ -158,8 +158,8 @@ export function TeamBuilder({ team, onRemove, onClear }: Props) {
                       </thead>
                       <tbody>
                         {members.map((m, i) => (
-                          <tr key={m.name}>
-                            <td className="max-w-[7rem] truncate py-0.5 pr-3 font-medium capitalize" title={m.name.replace(/-/g, " ")}>
+                          <tr key={m.name} className={i % 2 === 1 ? "bg-muted/70" : ""}>
+                            <td className="max-w-[7rem] truncate py-1 pr-3 font-medium capitalize" title={m.name.replace(/-/g, " ")}>
                               {m.name.replace(/-/g, " ")}
                             </td>
                             {ALL_TYPES.map(t => {
@@ -168,7 +168,7 @@ export function TeamBuilder({ team, onRemove, onClear }: Props) {
                               return (
                                 <td
                                   key={t}
-                                  className={cn("w-9 rounded py-0.5 text-center text-[10px] font-semibold", cls)}
+                                  className={cn("w-9 rounded py-1 text-center text-[10px] font-semibold border-l border-border/60", cls)}
                                   title={`${t}: ${mult}×`}
                                 >
                                   {cls ? multLabel(mult) : ""}
@@ -178,7 +178,7 @@ export function TeamBuilder({ team, onRemove, onClear }: Props) {
                           </tr>
                         ))}
                         {/* Weakness count totals row */}
-                        <tr className="border-t border-border/50">
+                        <tr className="border-t border-border/60">
                           <td className="pr-3 pt-1.5 text-[11px] font-medium text-muted-foreground">Weaknesses</td>
                           {ALL_TYPES.map(t => {
                             const count = weaknessCounts[t];
@@ -186,7 +186,7 @@ export function TeamBuilder({ team, onRemove, onClear }: Props) {
                               <td
                                 key={t}
                                 className={cn(
-                                  "w-9 pt-1.5 text-center text-[10px] font-bold",
+                                  "w-9 border-l border-border/60 pt-1.5 text-center text-[10px] font-bold",
                                   count >= 2 ? "text-red-500" : count === 1 ? "text-orange-400" : "text-transparent",
                                 )}
                               >
