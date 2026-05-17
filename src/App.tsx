@@ -105,7 +105,6 @@ export function App() {
                 src="https://sprites.porylist.com/sprites/pokemon/versions/generation-iv/diamond-pearl/137.png"
                 alt="Porygon"
                 className="h-10 w-10 object-contain"
-                style={{ imageRendering: "pixelated" }}
               />
               <h1 className="text-2xl font-bold tracking-tight">Porylist</h1>
             </div>

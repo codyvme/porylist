@@ -9,6 +9,7 @@ import {
   usePokemonSpecies,
   useMoveDetails,
   useAbilityDetails,
+  useMachineDetails,
   usePokemonEncounters,
   useEvolutionChain,
   extractIdFromUrl,
@@ -364,35 +365,61 @@ interface MoveTableProps {
   moves: FilteredMove[];
   moveDetailsMap: Record<string, MoveDetail>;
   showLevel: boolean;
+  machineNumberMap?: Record<string, string>;
   expandedMove: string | null;
   onToggleExpand: (name: string) => void;
   versionGroups: string[];
 }
 
-function MoveTable({ moves, moveDetailsMap, showLevel, expandedMove, onToggleExpand, versionGroups }: MoveTableProps) {
-  const colCount = showLevel ? 8 : 7;
+function parseMachineNum(label: string): number {
+  const m = label.match(/\d+$/);
+  return m ? parseInt(m[0], 10) : 9999;
+}
+
+function MoveTable({ moves, moveDetailsMap, showLevel, machineNumberMap, expandedMove, onToggleExpand, versionGroups }: MoveTableProps) {
+  const showMachineNum = machineNumberMap != null;
+  const showExtraCol = showLevel || showMachineNum;
+  // On mobile: chevron + (extra?) + name + type + category = 4 or 5 cols
+  const mobileColCount = showExtraCol ? 5 : 4;
+
+  const displayMoves = useMemo(() => {
+    if (!showMachineNum || Object.keys(machineNumberMap).length === 0) return moves;
+    return [...moves].sort((a, b) => {
+      const na = machineNumberMap[a.name];
+      const nb = machineNumberMap[b.name];
+      if (!na && !nb) return 0;
+      if (!na) return 1;
+      if (!nb) return -1;
+      // HMs after TMs, then by number
+      const aIsHM = na.startsWith("HM");
+      const bIsHM = nb.startsWith("HM");
+      if (aIsHM !== bIsHM) return aIsHM ? 1 : -1;
+      return parseMachineNum(na) - parseMachineNum(nb);
+    });
+  }, [moves, showMachineNum, machineNumberMap]);
+
   return (
     <div className="overflow-auto">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b text-left text-xs font-medium text-muted-foreground">
             <th className="w-6 pb-2" />
-            {showLevel && (
-              <th className="pb-2 pr-4 text-right">Lv.</th>
-            )}
+            {showLevel && <th className="pb-2 pr-4 text-right">Lv.</th>}
+            {showMachineNum && <th className="pb-2 pr-4">No.</th>}
             <th className="pb-2 pr-4">Name</th>
             <th className="pb-2 pr-4">Type</th>
-            <th className="pb-2 pr-4">Category</th>
-            <th className="pb-2 pr-4 text-right">Power</th>
-            <th className="pb-2 pr-4 text-right">Acc.</th>
-            <th className="pb-2 text-right">PP</th>
+            <th className="pb-2 pr-4">Cat.</th>
+            <th className="hidden pb-2 pr-4 text-right sm:table-cell">Power</th>
+            <th className="hidden pb-2 pr-4 text-right sm:table-cell">Acc.</th>
+            <th className="hidden pb-2 text-right sm:table-cell">PP</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border/50">
-          {moves.map((move) => {
+          {displayMoves.map((move) => {
             const detail = moveDetailsMap[move.name];
             const isExpanded = expandedMove === move.name;
             const effect = detail ? moveDescription(detail, versionGroups) : "";
+            const machineNum = machineNumberMap?.[move.name];
             return (
               <>
                 <tr
@@ -408,6 +435,13 @@ function MoveTable({ moves, moveDetailsMap, showLevel, expandedMove, onToggleExp
                   {showLevel && (
                     <td className="py-1.5 pr-4 text-right font-mono tabular-nums text-muted-foreground">
                       {move.level === 0 ? "—" : move.level}
+                    </td>
+                  )}
+                  {showMachineNum && (
+                    <td className="py-1.5 pr-4 font-mono tabular-nums text-muted-foreground">
+                      {machineNum ?? (
+                        <div className="h-4 w-10 animate-pulse rounded bg-muted" />
+                      )}
                     </td>
                   )}
                   <td className="py-1.5 pr-4 font-medium">
@@ -433,21 +467,21 @@ function MoveTable({ moves, moveDetailsMap, showLevel, expandedMove, onToggleExp
                       <div className="h-5 w-14 animate-pulse rounded bg-muted" />
                     )}
                   </td>
-                  <td className="py-1.5 pr-4 text-right font-mono tabular-nums">
+                  <td className="hidden py-1.5 pr-4 text-right font-mono tabular-nums sm:table-cell">
                     {detail ? (
                       detail.power ?? "—"
                     ) : (
                       <div className="ml-auto h-4 w-6 animate-pulse rounded bg-muted" />
                     )}
                   </td>
-                  <td className="py-1.5 pr-4 text-right font-mono tabular-nums">
+                  <td className="hidden py-1.5 pr-4 text-right font-mono tabular-nums sm:table-cell">
                     {detail ? (
                       detail.accuracy != null ? `${detail.accuracy}%` : "—"
                     ) : (
                       <div className="ml-auto h-4 w-8 animate-pulse rounded bg-muted" />
                     )}
                   </td>
-                  <td className="py-1.5 text-right font-mono tabular-nums">
+                  <td className="hidden py-1.5 text-right font-mono tabular-nums sm:table-cell">
                     {detail ? (
                       detail.pp ?? "—"
                     ) : (
@@ -458,8 +492,8 @@ function MoveTable({ moves, moveDetailsMap, showLevel, expandedMove, onToggleExp
                 {isExpanded && (
                   <tr key={`${move.name}-desc`} className="bg-muted/20">
                     <td /> {/* chevron column */}
-                    {showLevel && <td />} {/* level column */}
-                    <td colSpan={colCount - (showLevel ? 2 : 1)} className="py-2 pr-4 text-xs text-muted-foreground">
+                    {showExtraCol && <td />}
+                    <td colSpan={mobileColCount - (showExtraCol ? 2 : 1)} className="py-2 pr-4 text-xs text-muted-foreground">
                       {effect || (
                         <div className="h-3 w-48 animate-pulse rounded bg-muted" />
                       )}
@@ -484,7 +518,6 @@ function GameSpriteThumb({ src, alt }: { src: string; alt: string }) {
         src={src}
         alt={alt}
         className="h-16 w-16 object-contain"
-        style={{ imageRendering: "pixelated" }}
         onError={() => setFailed(true)}
       />
       <span className="text-xs text-muted-foreground">In-game</span>
@@ -686,32 +719,31 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate }: Pokemon
     return maxDex != null ? evolutions.filter((e) => e.speciesId <= maxDex) : evolutions;
   }, [evolutionChain, pokemon, generation]);
 
-  const filteredMoves = useMemo(() => {
-    if (!pokemon) return { levelUp: [], egg: [], machine: [], tutor: [] };
-
-    let activeVGs = versionGroups;
-    if (!game) {
-      const hasInSV = pokemon.moves.some((m) =>
-        m.version_group_details.some((vgd) => vgd.version_group.name === "scarlet-violet"),
-      );
-      if (!hasInSV) {
-        let bestGen = -1;
-        const bestVGs: string[] = [];
-        for (const m of pokemon.moves) {
-          for (const vgd of m.version_group_details) {
-            const gen = VERSION_GROUP_TO_GEN[vgd.version_group.name] ?? 0;
-            if (gen > bestGen) {
-              bestGen = gen;
-              bestVGs.length = 0;
-              bestVGs.push(vgd.version_group.name);
-            } else if (gen === bestGen && !bestVGs.includes(vgd.version_group.name)) {
-              bestVGs.push(vgd.version_group.name);
-            }
-          }
+  const activeVGs = useMemo(() => {
+    if (game || !pokemon) return versionGroups;
+    const hasInSV = pokemon.moves.some((m) =>
+      m.version_group_details.some((vgd) => vgd.version_group.name === "scarlet-violet"),
+    );
+    if (hasInSV) return versionGroups;
+    let bestGen = -1;
+    const bestVGs: string[] = [];
+    for (const m of pokemon.moves) {
+      for (const vgd of m.version_group_details) {
+        const gen = VERSION_GROUP_TO_GEN[vgd.version_group.name] ?? 0;
+        if (gen > bestGen) {
+          bestGen = gen;
+          bestVGs.length = 0;
+          bestVGs.push(vgd.version_group.name);
+        } else if (gen === bestGen && !bestVGs.includes(vgd.version_group.name)) {
+          bestVGs.push(vgd.version_group.name);
         }
-        activeVGs = bestVGs;
       }
     }
+    return bestVGs;
+  }, [game, pokemon, versionGroups]);
+
+  const filteredMoves = useMemo(() => {
+    if (!pokemon) return { levelUp: [], egg: [], machine: [], tutor: [] };
 
     const levelUpMap = new Map<string, FilteredMove>();
     const eggSet = new Set<string>();
@@ -744,7 +776,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate }: Pokemon
     tutor.sort((a, b) => a.name.localeCompare(b.name));
 
     return { levelUp, egg, machine, tutor };
-  }, [pokemon, versionGroups, game]);
+  }, [pokemon, activeVGs]);
 
   const activeMoves = useMemo(() => {
     switch (activeTab) {
@@ -766,6 +798,31 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate }: Pokemon
     });
     return map;
   }, [moveDetailsQueries, activeMoveNames]);
+
+  const machineUrls = useMemo(() => {
+    if (activeTab !== "machine") return [];
+    const urls: string[] = [];
+    for (const move of filteredMoves.machine) {
+      const detail = moveDetailsMap[move.name];
+      if (!detail?.machines?.length) continue;
+      const match = detail.machines.find((m) => activeVGs.includes(m.version_group.name));
+      if (match) urls.push(match.machine.url);
+    }
+    return urls;
+  }, [activeTab, filteredMoves.machine, moveDetailsMap, activeVGs]);
+
+  const machineDetailsQueries = useMachineDetails(machineUrls);
+
+  const machineNumberMap = useMemo(() => {
+    if (activeTab !== "machine") return undefined;
+    const map: Record<string, string> = {};
+    for (const q of machineDetailsQueries) {
+      if (!q.data) continue;
+      const { move, item } = q.data;
+      map[move.name] = item.name.toUpperCase();
+    }
+    return map;
+  }, [activeTab, machineDetailsQueries]);
 
   const homeSprite = pokemon
     ? showShiny
@@ -855,14 +912,14 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate }: Pokemon
               )}
 
               {/* Sprite + info */}
-              <div className="flex gap-6 p-6">
+              <div className="flex flex-col gap-6 p-6 sm:flex-row">
                 {/* Left: sprite */}
                 <div className="flex flex-shrink-0 flex-col items-center gap-3">
                   {homeSprite && (
                     <img
                       src={homeSprite}
                       alt={displayName}
-                      className="h-48 w-48 object-contain"
+                      className="h-36 w-36 object-contain sm:h-48 sm:w-48"
                       onError={(e) => {
                         const img = e.target as HTMLImageElement;
                         if (pokemon) {
@@ -892,7 +949,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate }: Pokemon
                 {/* Right: abilities + stats */}
                 <div className="flex flex-1 flex-col gap-6 sm:flex-row">
                   {/* Abilities */}
-                  <div className="min-w-[160px] max-w-[220px]">
+                  <div className="sm:min-w-[160px] sm:max-w-[220px]">
                     <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                       Abilities
                     </h3>
@@ -1096,7 +1153,22 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate }: Pokemon
                 <div className="px-6 pt-5 pb-1">
                   <h3 className="text-base font-semibold">Moves</h3>
                 </div>
-                <div className="flex border-b px-6">
+                {/* Mobile: dropdown */}
+                <div className="px-6 py-3 sm:hidden">
+                  <select
+                    value={activeTab}
+                    onChange={(e) => setActiveTab(e.target.value as MoveTab)}
+                    className="w-full rounded-md border bg-background px-3 py-2 text-sm font-medium text-foreground"
+                  >
+                    {tabs.map((tab) => (
+                      <option key={tab.id} value={tab.id}>
+                        {tab.label}{tab.count > 0 ? ` (${tab.count})` : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {/* Desktop: tab bar */}
+                <div className="hidden overflow-x-auto border-b px-6 sm:flex">
                   {tabs.map((tab) => (
                     <button
                       key={tab.id}
@@ -1136,6 +1208,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate }: Pokemon
                       moves={activeMoves}
                       moveDetailsMap={moveDetailsMap}
                       showLevel={activeTab === "level-up"}
+                      machineNumberMap={machineNumberMap}
                       expandedMove={expandedMove}
                       onToggleExpand={(name) =>
                         setExpandedMove((prev) => (prev === name ? null : name))

@@ -75,6 +75,14 @@ export interface MoveDetail {
   effect_entries: MoveEffectEntry[];
   flavor_text_entries: MoveFlavorTextEntry[];
   names: Array<{ name: string; language: { name: string; url: string } }>;
+  machines: Array<{ machine: { url: string }; version_group: { name: string; url: string } }>;
+}
+
+export interface MachineDetail {
+  id: number;
+  item: { name: string; url: string };
+  move: { name: string; url: string };
+  version_group: { name: string; url: string };
 }
 
 export interface AbilityDetail {
@@ -392,6 +400,17 @@ export function usePokemonEncounters(pokemonId: number | null) {
       fetchJson<LocationAreaEncounter[]>(`${BASE}/pokemon/${pokemonId}/encounters`),
     staleTime: Infinity,
     gcTime: 1000 * 60 * 60 * 24 * 30,
+  });
+}
+
+export function useMachineDetails(urls: string[]) {
+  return useQueries({
+    queries: urls.map((url) => ({
+      queryKey: ["machine", url],
+      queryFn: () => fetchJson<MachineDetail>(url),
+      staleTime: Infinity,
+      gcTime: 1000 * 60 * 60 * 24 * 30,
+    })),
   });
 }
 
