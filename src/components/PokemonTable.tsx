@@ -7,11 +7,12 @@ import {
   getSortedRowModel,
   type ColumnDef,
   type SortingState,
+  type VisibilityState,
   type Row as TableRow,
   useReactTable,
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, ChevronsUpDown } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, ChevronsUpDown, SlidersHorizontal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Select } from "@/components/ui/select";
 import {
@@ -465,20 +466,68 @@ export function PokemonTable() {
     ];
   }, [isGen1, showRegional, selectedGame, toggleExpanded]);
 
-  const gridTemplate = useMemo(() => {
-    const statColCount = isGen1 ? 5 : 6;
-    return `32px 72px 80px minmax(150px, 1fr) minmax(180px, 1.2fr) ${"92px ".repeat(
-      statColCount,
-    ).trim()} 76px`;
-  }, [isGen1]);
-
   const [sorting, setSorting] = useState<SortingState>([]);
+
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => {
+    try {
+      const saved = localStorage.getItem("porylist-col-vis");
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem("porylist-col-vis", JSON.stringify(columnVisibility));
+  }, [columnVisibility]);
+
+  const [colsOpen, setColsOpen] = useState(false);
+  const colsRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!colsOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (!colsRef.current?.contains(e.target as Node)) setColsOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [colsOpen]);
+
+  const TOGGLEABLE_COLS = isGen1
+    ? [
+        { id: "hp", label: "HP" },
+        { id: "attack", label: "Atk" },
+        { id: "defense", label: "Def" },
+        { id: "specialAttack", label: "Spc" },
+        { id: "speed", label: "Spd" },
+        { id: "bst", label: "BST" },
+      ]
+    : [
+        { id: "hp", label: "HP" },
+        { id: "attack", label: "Atk" },
+        { id: "defense", label: "Def" },
+        { id: "specialAttack", label: "Sp. Atk" },
+        { id: "specialDefense", label: "Sp. Def" },
+        { id: "speed", label: "Spd" },
+        { id: "bst", label: "BST" },
+      ];
+
+  const gridTemplate = useMemo(() => {
+    const statIds = isGen1
+      ? ["hp", "attack", "defense", "specialAttack", "speed"]
+      : ["hp", "attack", "defense", "specialAttack", "specialDefense", "speed"];
+    const visibleStats = statIds.filter((id) => columnVisibility[id] !== false).length;
+    const showBst = columnVisibility["bst"] !== false;
+    const statPart = visibleStats > 0 ? `${"92px ".repeat(visibleStats).trim()} ` : "";
+    const bstPart = showBst ? "76px" : "";
+    return `32px 72px 80px minmax(150px, 1fr) minmax(180px, 1.2fr) ${statPart}${bstPart}`.trim();
+  }, [isGen1, columnVisibility]);
 
   const table = useReactTable({
     data,
     columns,
-    state: { sorting },
+    state: { sorting, columnVisibility },
     onSortingChange: setSorting,
+    onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
   });
@@ -567,6 +616,36 @@ export function PokemonTable() {
           />
           National Dex
         </label>
+        <div className="relative" ref={colsRef}>
+          <button
+            onClick={() => setColsOpen((o) => !o)}
+            className={cn(
+              "flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted",
+              colsOpen ? "bg-muted" : "bg-background",
+            )}
+          >
+            <SlidersHorizontal className="h-3.5 w-3.5" />
+            Columns
+          </button>
+          {colsOpen && (
+            <div className="absolute right-0 top-full z-20 mt-1 w-40 rounded-lg border bg-background p-2 shadow-lg">
+              {TOGGLEABLE_COLS.map((col) => {
+                const visible = table.getColumn(col.id)?.getIsVisible() ?? true;
+                return (
+                  <label key={col.id} className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-muted">
+                    <input
+                      type="checkbox"
+                      checked={visible}
+                      onChange={() => table.getColumn(col.id)?.toggleVisibility()}
+                      className="h-3.5 w-3.5 accent-primary"
+                    />
+                    {col.label}
+                  </label>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
       <div className="overflow-hidden rounded-md border">
         <div
