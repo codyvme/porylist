@@ -373,9 +373,16 @@ export function PokemonTable({ search }: { search: string; onSearchChange: (v: s
   const captureRateVisible = columnVisibility["captureRate"] !== false;
   const eggGroupVisible = columnVisibility["eggGroups"] !== false;
 
+  // Derive unique species names from detail data — entry names like "deoxys-normal"
+  // don't map to valid species endpoints, but detail.species.name ("deoxys") does.
+  const speciesNames = useMemo(
+    () => detailsMap ? [...new Set(Object.values(detailsMap).map((d) => d.species.name))] : [],
+    [detailsMap],
+  );
+
   // Always prefetch species once main details are loaded — cached forever, so
   // legendary/mythical filters and species columns feel instant.
-  const speciesQuery = useAllPokemonSpecies(detailsMap ? entries.map((e) => e.name) : []);
+  const speciesQuery = useAllPokemonSpecies(speciesNames);
   const speciesMap = speciesQuery.data;
 
   const allRows = useMemo<Row[]>(
