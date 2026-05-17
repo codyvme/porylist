@@ -889,10 +889,10 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate }: Pokemon
     if (!eggData || !speciesEggGroups || !generation) return null;
     const genMask = 1 << (generation - 1);
     const selfSmogon = pokemon?.species.name.replace(/-/g, "");
-    const map: Record<string, Array<{ name: string; pokeApiName: string }>> = {};
+    const map: Record<string, Array<{ name: string; pokeApiName: string; id: number }>> = {};
     for (const move of filteredMoves.egg) {
       const smogonMove = move.name.replace(/-/g, "");
-      const parents: Array<{ name: string; pokeApiName: string }> = [];
+      const parents: Array<{ name: string; pokeApiName: string; id: number }> = [];
       for (const [sid, data] of Object.entries(eggData)) {
         if (sid === selfSmogon) continue;
         if (!data.g.some((g) => speciesEggGroups.includes(g))) continue;

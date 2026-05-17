@@ -215,7 +215,7 @@ function buildRow(
   };
 }
 
-export function PokemonTable({ search, onSearchChange }: { search: string; onSearchChange: (v: string) => void }) {
+export function PokemonTable({ search }: { search: string; onSearchChange: (v: string) => void }) {
   const list = usePokemonList();
   const entries = list.data?.results ?? [];
 
