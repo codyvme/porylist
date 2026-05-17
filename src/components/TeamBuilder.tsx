@@ -132,7 +132,7 @@ export function TeamBuilder({ team, onRemove, onClear }: Props) {
           <span className="text-xs text-muted-foreground">{team.length}/6</span>
 
           {team.length > 0 && (
-            <button onClick={(e) => { e.stopPropagation(); onClear(); }} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+            <button onClick={(e) => { e.stopPropagation(); onClear(); }} className="rounded border border-border px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive">
               Clear all
             </button>
           )}
