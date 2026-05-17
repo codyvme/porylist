@@ -487,7 +487,11 @@ export function PokemonTable({ search, onSearchChange }: { search: string; onSea
       cell: ({ getValue, row }) => {
         if (row.original.isLoading) return <div className="h-4 w-10 animate-pulse rounded bg-muted" />;
         const v = getValue();
-        return <span className="font-mono tabular-nums text-sm">{v > 0 ? `${(v / 10).toFixed(1)}m` : "—"}</span>;
+        if (v <= 0) return <span className="font-mono tabular-nums text-sm">—</span>;
+        const totalIn = v * 3.93701;
+        const ft = Math.floor(totalIn / 12);
+        const inches = Math.round(totalIn % 12);
+        return <span className="font-mono tabular-nums text-sm">{`${ft}'${String(inches).padStart(2, "0")}"`}</span>;
       },
     });
 
@@ -497,7 +501,9 @@ export function PokemonTable({ search, onSearchChange }: { search: string; onSea
       cell: ({ getValue, row }) => {
         if (row.original.isLoading) return <div className="h-4 w-12 animate-pulse rounded bg-muted" />;
         const v = getValue();
-        return <span className="font-mono tabular-nums text-sm">{v > 0 ? `${(v / 10).toFixed(1)}kg` : "—"}</span>;
+        if (v <= 0) return <span className="font-mono tabular-nums text-sm">—</span>;
+        const lbs = (v * 0.220462).toFixed(1);
+        return <span className="font-mono tabular-nums text-sm">{`${lbs} lbs`}</span>;
       },
     });
 

@@ -137,7 +137,7 @@ export function useAllPokemonSpecies(names: string[]) {
     staleTime: Infinity,
     gcTime: 1000 * 60 * 60 * 24 * 30,
     queryFn: async () => {
-      const results = await Promise.all(
+      const results = await Promise.allSettled(
         names.map((name) =>
           queryClient.fetchQuery<PokemonSpecies>({
             queryKey: ["pokemon-species", name],
@@ -147,7 +147,10 @@ export function useAllPokemonSpecies(names: string[]) {
         ),
       );
       const map: PokemonSpeciesMap = {};
-      for (let i = 0; i < names.length; i++) map[names[i]] = results[i];
+      for (let i = 0; i < names.length; i++) {
+        const r = results[i];
+        if (r.status === "fulfilled") map[names[i]] = r.value;
+      }
       return map;
     },
   });
