@@ -20,6 +20,7 @@ import {
   typesForGeneration,
   useAllPokemonDetails,
   useAllPokemonEntries,
+  useAllPokemonSpecies,
   useFormDetails,
   usePokemonFormData,
   usePokemonList,
@@ -51,6 +52,9 @@ interface Row {
   specialAttack: number;
   specialDefense: number;
   speed: number;
+  height: number;
+  weight: number;
+  captureRate: number | null;
 }
 
 type DisplayRow =
@@ -190,6 +194,7 @@ function buildRow(
   isLoading: boolean,
   spriteVersion: string | undefined,
   generation: number | undefined,
+  captureRate: number | null,
 ): Row {
   const id = detail?.id ?? extractIdFromUrl(entry.url);
   return {
@@ -204,6 +209,9 @@ function buildRow(
     specialAttack: statByName(detail, "special-attack"),
     specialDefense: statByName(detail, "special-defense"),
     speed: statByName(detail, "speed"),
+    height: detail?.height ?? 0,
+    weight: detail?.weight ?? 0,
+    captureRate,
   };
 }
 
@@ -326,13 +334,34 @@ export function PokemonTable({ search, onSearchChange }: { search: string; onSea
   const availableFormsMapRef = useRef(availableFormsMap);
   availableFormsMapRef.current = availableFormsMap;
 
+  const DEFAULT_HIDDEN: VisibilityState = { height: false, weight: false, captureRate: false };
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => {
+    try {
+      const saved = localStorage.getItem("porylist-col-vis");
+      return saved ? { ...DEFAULT_HIDDEN, ...JSON.parse(saved) } : DEFAULT_HIDDEN;
+    } catch {
+      return DEFAULT_HIDDEN;
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem("porylist-col-vis", JSON.stringify(columnVisibility));
+  }, [columnVisibility]);
+
+  const captureRateVisible = columnVisibility["captureRate"] !== false;
+  const speciesQuery = useAllPokemonSpecies(captureRateVisible ? entries.map((e) => e.name) : []);
+  const speciesMap = speciesQuery.data;
+
   const allRows = useMemo<Row[]>(
     () =>
       entries.map((entry) => {
         const detail = detailsMap?.[entry.name];
-        return buildRow(entry, detail, !detail, spriteVersion, generation);
+        const captureRate = captureRateVisible
+          ? (speciesMap?.[detail?.species.name ?? entry.name]?.capture_rate ?? null)
+          : null;
+        return buildRow(entry, detail, !detail, spriteVersion, generation, captureRate);
       }),
-    [entries, detailsMap, spriteVersion, generation],
+    [entries, detailsMap, speciesMap, captureRateVisible, spriteVersion, generation],
   );
 
   const data = useMemo<Row[]>(() => {
@@ -452,6 +481,37 @@ export function PokemonTable({ search, onSearchChange }: { search: string; onSea
       },
     );
 
+    const heightCol = columnHelper.accessor("height", {
+      id: "height",
+      header: ({ column }) => <SortHeader label="Height" sorted={column.getIsSorted()} />,
+      cell: ({ getValue, row }) => {
+        if (row.original.isLoading) return <div className="h-4 w-10 animate-pulse rounded bg-muted" />;
+        const v = getValue();
+        return <span className="font-mono tabular-nums text-sm">{v > 0 ? `${(v / 10).toFixed(1)}m` : "—"}</span>;
+      },
+    });
+
+    const weightCol = columnHelper.accessor("weight", {
+      id: "weight",
+      header: ({ column }) => <SortHeader label="Weight" sorted={column.getIsSorted()} />,
+      cell: ({ getValue, row }) => {
+        if (row.original.isLoading) return <div className="h-4 w-12 animate-pulse rounded bg-muted" />;
+        const v = getValue();
+        return <span className="font-mono tabular-nums text-sm">{v > 0 ? `${(v / 10).toFixed(1)}kg` : "—"}</span>;
+      },
+    });
+
+    const captureRateCol = columnHelper.accessor("captureRate", {
+      id: "captureRate",
+      header: ({ column }) => <SortHeader label="Catch" sorted={column.getIsSorted()} />,
+      cell: ({ getValue, row }) => {
+        if (row.original.isLoading) return <div className="h-4 w-8 animate-pulse rounded bg-muted" />;
+        const v = getValue();
+        if (v === null) return <div className="h-4 w-8 animate-pulse rounded bg-muted" />;
+        return <span className="font-mono tabular-nums text-sm">{v}</span>;
+      },
+    });
+
     return [
       expandCol,
       spriteColumn,
@@ -460,23 +520,13 @@ export function PokemonTable({ search, onSearchChange }: { search: string; onSea
       typesColumn,
       ...statCols,
       bstCol,
+      heightCol,
+      weightCol,
+      captureRateCol,
     ];
   }, [isGen1, showRegional, selectedGame, toggleExpanded]);
 
   const [sorting, setSorting] = useState<SortingState>([]);
-
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => {
-    try {
-      const saved = localStorage.getItem("porylist-col-vis");
-      return saved ? JSON.parse(saved) : {};
-    } catch {
-      return {};
-    }
-  });
-
-  useEffect(() => {
-    localStorage.setItem("porylist-col-vis", JSON.stringify(columnVisibility));
-  }, [columnVisibility]);
 
   const [colsOpen, setColsOpen] = useState(false);
   const colsRef = useRef<HTMLDivElement>(null);
@@ -489,6 +539,12 @@ export function PokemonTable({ search, onSearchChange }: { search: string; onSea
     return () => document.removeEventListener("mousedown", handler);
   }, [colsOpen]);
 
+  const EXTRA_COLS = [
+    { id: "height", label: "Height" },
+    { id: "weight", label: "Weight" },
+    { id: "captureRate", label: "Catch Rate" },
+  ];
+
   const TOGGLEABLE_COLS = isGen1
     ? [
         { id: "hp", label: "HP" },
@@ -497,6 +553,7 @@ export function PokemonTable({ search, onSearchChange }: { search: string; onSea
         { id: "specialAttack", label: "Spc" },
         { id: "speed", label: "Spd" },
         { id: "bst", label: "BST" },
+        ...EXTRA_COLS,
       ]
     : [
         { id: "hp", label: "HP" },
@@ -506,6 +563,7 @@ export function PokemonTable({ search, onSearchChange }: { search: string; onSea
         { id: "specialDefense", label: "Sp. Def" },
         { id: "speed", label: "Spd" },
         { id: "bst", label: "BST" },
+        ...EXTRA_COLS,
       ];
 
   const gridTemplate = useMemo(() => {
@@ -514,9 +572,17 @@ export function PokemonTable({ search, onSearchChange }: { search: string; onSea
       : ["hp", "attack", "defense", "specialAttack", "specialDefense", "speed"];
     const visibleStats = statIds.filter((id) => columnVisibility[id] !== false).length;
     const showBst = columnVisibility["bst"] !== false;
+    const showHeight = columnVisibility["height"] !== false;
+    const showWeight = columnVisibility["weight"] !== false;
+    const showCaptureRate = columnVisibility["captureRate"] !== false;
     const statPart = visibleStats > 0 ? `${"92px ".repeat(visibleStats).trim()} ` : "";
-    const bstPart = showBst ? "76px" : "";
-    return `32px 72px 80px minmax(150px, 1fr) minmax(180px, 1.2fr) ${statPart}${bstPart}`.trim();
+    const extraParts = [
+      showBst ? "76px" : "",
+      showHeight ? "80px" : "",
+      showWeight ? "80px" : "",
+      showCaptureRate ? "70px" : "",
+    ].filter(Boolean).join(" ");
+    return `32px 72px 80px minmax(150px, 1fr) minmax(180px, 1.2fr) ${statPart}${extraParts}`.trim();
   }, [isGen1, columnVisibility]);
 
   const table = useReactTable({

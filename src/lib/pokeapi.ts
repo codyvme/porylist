@@ -106,6 +106,8 @@ export interface PokemonPastType {
 export interface Pokemon {
   id: number;
   name: string;
+  height: number;
+  weight: number;
   types: PokemonType[];
   past_types: PokemonPastType[];
   sprites: PokemonSprites;
@@ -116,12 +118,39 @@ export interface Pokemon {
 }
 
 export interface PokemonSpecies {
+  capture_rate: number;
   flavor_text_entries: Array<{
     flavor_text: string;
     language: { name: string; url: string };
     version: { name: string; url: string };
   }>;
   evolution_chain: { url: string };
+}
+
+export type PokemonSpeciesMap = Record<string, PokemonSpecies>;
+
+export function useAllPokemonSpecies(names: string[]) {
+  const queryClient = useQueryClient();
+  return useQuery({
+    queryKey: ["pokemon-species-all", [...names].sort().join(",")],
+    enabled: names.length > 0,
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 60 * 24 * 30,
+    queryFn: async () => {
+      const results = await Promise.all(
+        names.map((name) =>
+          queryClient.fetchQuery<PokemonSpecies>({
+            queryKey: ["pokemon-species", name],
+            queryFn: () => fetchJson<PokemonSpecies>(`${BASE}/pokemon-species/${name}`),
+            staleTime: Infinity,
+          }),
+        ),
+      );
+      const map: PokemonSpeciesMap = {};
+      for (let i = 0; i < names.length; i++) map[names[i]] = results[i];
+      return map;
+    },
+  });
 }
 
 export interface EvolutionDetail {
