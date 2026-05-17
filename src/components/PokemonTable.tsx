@@ -623,7 +623,7 @@ export function PokemonTable({ search, onSearchChange }: { search: string; onSea
                     <input
                       type="checkbox"
                       checked={visible}
-                      onChange={() => table.getColumn(col.id)?.toggleVisibility()}
+                      onChange={(e) => table.getColumn(col.id)?.toggleVisibility(e.target.checked)}
                       className="h-3.5 w-3.5 accent-primary"
                     />
                     {col.label}
