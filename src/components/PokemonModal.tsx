@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, Sparkles, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { typeStyle } from "@/lib/types";
+import { computeTypeEffectiveness } from "@/lib/type-chart";
 import { GAME_VERSION_GROUPS, GAME_VERSIONS, spriteUrl, type GameOption } from "@/lib/games";
 import {
   typesForGeneration,
@@ -709,6 +710,24 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate }: Pokemon
     [pokemon, generation],
   );
 
+  const typeEffectiveness = useMemo(() => {
+    if (types.length === 0) return null;
+    const chart = computeTypeEffectiveness(types);
+    const immune: string[] = [];
+    const quarter: string[] = [];
+    const half: string[] = [];
+    const double: string[] = [];
+    const quadruple: string[] = [];
+    for (const [atk, mult] of Object.entries(chart)) {
+      if (mult === 0) immune.push(atk);
+      else if (mult === 0.25) quarter.push(atk);
+      else if (mult === 0.5) half.push(atk);
+      else if (mult === 2) double.push(atk);
+      else if (mult === 4) quadruple.push(atk);
+    }
+    return { immune, quarter, half, double, quadruple };
+  }, [types]);
+
   const abilities = useMemo(() => {
     if (!pokemon) return [];
     if (generation != null && generation <= 2) return [];
@@ -1142,6 +1161,63 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate }: Pokemon
                         </div>
                       </button>
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Type Effectiveness */}
+              {typeEffectiveness && (
+                <div className="border-t px-6 py-5">
+                  <h3 className="mb-4 text-base font-semibold">Type Effectiveness</h3>
+                  <div className="space-y-3">
+                    {typeEffectiveness.immune.length > 0 && (
+                      <div>
+                        <p className="mb-1.5 text-xs font-medium text-muted-foreground">Immune (0×)</p>
+                        <div className="flex flex-wrap gap-2">
+                          {typeEffectiveness.immune.map((t) => (
+                            <Badge key={t} variant="default" className="capitalize text-xs" style={typeStyle(t)}>{t}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {(typeEffectiveness.quarter.length > 0 || typeEffectiveness.half.length > 0) && (
+                      <div>
+                        <p className="mb-1.5 text-xs font-medium text-muted-foreground">Resistant</p>
+                        <div className="flex flex-wrap gap-x-4 gap-y-2">
+                          {typeEffectiveness.quarter.map((t) => (
+                            <span key={t} className="inline-flex items-center gap-1">
+                              <Badge variant="default" className="capitalize text-xs" style={typeStyle(t)}>{t}</Badge>
+                              <span className="text-xs text-muted-foreground">¼×</span>
+                            </span>
+                          ))}
+                          {typeEffectiveness.half.map((t) => (
+                            <span key={t} className="inline-flex items-center gap-1">
+                              <Badge variant="default" className="capitalize text-xs" style={typeStyle(t)}>{t}</Badge>
+                              <span className="text-xs text-muted-foreground">½×</span>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {(typeEffectiveness.double.length > 0 || typeEffectiveness.quadruple.length > 0) && (
+                      <div>
+                        <p className="mb-1.5 text-xs font-medium text-muted-foreground">Weak to</p>
+                        <div className="flex flex-wrap gap-x-4 gap-y-2">
+                          {typeEffectiveness.quadruple.map((t) => (
+                            <span key={t} className="inline-flex items-center gap-1">
+                              <Badge variant="default" className="capitalize text-xs" style={typeStyle(t)}>{t}</Badge>
+                              <span className="text-xs text-muted-foreground">4×</span>
+                            </span>
+                          ))}
+                          {typeEffectiveness.double.map((t) => (
+                            <span key={t} className="inline-flex items-center gap-1">
+                              <Badge variant="default" className="capitalize text-xs" style={typeStyle(t)}>{t}</Badge>
+                              <span className="text-xs text-muted-foreground">2×</span>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
