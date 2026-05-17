@@ -139,18 +139,20 @@ export function TeamBuilder({ team, onRemove, onClear }: Props) {
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="group relative">
-            <button
-              onClick={(e) => { e.stopPropagation(); handleShare(); }}
-              className="rounded-full p-2 text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Copy shareable link"
-            >
-              {copied ? <Check className="h-4 w-4 text-green-500" /> : <Share2 className="h-4 w-4" />}
-            </button>
-            <div className="pointer-events-none absolute bottom-full left-1/2 mb-1.5 -translate-x-1/2 whitespace-nowrap rounded bg-foreground px-2 py-1 text-[11px] text-background opacity-0 transition-opacity group-hover:opacity-100">
-              {copied ? "Copied!" : "Copy shareable link"}
+          {team.length > 0 && (
+            <div className="group relative">
+              <button
+                onClick={(e) => { e.stopPropagation(); handleShare(); }}
+                className="rounded-full p-2 text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Copy shareable link"
+              >
+                {copied ? <Check className="h-4 w-4 text-green-500" /> : <Share2 className="h-4 w-4" />}
+              </button>
+              <div className="pointer-events-none absolute bottom-full left-1/2 mb-1.5 -translate-x-1/2 whitespace-nowrap rounded bg-foreground px-2 py-1 text-[11px] text-background opacity-0 transition-opacity group-hover:opacity-100">
+                {copied ? "Copied!" : "Copy shareable link"}
+              </div>
             </div>
-          </div>
+          )}
           <div className="rounded-full p-2 text-muted-foreground">
             {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
           </div>
