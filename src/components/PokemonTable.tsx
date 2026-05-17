@@ -12,7 +12,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, ChevronsUpDown, ListFilter, SlidersHorizontal } from "lucide-react";
+import { ArrowDown, ArrowUp, Check, ChevronDown, ChevronRight, ChevronsUpDown, ListFilter, Plus, SlidersHorizontal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Select } from "@/components/ui/select";
 import {
@@ -225,7 +225,12 @@ function buildRow(
   };
 }
 
-export function PokemonTable({ search }: { search: string; onSearchChange: (v: string) => void }) {
+export function PokemonTable({ search, team, onAddToTeam }: {
+  search: string;
+  onSearchChange: (v: string) => void;
+  team: string[];
+  onAddToTeam: (name: string) => void;
+}) {
   const list = usePokemonList();
   const entries = list.data?.results ?? [];
 
@@ -582,6 +587,34 @@ export function PokemonTable({ search }: { search: string; onSearchChange: (v: s
       },
     });
 
+    const teamCol = columnHelper.display({
+      id: "team",
+      header: () => null,
+      enableSorting: false,
+      cell: ({ row }) => {
+        const name = row.original.name;
+        if (row.original.isLoading) return null;
+        const inTeam = team.includes(name);
+        const full = team.length >= 6;
+        if (full && !inTeam) return null;
+        return (
+          <button
+            onClick={(e) => { e.stopPropagation(); onAddToTeam(name); }}
+            className={cn(
+              "flex h-6 w-6 items-center justify-center rounded-full transition-colors",
+              inTeam
+                ? "text-primary hover:text-destructive"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground",
+            )}
+            aria-label={inTeam ? `Remove ${name} from team` : `Add ${name} to team`}
+            title={inTeam ? "In team — click to remove" : "Add to team"}
+          >
+            {inTeam ? <Check className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
+          </button>
+        );
+      },
+    });
+
     return [
       expandCol,
       spriteColumn,
@@ -594,8 +627,9 @@ export function PokemonTable({ search }: { search: string; onSearchChange: (v: s
       weightCol,
       captureRateCol,
       eggGroupsCol,
+      teamCol,
     ];
-  }, [isGen1, showRegional, selectedGame, toggleExpanded]);
+  }, [isGen1, showRegional, selectedGame, toggleExpanded, team, onAddToTeam]);
 
   const [sorting, setSorting] = useState<SortingState>([]);
 
@@ -669,7 +703,7 @@ export function PokemonTable({ search }: { search: string; onSearchChange: (v: s
       showCaptureRate ? "70px" : "",
       showEggGroups ? "160px" : "",
     ].filter(Boolean).join(" ");
-    return `32px 72px 80px minmax(150px, 1fr) minmax(180px, 1.2fr) ${statPart}${extraParts}`.trim();
+    return `32px 72px 80px minmax(150px, 1fr) minmax(180px, 1.2fr) ${statPart}${extraParts} 40px`.trim();
   }, [isGen1, columnVisibility]);
 
   const table = useReactTable({
@@ -1094,6 +1128,8 @@ export function PokemonTable({ search }: { search: string; onSearchChange: (v: s
                       <span className="text-sm">—</span>
                     </div>
                   )}
+                  {/* team btn: not applicable to variant rows */}
+                  <div className="flex items-center px-3 py-3" />
                 </div>
               );
             })}
@@ -1112,6 +1148,8 @@ export function PokemonTable({ search }: { search: string; onSearchChange: (v: s
           game={selectedGame}
           onClose={closeModal}
           onNavigate={openModal}
+          team={team}
+          onAddToTeam={onAddToTeam}
         />
       )}
     </div>
