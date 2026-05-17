@@ -366,8 +366,12 @@ interface MoveTableProps {
   moveDetailsMap: Record<string, MoveDetail>;
   showLevel: boolean;
   machineNumberMap?: Record<string, string>;
+  eggParentMap?: Record<string, Array<{ name: string; pokeApiName: string; id: number }>> | null;
+  eggDataLoaded?: boolean;
+  hasGeneration?: boolean;
   expandedMove: string | null;
   onToggleExpand: (name: string) => void;
+  onNavigate: (name: string) => void;
   versionGroups: string[];
 }
 
@@ -376,7 +380,7 @@ function parseMachineNum(label: string): number {
   return m ? parseInt(m[0], 10) : 9999;
 }
 
-function MoveTable({ moves, moveDetailsMap, showLevel, machineNumberMap, expandedMove, onToggleExpand, versionGroups }: MoveTableProps) {
+function MoveTable({ moves, moveDetailsMap, showLevel, machineNumberMap, eggParentMap, eggDataLoaded, hasGeneration, expandedMove, onToggleExpand, onNavigate, versionGroups }: MoveTableProps) {
   const showMachineNum = machineNumberMap != null;
   const showExtraCol = showLevel || showMachineNum;
   // On mobile: chevron + (extra?) + name + type + category = 4 or 5 cols
@@ -494,9 +498,52 @@ function MoveTable({ moves, moveDetailsMap, showLevel, machineNumberMap, expande
                     <td /> {/* chevron column */}
                     {showExtraCol && <td />}
                     <td colSpan={mobileColCount - (showExtraCol ? 2 : 1)} className="py-2 pr-4 text-xs text-muted-foreground">
-                      {effect || (
-                        <div className="h-3 w-48 animate-pulse rounded bg-muted" />
-                      )}
+                      <div className="space-y-2">
+                        {effect ? (
+                          <p>{effect}</p>
+                        ) : (
+                          <div className="h-3 w-48 animate-pulse rounded bg-muted" />
+                        )}
+                        {eggParentMap !== undefined && (
+                          <div>
+                            {!hasGeneration ? (
+                              <p className="italic">Select a game to see breeding parents.</p>
+                            ) : !eggDataLoaded ? (
+                              <div className="h-3 w-32 animate-pulse rounded bg-muted" />
+                            ) : eggParentMap === null ? null : (
+                              (() => {
+                                const parents = eggParentMap[move.name] ?? [];
+                                return parents.length === 0 ? (
+                                  <p className="italic">No compatible parents found.</p>
+                                ) : (
+                                  <div className="pt-1">
+                                    <span className="font-semibold text-foreground">Parents:</span>
+                                    <div className="mt-1 flex flex-wrap gap-2">
+                                      {parents.map((p) => (
+                                        <button
+                                          key={p.pokeApiName}
+                                          onClick={(e) => { e.stopPropagation(); onNavigate(p.pokeApiName); }}
+                                          className="flex flex-col items-center gap-0.5 rounded-lg p-1 hover:bg-muted/50"
+                                          title={p.name}
+                                        >
+                                          <img
+                                            src={`https://sprites.porylist.com/sprites/pokemon/${p.id}.png`}
+                                            alt={p.name}
+                                            className="h-10 w-10 object-contain"
+                                          />
+                                          <span className="max-w-[56px] truncate text-[10px] leading-tight text-muted-foreground">
+                                            {p.name}
+                                          </span>
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                );
+                              })()
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 )}
@@ -823,6 +870,40 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate }: Pokemon
     }
     return map;
   }, [activeTab, machineDetailsQueries]);
+
+  // Egg parent data — lazy loaded only when egg tab is active
+  const [eggData, setEggData] = useState<Record<string, { n: string; p: string; i: number; g: string[]; l: Record<string, number> }> | null>(null);
+  useEffect(() => {
+    if (activeTab !== "egg" || eggData !== null) return;
+    import("../data/egg-parents.json").then((m) => setEggData(m.default));
+  }, [activeTab, eggData]);
+
+  const speciesEggGroups = useMemo(() => {
+    if (!eggData || !pokemon) return null;
+    const smogonName = pokemon.species.name.replace(/-/g, "");
+    return eggData[smogonName]?.g ?? null;
+  }, [eggData, pokemon]);
+
+  // moveName (PokeAPI) → sorted list of parents { name, pokeApiName }
+  const eggParentMap = useMemo(() => {
+    if (!eggData || !speciesEggGroups || !generation) return null;
+    const genMask = 1 << (generation - 1);
+    const selfSmogon = pokemon?.species.name.replace(/-/g, "");
+    const map: Record<string, Array<{ name: string; pokeApiName: string }>> = {};
+    for (const move of filteredMoves.egg) {
+      const smogonMove = move.name.replace(/-/g, "");
+      const parents: Array<{ name: string; pokeApiName: string }> = [];
+      for (const [sid, data] of Object.entries(eggData)) {
+        if (sid === selfSmogon) continue;
+        if (!data.g.some((g) => speciesEggGroups.includes(g))) continue;
+        if (!((data.l[smogonMove] ?? 0) & genMask)) continue;
+        parents.push({ name: data.n, pokeApiName: data.p, id: data.i });
+      }
+      parents.sort((a, b) => a.name.localeCompare(b.name));
+      map[move.name] = parents;
+    }
+    return map;
+  }, [eggData, speciesEggGroups, generation, filteredMoves.egg, pokemon]);
 
   const homeSprite = pokemon
     ? showShiny
@@ -1209,10 +1290,14 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate }: Pokemon
                       moveDetailsMap={moveDetailsMap}
                       showLevel={activeTab === "level-up"}
                       machineNumberMap={machineNumberMap}
+                      eggParentMap={activeTab === "egg" ? eggParentMap : undefined}
+                      eggDataLoaded={eggData !== null}
+                      hasGeneration={generation != null}
                       expandedMove={expandedMove}
                       onToggleExpand={(name) =>
                         setExpandedMove((prev) => (prev === name ? null : name))
                       }
+                      onNavigate={onNavigate}
                       versionGroups={versionGroups}
                     />
                   )}
