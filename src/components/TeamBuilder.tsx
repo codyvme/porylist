@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { ChevronDown, ChevronUp, Swords } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
+import { Check, ChevronDown, ChevronUp, Link2, Swords } from "lucide-react";
 import { typeStyle } from "@/lib/types";
 import { ALL_TYPES, computeTypeEffectiveness, offensiveCoverage } from "@/lib/type-chart";
 import { useSinglePokemon, typesForGeneration } from "@/lib/pokeapi";
@@ -36,6 +36,12 @@ interface Props {
 
 export function TeamBuilder({ team, onRemove, onClear }: Props) {
   const [expanded, setExpanded] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const handleShare = useCallback(() => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }, []);
 
   const p0 = useSinglePokemon(team[0] ?? null);
   const p1 = useSinglePokemon(team[1] ?? null);
@@ -68,6 +74,15 @@ export function TeamBuilder({ team, onRemove, onClear }: Props) {
   const covered = useMemo(
     () => offensiveCoverage(members.flatMap(m => m.types)),
     [members],
+  );
+
+  const sharedWeaknesses = useMemo(
+    () =>
+      ALL_TYPES
+        .filter(t => weaknessCounts[t] >= 2)
+        .map(t => ({ type: t, count: weaknessCounts[t] }))
+        .sort((a, b) => b.count - a.count),
+    [weaknessCounts],
   );
 
   return (
@@ -123,8 +138,18 @@ export function TeamBuilder({ team, onRemove, onClear }: Props) {
           )}
         </div>
 
-        <div className="text-muted-foreground">
-          {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={(e) => { e.stopPropagation(); handleShare(); }}
+            className="rounded-full p-2 text-muted-foreground hover:text-foreground transition-colors"
+            title="Copy shareable link"
+            aria-label="Copy shareable link"
+          >
+            {copied ? <Check className="h-4 w-4 text-green-500" /> : <Link2 className="h-4 w-4" />}
+          </button>
+          <div className="rounded-full p-2 text-muted-foreground">
+            {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+          </div>
         </div>
       </div>
 
@@ -138,6 +163,28 @@ export function TeamBuilder({ team, onRemove, onClear }: Props) {
               </p>
             ) : (
               <div className="max-h-80 space-y-5 overflow-y-auto pr-1">
+                {/* Shared Weaknesses */}
+                {sharedWeaknesses.length > 0 && (
+                  <div>
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      Shared Weaknesses
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {sharedWeaknesses.map(({ type, count }) => (
+                        <span key={type} className="flex items-center gap-1">
+                          <span
+                            className="rounded-full px-2 py-0.5 text-xs font-semibold capitalize"
+                            style={typeStyle(type)}
+                          >
+                            {type}
+                          </span>
+                          <span className="text-xs text-muted-foreground">{count}×</span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Defensive matchups */}
                 <div>
                   <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -224,6 +271,28 @@ export function TeamBuilder({ team, onRemove, onClear }: Props) {
                       </span>
                     ))}
                   </div>
+                  {team.length > 0 && (() => {
+                    const uncovered = ALL_TYPES.filter(t => !covered.has(t));
+                    if (uncovered.length === 0) return null;
+                    return (
+                      <div className="mt-2">
+                        <p className="mb-1.5 text-xs text-muted-foreground">
+                          No super-effective coverage vs:
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {uncovered.map(t => (
+                            <span
+                              key={t}
+                              className="rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize"
+                              style={typeStyle(t)}
+                            >
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             )}

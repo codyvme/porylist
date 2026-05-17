@@ -120,11 +120,25 @@ export function App() {
   const [search, setSearch] = useState("");
 
   const [team, setTeam] = useState<string[]>(() => {
+    const urlTeam = new URLSearchParams(window.location.search).get('team');
+    if (urlTeam) {
+      const names = urlTeam.split(',').filter(Boolean).slice(0, 6);
+      if (names.length > 0) return names;
+    }
     try { return JSON.parse(localStorage.getItem("porylist-team") ?? "[]"); }
     catch { return []; }
   });
   useEffect(() => {
     localStorage.setItem("porylist-team", JSON.stringify(team));
+  }, [team]);
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (team.length > 0) {
+      url.searchParams.set('team', team.join(','));
+    } else {
+      url.searchParams.delete('team');
+    }
+    history.replaceState(null, '', url.toString());
   }, [team]);
   const addToTeam = useCallback((name: string) => {
     setTeam(prev => prev.includes(name) || prev.length >= 6 ? prev : [...prev, name]);
