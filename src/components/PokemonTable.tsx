@@ -796,9 +796,15 @@ export function PokemonTable({ search, onSearchChange }: { search: string; onSea
               const bst = isGen1
                 ? hp + atk + def + spa + spe
                 : hp + atk + def + spa + spdef + spe;
-              const statValues = isGen1
+              const allStatIds = isGen1
+                ? ["hp", "attack", "defense", "specialAttack", "speed"]
+                : ["hp", "attack", "defense", "specialAttack", "specialDefense", "speed"];
+              const allStatValues = isGen1
                 ? [hp, atk, def, spa, spe]
                 : [hp, atk, def, spa, spdef, spe];
+              const visibleStats = allStatIds
+                .map((id, i) => ({ id, val: allStatValues[i] }))
+                .filter(({ id }) => columnVisibility[id] !== false);
               const name = canonicalFormName(formName, formDataMap);
               const formSprite = detail
                 ? spriteUrl(detail.id, undefined)
@@ -869,8 +875,8 @@ export function PokemonTable({ search, onSearchChange }: { search: string; onSea
                     )}
                   </div>
                   {/* stats */}
-                  {statValues.map((val, i) => (
-                    <div key={i} className="flex items-center px-3 py-3 text-sm">
+                  {visibleStats.map(({ id, val }) => (
+                    <div key={id} className="flex items-center px-3 py-3 text-sm">
                       {isLoadingDetail ? (
                         <div className="h-4 w-8 animate-pulse rounded bg-muted" />
                       ) : (
@@ -881,15 +887,50 @@ export function PokemonTable({ search, onSearchChange }: { search: string; onSea
                     </div>
                   ))}
                   {/* bst */}
-                  <div className="flex items-center px-3 py-3 text-sm">
-                    {isLoadingDetail ? (
-                      <div className="h-4 w-10 animate-pulse rounded bg-muted" />
-                    ) : (
-                      <span className="font-mono tabular-nums text-sm font-semibold">
-                        {bst > 0 ? bst : "—"}
-                      </span>
-                    )}
-                  </div>
+                  {columnVisibility["bst"] !== false && (
+                    <div className="flex items-center px-3 py-3 text-sm">
+                      {isLoadingDetail ? (
+                        <div className="h-4 w-10 animate-pulse rounded bg-muted" />
+                      ) : (
+                        <span className="font-mono tabular-nums text-sm font-semibold">
+                          {bst > 0 ? bst : "—"}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {/* height */}
+                  {columnVisibility["height"] !== false && (
+                    <div className="flex items-center px-3 py-3 text-sm">
+                      {isLoadingDetail ? (
+                        <div className="h-4 w-10 animate-pulse rounded bg-muted" />
+                      ) : (() => {
+                        const v = detail?.height ?? 0;
+                        if (v <= 0) return <span className="font-mono tabular-nums text-sm">—</span>;
+                        const totalIn = v * 3.93701;
+                        const ft = Math.floor(totalIn / 12);
+                        const inches = Math.round(totalIn % 12);
+                        return <span className="font-mono tabular-nums text-sm">{`${ft}'${String(inches).padStart(2, "0")}"`}</span>;
+                      })()}
+                    </div>
+                  )}
+                  {/* weight */}
+                  {columnVisibility["weight"] !== false && (
+                    <div className="flex items-center px-3 py-3 text-sm">
+                      {isLoadingDetail ? (
+                        <div className="h-4 w-10 animate-pulse rounded bg-muted" />
+                      ) : (() => {
+                        const v = detail?.weight ?? 0;
+                        if (v <= 0) return <span className="font-mono tabular-nums text-sm">—</span>;
+                        return <span className="font-mono tabular-nums text-sm">{`${(v * 0.220462).toFixed(1)} lbs`}</span>;
+                      })()}
+                    </div>
+                  )}
+                  {/* catch rate: not available for forms, show dash */}
+                  {columnVisibility["captureRate"] !== false && (
+                    <div className="flex items-center px-3 py-3 text-sm">
+                      <span className="font-mono tabular-nums text-sm">—</span>
+                    </div>
+                  )}
                 </div>
               );
             })}
