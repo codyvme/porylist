@@ -1,6 +1,6 @@
 # Porylist
 
-A fast, filterable Pokédex for browsing and sorting all 1,025 Pokémon by game, type, and base stats.
+A fast, filterable Pokédex for browsing, sorting, and team-building across all 1,025 Pokémon.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
@@ -11,16 +11,23 @@ A fast, filterable Pokédex for browsing and sorting all 1,025 Pokémon by game,
 - **Game filter** — narrow the list to Pokémon available in a specific game, with generation-accurate typings (e.g. pre-Fairy-type Pokémon show correctly in Gen 1–5)
 - **National Dex mode** — show all Pokémon up to a generation's cutoff instead of just the regional dex
 - **Sortable stats** — click any column header to sort by HP, Attack, Defense, Sp. Atk, Sp. Def, Speed, or BST
-- **Type filter** — filter by one or more types
+- **Filter dropdown** — filter by one or more types, or limit results to legendary or mythical Pokémon
+- **Column picker** — toggle optional columns: height, weight, catch rate, and egg group
 - **Search** — live search by name
 - **Pokémon detail modal** — click any Pokémon to see:
   - Home and in-game sprites (with shiny toggle)
   - Generation-accurate abilities with descriptions
-  - Base stats
+  - Base stats bar chart
+  - Type effectiveness chart
   - Pokédex flavor text for the selected game
   - Wild encounter locations (where available)
   - Full move list (Level Up, Egg Moves, TM/HM, Move Tutor) for the selected game
-- **Dark mode** — toggle with the button in the header, persisted across sessions
+- **Team Builder** — pick up to 6 Pokémon via the + button on any row or in the detail modal. A docked bottom panel shows:
+  - Mini sprites for each team slot
+  - Defensive matchups grid — per-type damage multipliers for each member with a shared weakness count totals row
+  - Offensive STAB coverage — which types your team hits for super-effective damage
+  - Team persists to localStorage across sessions
+- **Dark mode** — defaults to your device's color scheme preference; toggle manually in the header
 - **Offline-capable** — data is cached in IndexedDB via TanStack Query, so repeat visits are instant
 
 ## Tech Stack
