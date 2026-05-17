@@ -59,6 +59,9 @@ interface Row {
   eggGroups: string[] | null;
   isLegendary: boolean | null;
   isMythical: boolean | null;
+  isBaby: boolean | null;
+  isMono: boolean;
+  isNoEvolution: boolean | null;
 }
 
 type DisplayRow =
@@ -184,6 +187,8 @@ function buildRow(
   eggGroups: string[] | null,
   isLegendary: boolean | null,
   isMythical: boolean | null,
+  isBaby: boolean | null,
+  isNoEvolution: boolean | null,
 ): Row {
   const id = detail?.id ?? extractIdFromUrl(entry.url);
   return {
@@ -204,6 +209,9 @@ function buildRow(
     eggGroups,
     isLegendary,
     isMythical,
+    isBaby,
+    isMono: !isLoading && detail != null ? typesForGeneration(detail, generation).length === 1 : false,
+    isNoEvolution,
   };
 }
 
@@ -349,6 +357,9 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam }: {
   const [selectedTypes, setSelectedTypes] = useState<Set<string>>(new Set());
   const [showLegendary, setShowLegendary] = useState(false);
   const [showMythical, setShowMythical] = useState(false);
+  const [showBaby, setShowBaby] = useState(false);
+  const [showMono, setShowMono] = useState(false);
+  const [showNoEvolution, setShowNoEvolution] = useState(false);
 
   const toggleType = useCallback((t: string) => {
     setSelectedTypes((prev) => {
@@ -373,6 +384,15 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam }: {
   const speciesQuery = useAllPokemonSpecies(speciesNames);
   const speciesMap = speciesQuery.data;
 
+  const evolutionTargets = useMemo(() => {
+    if (!speciesMap) return null;
+    const targets = new Set<string>();
+    for (const species of Object.values(speciesMap)) {
+      if (species.evolves_from_species) targets.add(species.evolves_from_species.name);
+    }
+    return targets;
+  }, [speciesMap]);
+
   const allRows = useMemo<Row[]>(
     () =>
       entries.map((entry) => {
@@ -385,9 +405,13 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam }: {
           : null;
         const isLegendary = species != null ? species.is_legendary : null;
         const isMythical = species != null ? species.is_mythical : null;
-        return buildRow(entry, detail, !detail, spriteVersion, generation, captureRate, eggGroups, isLegendary, isMythical);
+        const isBaby = species != null ? species.is_baby : null;
+        const isNoEvolution = species != null && evolutionTargets != null
+          ? species.evolves_from_species === null && !evolutionTargets.has(speciesName)
+          : null;
+        return buildRow(entry, detail, !detail, spriteVersion, generation, captureRate, eggGroups, isLegendary, isMythical, isBaby, isNoEvolution);
       }),
-    [entries, detailsMap, speciesMap, captureRateVisible, eggGroupVisible, spriteVersion, generation],
+    [entries, detailsMap, speciesMap, captureRateVisible, eggGroupVisible, spriteVersion, generation, evolutionTargets],
   );
 
   const data = useMemo<Row[]>(() => {
@@ -408,13 +432,19 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam }: {
         [...selectedTypes].every((t) => r.types.includes(t)),
       );
     }
-    if ((showLegendary || showMythical) && speciesMap != null) {
+    if ((showLegendary || showMythical || showBaby) && speciesMap != null) {
       result = result.filter((r) =>
-        (showLegendary && r.isLegendary) || (showMythical && r.isMythical),
+        (showLegendary && r.isLegendary) || (showMythical && r.isMythical) || (showBaby && r.isBaby),
       );
     }
+    if (showMono) {
+      result = result.filter((r) => r.isLoading || r.isMono);
+    }
+    if (showNoEvolution && speciesMap != null && evolutionTargets != null) {
+      result = result.filter((r) => r.isNoEvolution === true);
+    }
     return result;
-  }, [allRows, selectedGame, deferredShowNational, deferredSearch, selectedTypes, showLegendary, showMythical, speciesMap]);
+  }, [allRows, selectedGame, deferredShowNational, deferredSearch, selectedTypes, showLegendary, showMythical, showBaby, showMono, showNoEvolution, speciesMap, evolutionTargets]);
 
   const showRegional = !!selectedGame && !deferredShowNational;
   const columns = useMemo<ColumnDef<Row, any>[]>(() => {
@@ -655,7 +685,7 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam }: {
     return () => document.removeEventListener("mousedown", handler);
   }, [filterOpen]);
 
-  const activeFilterCount = selectedTypes.size + (showLegendary ? 1 : 0) + (showMythical ? 1 : 0);
+  const activeFilterCount = selectedTypes.size + (showLegendary ? 1 : 0) + (showMythical ? 1 : 0) + (showBaby ? 1 : 0) + (showMono ? 1 : 0) + (showNoEvolution ? 1 : 0);
 
   const EXTRA_COLS = [
     { id: "height", label: "Height" },
@@ -810,25 +840,26 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam }: {
           {filterOpen && (
             <div className="absolute right-0 top-full z-20 mt-1 w-72 rounded-lg border bg-background p-3 shadow-lg">
               <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Category</p>
-              <div className="mb-3 flex gap-2">
-                <button
-                  onClick={() => setShowLegendary((v) => !v)}
-                  className={cn(
-                    "rounded-md border px-3 py-1 text-sm font-medium transition-colors",
-                    showLegendary ? "border-amber-500/50 bg-amber-500/15 text-amber-500" : "hover:bg-muted",
-                  )}
-                >
-                  Legendary
-                </button>
-                <button
-                  onClick={() => setShowMythical((v) => !v)}
-                  className={cn(
-                    "rounded-md border px-3 py-1 text-sm font-medium transition-colors",
-                    showMythical ? "border-purple-500/50 bg-purple-500/15 text-purple-400" : "hover:bg-muted",
-                  )}
-                >
-                  Mythical
-                </button>
+              <div className="mb-3 space-y-1.5">
+                {[
+                    { label: "Legendary", checked: showLegendary, onChange: () => setShowLegendary((v) => !v) },
+                    { label: "Mythical", checked: showMythical, onChange: () => setShowMythical((v) => !v) },
+                    { label: "Baby", checked: showBaby, onChange: () => setShowBaby((v) => !v) },
+                    { label: "Mono-type", checked: showMono, onChange: () => setShowMono((v) => !v) },
+                    { label: "No Evolution", checked: showNoEvolution, onChange: () => setShowNoEvolution((v) => !v) },
+                  ].map(({ label, checked, onChange }) => (
+                  <label key={label} className="flex cursor-pointer items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={onChange}
+                      className="h-3.5 w-3.5 rounded accent-primary"
+                    />
+                    <span className={checked ? "font-medium text-foreground" : "text-muted-foreground"}>
+                      {label}
+                    </span>
+                  </label>
+                ))}
               </div>
               <div className="mb-2 flex items-center justify-between">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Type</p>

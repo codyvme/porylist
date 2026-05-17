@@ -964,37 +964,23 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, team, onA
         {/* Modal */}
         <div className="relative z-10 w-full max-w-4xl rounded-xl border bg-background shadow-2xl">
           {/* Header */}
-          <div className="flex items-center justify-between gap-3 border-b px-6 py-4">
-            {pokemon && onAddToTeam && (
-              <button
-                onClick={() => {
-                  if (team?.includes(pokemon.name)) onRemoveFromTeam?.(pokemon.name);
-                  else onAddToTeam(pokemon.name);
-                }}
-                className={cn(
-                  "shrink-0 flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-sm font-medium transition-colors",
-                  team?.includes(pokemon.name)
-                    ? "border-primary/50 bg-primary/10 text-primary hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
-                    : team && team.length >= 6
-                    ? "cursor-not-allowed border-muted text-muted-foreground opacity-50"
-                    : "hover:bg-muted",
+          <div className="flex items-center justify-between gap-6 border-b px-6 py-4">
+            <div className="flex min-w-0 flex-1 items-center gap-6">
+              <div className="flex items-center gap-2.5">
+                {pokemon && (
+                  <span className="shrink-0 font-mono text-sm text-muted-foreground">
+                    #{String(pokemon.id).padStart(4, "0")}
+                  </span>
                 )}
-                disabled={!team?.includes(pokemon.name) && team?.length === 6}
-                title={team?.includes(pokemon.name) ? "Remove from team" : team?.length === 6 ? "Team is full" : "Add to team"}
-              >
-                {team?.includes(pokemon.name)
-                  ? <><Check className="h-3.5 w-3.5" /> In Team</>
-                  : <><Plus className="h-3.5 w-3.5" /> Add to Team</>}
-              </button>
-            )}
-            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
-              <h2 className="text-xl font-bold">{displayName}</h2>
-              {pokemon && (
-                <span className="font-mono text-sm text-muted-foreground">
-                  #{String(pokemon.id).padStart(4, "0")}
-                </span>
-              )}
-              <div className="flex gap-1.5">
+                <div className="flex flex-col gap-0">
+                  <h2 className="text-xl font-bold">{displayName}</h2>
+                  {species && (() => {
+                    const genus = species.genera.find((g) => g.language.name === "en")?.genus;
+                    return genus ? <span className="text-xs text-muted-foreground">{genus}</span> : null;
+                  })()}
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5">
                 {types.map((t) => (
                   <Badge
                     key={t}
@@ -1007,13 +993,37 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, team, onA
                 ))}
               </div>
             </div>
-            <button
-              onClick={onClose}
-              className="ml-4 rounded-md p-1.5 hover:bg-muted"
-              aria-label="Close"
-            >
-              <X className="h-5 w-5" />
-            </button>
+            <div className="flex shrink-0 items-center gap-2">
+              {pokemon && onAddToTeam && (
+                <button
+                  onClick={() => {
+                    if (team?.includes(pokemon.name)) onRemoveFromTeam?.(pokemon.name);
+                    else onAddToTeam(pokemon.name);
+                  }}
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-sm font-medium transition-colors",
+                    team?.includes(pokemon.name)
+                      ? "border-primary/50 bg-primary/10 text-primary hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
+                      : team && team.length >= 6
+                      ? "cursor-not-allowed border-muted text-muted-foreground opacity-50"
+                      : "hover:bg-muted",
+                  )}
+                  disabled={!team?.includes(pokemon.name) && team?.length === 6}
+                  title={team?.includes(pokemon.name) ? "Remove from team" : team?.length === 6 ? "Team is full" : "Add to team"}
+                >
+                  {team?.includes(pokemon.name)
+                    ? <><Check className="h-3.5 w-3.5" /> In Team</>
+                    : <><Plus className="h-3.5 w-3.5" /> Add to Team</>}
+                </button>
+              )}
+              <button
+                onClick={onClose}
+                className="rounded-md p-1.5 hover:bg-muted"
+                aria-label="Close"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
           </div>
 
           {isLoading ? (

@@ -119,8 +119,11 @@ export interface Pokemon {
 
 export interface PokemonSpecies {
   capture_rate: number;
+  is_baby: boolean;
   is_legendary: boolean;
   is_mythical: boolean;
+  evolves_from_species: { name: string; url: string } | null;
+  genera: Array<{ genus: string; language: { name: string; url: string } }>;
   egg_groups: Array<{ name: string; url: string }>;
   flavor_text_entries: Array<{
     flavor_text: string;
