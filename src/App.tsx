@@ -50,8 +50,8 @@ function AboutModal({ onClose }: { onClose: () => void }) {
         <h2 className="mb-3 text-lg font-semibold">About Porylist</h2>
         <div className="space-y-2 text-sm text-muted-foreground">
           <p>
-            Porylist is a Pokédex filtering tool for browsing and sorting
-            Pokémon by game, type, and base stats.
+            Porylist is a Pokédex browsing and team-building tool for filtering,
+            sorting, and analyzing Pokémon by game, type, and base stats.
           </p>
           <p>
             Use the <strong className="text-foreground">Game</strong> dropdown
@@ -61,9 +61,22 @@ function AboutModal({ onClose }: { onClose: () => void }) {
             all Pokémon up to that generation instead.
           </p>
           <p>
+            Use the <strong className="text-foreground">Filter</strong> button
+            to narrow results by type, or to show only legendary or mythical
+            Pokémon. Use <strong className="text-foreground">Columns</strong> to
+            toggle optional columns like height, weight, catch rate, and egg group.
+          </p>
+          <p>
             Click any Pokémon's name to open a detail view with its sprite,
-            abilities, base stats, Pokédex entry, and full move list for the
-            selected game.
+            abilities, base stats, type effectiveness, Pokédex entry, and full
+            move list for the selected game.
+          </p>
+          <p>
+            The <strong className="text-foreground">Team Builder</strong> panel
+            at the bottom lets you pick up to 6 Pokémon. Expand it to see a
+            defensive matchups grid (per-type damage multipliers for each member
+            plus a shared weakness count) and an offensive STAB coverage summary.
+            Your team is saved automatically.
           </p>
           <p>
             Data and sprites are sourced from{" "}
@@ -156,10 +169,10 @@ export function App() {
             </div>
           </div>
         </header>
-        <main className="container py-6 pb-20">
+        <main className="container py-6">
           <PokemonTable search={search} onSearchChange={setSearch} team={team} onAddToTeam={addToTeam} />
         </main>
-        <footer className="border-t mt-6">
+        <footer className="border-t mt-6 pb-16">
           <div className="container py-6 space-y-1">
             <p className="text-xs text-muted-foreground">
               &copy; {new Date().getFullYear()} Porylist
