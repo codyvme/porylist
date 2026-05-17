@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 
 function useTheme() {
   const [isDark, setIsDark] = useState(
-    () => localStorage.getItem("theme") === "dark",
+    () => localStorage.getItem("theme") !== "light",
   );
 
   useEffect(() => {
@@ -100,7 +100,7 @@ export function App() {
       persistOptions={{ persister, maxAge: 1000 * 60 * 60 * 24 * 30 }}
     >
       <div className="min-h-screen bg-background">
-        <header className="border-b">
+        <header className="border-b border-slate-700/60 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900">
           <div className="container flex items-center gap-4 py-4">
             <div className="flex items-center shrink-0">
               <img
@@ -108,29 +108,29 @@ export function App() {
                 alt="Porygon"
                 className="h-10 w-10 object-contain"
               />
-              <h1 className="text-2xl font-bold tracking-tight">Porylist</h1>
+              <h1 className="text-2xl font-bold tracking-tight text-white">Porylist</h1>
             </div>
             <div className="relative flex-1">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <Input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search…"
-                className="pl-9 w-full"
+                className="pl-9 w-full border-slate-600 bg-slate-800/80 text-white placeholder:text-slate-400 focus-visible:border-blue-500 focus-visible:ring-blue-500/30"
                 aria-label="Search Pokémon"
               />
             </div>
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setShowAbout(true)}
-                className="rounded-full p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+                className="rounded-full p-2 text-slate-400 hover:bg-slate-700 hover:text-white"
                 aria-label="About"
               >
                 <CircleHelp className="h-5 w-5" />
               </button>
               <button
                 onClick={toggle}
-                className="rounded-full p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+                className="rounded-full p-2 text-slate-400 hover:bg-slate-700 hover:text-white"
                 aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
               >
                 {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
