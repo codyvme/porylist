@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { persister, queryClient } from "@/lib/query-client";
 import { PokemonTable } from "@/components/PokemonTable";
+import { TeamBuilder } from "@/components/TeamBuilder";
 import { CircleHelp, Moon, Search, Sun, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
@@ -96,6 +97,21 @@ export function App() {
   const [showAbout, setShowAbout] = useState(false);
   const [search, setSearch] = useState("");
 
+  const [team, setTeam] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem("porylist-team") ?? "[]"); }
+    catch { return []; }
+  });
+  useEffect(() => {
+    localStorage.setItem("porylist-team", JSON.stringify(team));
+  }, [team]);
+  const addToTeam = useCallback((name: string) => {
+    setTeam(prev => prev.includes(name) || prev.length >= 6 ? prev : [...prev, name]);
+  }, []);
+  const removeFromTeam = useCallback((name: string) => {
+    setTeam(prev => prev.filter(n => n !== name));
+  }, []);
+  const clearTeam = useCallback(() => setTeam([]), []);
+
   return (
     <PersistQueryClientProvider
       client={queryClient}
@@ -140,8 +156,8 @@ export function App() {
             </div>
           </div>
         </header>
-        <main className="container py-6">
-          <PokemonTable search={search} onSearchChange={setSearch} />
+        <main className="container py-6 pb-20">
+          <PokemonTable search={search} onSearchChange={setSearch} team={team} onAddToTeam={addToTeam} />
         </main>
         <footer className="border-t mt-6">
           <div className="container py-6 space-y-1">
@@ -157,6 +173,7 @@ export function App() {
           </div>
         </footer>
         {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
+        <TeamBuilder team={team} onRemove={removeFromTeam} onClear={clearTeam} />
       </div>
     </PersistQueryClientProvider>
   );

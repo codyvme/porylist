@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, Sparkles, X } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, Plus, Sparkles, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { typeStyle } from "@/lib/types";
 import { computeTypeEffectiveness } from "@/lib/type-chart";
@@ -273,6 +273,8 @@ interface PokemonModalProps {
   game: GameOption | undefined;
   onClose: () => void;
   onNavigate: (name: string) => void;
+  team?: string[];
+  onAddToTeam?: (name: string) => void;
 }
 
 const STAT_LABELS: Record<string, string> = {
@@ -659,7 +661,7 @@ function findAllEvolutions(chain: ChainLink, targetName: string): DirectEvolutio
   return null;
 }
 
-export function PokemonModal({ pokemonName, game, onClose, onNavigate }: PokemonModalProps) {
+export function PokemonModal({ pokemonName, game, onClose, onNavigate, team, onAddToTeam }: PokemonModalProps) {
   const [activeTab, setActiveTab] = useState<MoveTab>("level-up");
   const [showShiny, setShowShiny] = useState(false);
   const [expandedMove, setExpandedMove] = useState<string | null>(null);
@@ -961,8 +963,27 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate }: Pokemon
         {/* Modal */}
         <div className="relative z-10 w-full max-w-4xl rounded-xl border bg-background shadow-2xl">
           {/* Header */}
-          <div className="flex items-center justify-between border-b px-6 py-4">
-            <div className="flex flex-wrap items-center gap-3">
+          <div className="relative flex items-center justify-between border-b px-6 py-4">
+            {pokemon && onAddToTeam && (
+              <button
+                onClick={() => onAddToTeam(pokemon.name)}
+                className={cn(
+                  "absolute left-4 top-4 flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-sm font-medium transition-colors",
+                  team?.includes(pokemon.name)
+                    ? "border-primary/50 bg-primary/10 text-primary"
+                    : team && team.length >= 6
+                    ? "cursor-not-allowed border-muted text-muted-foreground opacity-50"
+                    : "hover:bg-muted",
+                )}
+                disabled={!team?.includes(pokemon.name) && team?.length === 6}
+                title={team?.includes(pokemon.name) ? "In team" : team?.length === 6 ? "Team is full" : "Add to team"}
+              >
+                {team?.includes(pokemon.name)
+                  ? <><Check className="h-3.5 w-3.5" /> In Team</>
+                  : <><Plus className="h-3.5 w-3.5" /> Add to Team</>}
+              </button>
+            )}
+            <div className={cn("flex flex-wrap items-center gap-3", pokemon && onAddToTeam ? "pl-32" : "")}>
               <h2 className="text-xl font-bold">{displayName}</h2>
               {pokemon && (
                 <span className="font-mono text-sm text-muted-foreground">

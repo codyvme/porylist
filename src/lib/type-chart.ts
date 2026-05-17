@@ -32,6 +32,16 @@ export type TypeName = typeof ALL_TYPES[number];
  * Returns a map of attackingType → damage multiplier for a Pokémon
  * with the given defending types (1 or 2).
  */
+export function offensiveCoverage(atkTypes: string[]): Set<string> {
+  const covered = new Set<string>();
+  for (const atk of atkTypes) {
+    for (const def of ALL_TYPES) {
+      if ((CHART[atk]?.[def] ?? 1) >= 2) covered.add(def);
+    }
+  }
+  return covered;
+}
+
 export function computeTypeEffectiveness(
   defendingTypes: string[],
 ): Record<string, number> {
