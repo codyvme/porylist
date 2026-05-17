@@ -12,7 +12,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, ChevronsUpDown, SlidersHorizontal } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, ChevronsUpDown, ListFilter, SlidersHorizontal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Select } from "@/components/ui/select";
 import {
@@ -38,6 +38,7 @@ import {
 } from "@/lib/games";
 import { Switch } from "@/components/ui/switch";
 import { typeStyle } from "@/lib/types";
+import { ALL_TYPES } from "@/lib/type-chart";
 import { cn } from "@/lib/utils";
 
 interface Row {
@@ -55,6 +56,9 @@ interface Row {
   height: number;
   weight: number;
   captureRate: number | null;
+  eggGroups: string[] | null;
+  isLegendary: boolean | null;
+  isMythical: boolean | null;
 }
 
 type DisplayRow =
@@ -195,6 +199,9 @@ function buildRow(
   spriteVersion: string | undefined,
   generation: number | undefined,
   captureRate: number | null,
+  eggGroups: string[] | null,
+  isLegendary: boolean | null,
+  isMythical: boolean | null,
 ): Row {
   const id = detail?.id ?? extractIdFromUrl(entry.url);
   return {
@@ -212,6 +219,9 @@ function buildRow(
     height: detail?.height ?? 0,
     weight: detail?.weight ?? 0,
     captureRate,
+    eggGroups,
+    isLegendary,
+    isMythical,
   };
 }
 
@@ -334,7 +344,7 @@ export function PokemonTable({ search }: { search: string; onSearchChange: (v: s
   const availableFormsMapRef = useRef(availableFormsMap);
   availableFormsMapRef.current = availableFormsMap;
 
-  const DEFAULT_HIDDEN: VisibilityState = { height: false, weight: false, captureRate: false };
+  const DEFAULT_HIDDEN: VisibilityState = { height: false, weight: false, captureRate: false, eggGroups: false };
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => {
     try {
       const saved = localStorage.getItem("porylist-col-vis");
@@ -348,20 +358,41 @@ export function PokemonTable({ search }: { search: string; onSearchChange: (v: s
     localStorage.setItem("porylist-col-vis", JSON.stringify(columnVisibility));
   }, [columnVisibility]);
 
+  const [selectedTypes, setSelectedTypes] = useState<Set<string>>(new Set());
+  const [showLegendary, setShowLegendary] = useState(false);
+  const [showMythical, setShowMythical] = useState(false);
+
+  const toggleType = useCallback((t: string) => {
+    setSelectedTypes((prev) => {
+      const next = new Set(prev);
+      if (next.has(t)) next.delete(t); else next.add(t);
+      return next;
+    });
+  }, []);
+
   const captureRateVisible = columnVisibility["captureRate"] !== false;
-  const speciesQuery = useAllPokemonSpecies(captureRateVisible ? entries.map((e) => e.name) : []);
+  const eggGroupVisible = columnVisibility["eggGroups"] !== false;
+
+  // Always prefetch species once main details are loaded — cached forever, so
+  // legendary/mythical filters and species columns feel instant.
+  const speciesQuery = useAllPokemonSpecies(detailsMap ? entries.map((e) => e.name) : []);
   const speciesMap = speciesQuery.data;
 
   const allRows = useMemo<Row[]>(
     () =>
       entries.map((entry) => {
         const detail = detailsMap?.[entry.name];
-        const captureRate = captureRateVisible
-          ? (speciesMap?.[detail?.species.name ?? entry.name]?.capture_rate ?? null)
+        const speciesName = detail?.species.name ?? entry.name;
+        const species = speciesMap?.[speciesName];
+        const captureRate = captureRateVisible ? (species?.capture_rate ?? null) : null;
+        const eggGroups = eggGroupVisible
+          ? (species?.egg_groups.map((g) => g.name.replace(/-/g, " ")) ?? null)
           : null;
-        return buildRow(entry, detail, !detail, spriteVersion, generation, captureRate);
+        const isLegendary = species != null ? species.is_legendary : null;
+        const isMythical = species != null ? species.is_mythical : null;
+        return buildRow(entry, detail, !detail, spriteVersion, generation, captureRate, eggGroups, isLegendary, isMythical);
       }),
-    [entries, detailsMap, speciesMap, captureRateVisible, spriteVersion, generation],
+    [entries, detailsMap, speciesMap, captureRateVisible, eggGroupVisible, spriteVersion, generation],
   );
 
   const data = useMemo<Row[]>(() => {
@@ -377,8 +408,18 @@ export function PokemonTable({ search }: { search: string; onSearchChange: (v: s
         r.name.replace(/-/g, " ").toLowerCase().includes(q),
       );
     }
+    if (selectedTypes.size > 0) {
+      result = result.filter((r) =>
+        [...selectedTypes].every((t) => r.types.includes(t)),
+      );
+    }
+    if ((showLegendary || showMythical) && speciesMap != null) {
+      result = result.filter((r) =>
+        (showLegendary && r.isLegendary) || (showMythical && r.isMythical),
+      );
+    }
     return result;
-  }, [allRows, selectedGame, deferredShowNational, deferredSearch]);
+  }, [allRows, selectedGame, deferredShowNational, deferredSearch, selectedTypes, showLegendary, showMythical, speciesMap]);
 
   const showRegional = !!selectedGame && !deferredShowNational;
   const columns = useMemo<ColumnDef<Row, any>[]>(() => {
@@ -518,6 +559,22 @@ export function PokemonTable({ search }: { search: string; onSearchChange: (v: s
       },
     });
 
+    const eggGroupsCol = columnHelper.accessor("eggGroups", {
+      id: "eggGroups",
+      enableSorting: false,
+      header: () => <span className="select-none">Egg Group</span>,
+      cell: ({ getValue, row }) => {
+        if (row.original.isLoading) return <div className="h-4 w-20 animate-pulse rounded bg-muted" />;
+        const v = getValue();
+        if (v === null) return <div className="h-4 w-20 animate-pulse rounded bg-muted" />;
+        return (
+          <span className="text-sm capitalize">
+            {v.map((g) => g.replace(/\b\w/g, (c) => c.toUpperCase())).join(", ")}
+          </span>
+        );
+      },
+    });
+
     return [
       expandCol,
       spriteColumn,
@@ -529,6 +586,7 @@ export function PokemonTable({ search }: { search: string; onSearchChange: (v: s
       heightCol,
       weightCol,
       captureRateCol,
+      eggGroupsCol,
     ];
   }, [isGen1, showRegional, selectedGame, toggleExpanded]);
 
@@ -545,10 +603,24 @@ export function PokemonTable({ search }: { search: string; onSearchChange: (v: s
     return () => document.removeEventListener("mousedown", handler);
   }, [colsOpen]);
 
+  const [filterOpen, setFilterOpen] = useState(false);
+  const filterRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!filterOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (!filterRef.current?.contains(e.target as Node)) setFilterOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [filterOpen]);
+
+  const activeFilterCount = selectedTypes.size + (showLegendary ? 1 : 0) + (showMythical ? 1 : 0);
+
   const EXTRA_COLS = [
     { id: "height", label: "Height" },
     { id: "weight", label: "Weight" },
     { id: "captureRate", label: "Catch Rate" },
+    { id: "eggGroups", label: "Egg Group" },
   ];
 
   const TOGGLEABLE_COLS = isGen1
@@ -581,12 +653,14 @@ export function PokemonTable({ search }: { search: string; onSearchChange: (v: s
     const showHeight = columnVisibility["height"] !== false;
     const showWeight = columnVisibility["weight"] !== false;
     const showCaptureRate = columnVisibility["captureRate"] !== false;
+    const showEggGroups = columnVisibility["eggGroups"] !== false;
     const statPart = visibleStats > 0 ? `${"92px ".repeat(visibleStats).trim()} ` : "";
     const extraParts = [
       showBst ? "76px" : "",
       showHeight ? "80px" : "",
       showWeight ? "80px" : "",
       showCaptureRate ? "70px" : "",
+      showEggGroups ? "160px" : "",
     ].filter(Boolean).join(" ");
     return `32px 72px 80px minmax(150px, 1fr) minmax(180px, 1.2fr) ${statPart}${extraParts}`.trim();
   }, [isGen1, columnVisibility]);
@@ -675,7 +749,76 @@ export function PokemonTable({ search }: { search: string; onSearchChange: (v: s
           />
           National Dex
         </label>
-        <div className="relative ml-auto" ref={colsRef}>
+        <div className="relative ml-auto flex items-center gap-2">
+        <div className="relative" ref={filterRef}>
+          <button
+            onClick={() => setFilterOpen((o) => !o)}
+            className={cn(
+              "flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted",
+              filterOpen || activeFilterCount > 0 ? "bg-muted" : "bg-background",
+            )}
+          >
+            <ListFilter className="h-3.5 w-3.5" />
+            Filter
+            {activeFilterCount > 0 && (
+              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
+          {filterOpen && (
+            <div className="absolute right-0 top-full z-20 mt-1 w-72 rounded-lg border bg-background p-3 shadow-lg">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Category</p>
+              <div className="mb-3 flex gap-2">
+                <button
+                  onClick={() => setShowLegendary((v) => !v)}
+                  className={cn(
+                    "rounded-md border px-3 py-1 text-sm font-medium transition-colors",
+                    showLegendary ? "border-amber-500/50 bg-amber-500/15 text-amber-500" : "hover:bg-muted",
+                  )}
+                >
+                  Legendary
+                </button>
+                <button
+                  onClick={() => setShowMythical((v) => !v)}
+                  className={cn(
+                    "rounded-md border px-3 py-1 text-sm font-medium transition-colors",
+                    showMythical ? "border-purple-500/50 bg-purple-500/15 text-purple-400" : "hover:bg-muted",
+                  )}
+                >
+                  Mythical
+                </button>
+              </div>
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Type</p>
+                {selectedTypes.size > 0 && (
+                  <button
+                    onClick={() => setSelectedTypes(new Set())}
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {ALL_TYPES.map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => toggleType(t)}
+                    className={cn(
+                      "rounded-full border-0 px-2.5 py-0.5 text-xs font-semibold capitalize transition-opacity",
+                      selectedTypes.has(t) ? "opacity-100 ring-2 ring-white/40 ring-offset-1 ring-offset-background" : "opacity-40 hover:opacity-70",
+                    )}
+                    style={typeStyle(t)}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="relative" ref={colsRef}>
           <button
             onClick={() => setColsOpen((o) => !o)}
             className={cn(
@@ -704,6 +847,7 @@ export function PokemonTable({ search }: { search: string; onSearchChange: (v: s
               })}
             </div>
           )}
+        </div>
         </div>
       </div>
       <div className="overflow-hidden rounded-md border">
@@ -747,6 +891,12 @@ export function PokemonTable({ search }: { search: string; onSearchChange: (v: s
               );
             })}
           </div>
+          {displayRows.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-2 py-24 text-center">
+              <p className="text-base font-medium">No Pokémon found</p>
+              <p className="text-sm text-muted-foreground">Try adjusting your filters or search.</p>
+            </div>
+          ) : (
           <div
             style={{
               height: rowVirtualizer.getTotalSize(),
@@ -931,10 +1081,17 @@ export function PokemonTable({ search }: { search: string; onSearchChange: (v: s
                       <span className="font-mono tabular-nums text-sm">—</span>
                     </div>
                   )}
+                  {/* egg groups: not available for forms, show dash */}
+                  {columnVisibility["eggGroups"] !== false && (
+                    <div className="flex items-center px-3 py-3 text-sm">
+                      <span className="text-sm">—</span>
+                    </div>
+                  )}
                 </div>
               );
             })}
           </div>
+          )}
           </div>
         </div>
       </div>
