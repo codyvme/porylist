@@ -6,9 +6,11 @@ import { CircleHelp, Moon, Search, Sun, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 function useTheme() {
-  const [isDark, setIsDark] = useState(
-    () => localStorage.getItem("theme") !== "light",
-  );
+  const [isDark, setIsDark] = useState(() => {
+    const saved = localStorage.getItem("theme");
+    if (saved) return saved === "dark";
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  });
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", isDark);
