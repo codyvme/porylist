@@ -603,7 +603,7 @@ export function PokemonTable({ search, onSearchChange }: { search: string; onSea
           />
           National Dex
         </label>
-        <div className="relative" ref={colsRef}>
+        <div className="relative ml-auto" ref={colsRef}>
           <button
             onClick={() => setColsOpen((o) => !o)}
             className={cn(
