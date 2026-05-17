@@ -440,14 +440,41 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam }: {
       header: ({ column }) => (
         <SortHeader label="Name" sorted={column.getIsSorted()} />
       ),
-      cell: ({ getValue, row }) => (
-        <button
-          className="text-left font-medium capitalize hover:underline focus:outline-none"
-          onClick={() => openModalRef.current(row.original.name)}
-        >
-          {getValue().replace(/-/g, " ")}
-        </button>
-      ),
+      cell: ({ getValue, row }) => {
+        const name = row.original.name;
+        const inTeam = team.includes(name);
+        const full = team.length >= 6;
+        const showBtn = !row.original.isLoading && (inTeam || !full);
+        return (
+          <div className="flex items-center gap-2">
+            <button
+              className="text-left font-medium capitalize hover:underline focus:outline-none"
+              onClick={() => openModalRef.current(name)}
+            >
+              {getValue().replace(/-/g, " ")}
+            </button>
+            {showBtn && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (inTeam) onRemoveFromTeam(name);
+                  else onAddToTeam(name);
+                }}
+                className={cn(
+                  "flex items-center justify-center rounded-full p-1.5 transition-colors",
+                  inTeam
+                    ? "text-primary hover:bg-destructive/10 hover:text-destructive"
+                    : "text-muted-foreground/50 hover:bg-muted hover:text-foreground",
+                )}
+                aria-label={inTeam ? `Remove ${name} from team` : `Add ${name} to team`}
+                title={inTeam ? "Remove from team" : "Add to team"}
+              >
+                {inTeam ? <Check className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
+              </button>
+            )}
+          </div>
+        );
+      },
     });
 
     const expandCol = columnHelper.display({
@@ -588,34 +615,6 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam }: {
       },
     });
 
-    const teamCol = columnHelper.display({
-      id: "team",
-      header: () => null,
-      enableSorting: false,
-      cell: ({ row }) => {
-        const name = row.original.name;
-        if (row.original.isLoading) return null;
-        const inTeam = team.includes(name);
-        const full = team.length >= 6;
-        if (full && !inTeam) return null;
-        return (
-          <button
-            onClick={(e) => { e.stopPropagation(); onAddToTeam(name); }}
-            className={cn(
-              "flex h-6 w-6 items-center justify-center rounded-full transition-colors",
-              inTeam
-                ? "text-primary hover:text-destructive"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground",
-            )}
-            aria-label={inTeam ? `Remove ${name} from team` : `Add ${name} to team`}
-            title={inTeam ? "In team — click to remove" : "Add to team"}
-          >
-            {inTeam ? <Check className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
-          </button>
-        );
-      },
-    });
-
     return [
       expandCol,
       spriteColumn,
@@ -628,9 +627,8 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam }: {
       weightCol,
       captureRateCol,
       eggGroupsCol,
-      teamCol,
     ];
-  }, [isGen1, showRegional, selectedGame, toggleExpanded, team, onAddToTeam]);
+  }, [isGen1, showRegional, selectedGame, toggleExpanded, team, onAddToTeam, onRemoveFromTeam]);
 
   const [sorting, setSorting] = useState<SortingState>([]);
 
@@ -704,7 +702,7 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam }: {
       showCaptureRate ? "70px" : "",
       showEggGroups ? "160px" : "",
     ].filter(Boolean).join(" ");
-    return `32px 72px 80px minmax(150px, 1fr) minmax(180px, 1.2fr) ${statPart}${extraParts} 40px`.trim();
+    return `32px 72px 80px minmax(150px, 1fr) minmax(180px, 1.2fr) ${statPart}${extraParts}`.trim();
   }, [isGen1, columnVisibility]);
 
   const table = useReactTable({
