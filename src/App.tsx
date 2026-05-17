@@ -97,6 +97,15 @@ function AboutModal({ onClose }: { onClose: () => void }) {
             >
               PokeAPI sprites repo
             </a>
+            . Type icons by{" "}
+            <a
+              href="https://github.com/partywhale/pokemon-type-icons"
+              target="_blank"
+              rel="noreferrer"
+              className="text-foreground underline"
+            >
+              partywhale
+            </a>
             .
           </p>
         </div>

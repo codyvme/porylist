@@ -88,7 +88,7 @@ Output goes to `dist/`.
 
 ## Data Sources
 
-All Pokémon data is fetched at runtime from [PokéAPI](https://pokeapi.co/) and cached locally. Sprites are sourced from the [PokeAPI sprites repository](https://github.com/PokeAPI/sprites).
+All Pokémon data is fetched at runtime from [PokéAPI](https://pokeapi.co/) and cached locally. Sprites are sourced from the [PokeAPI sprites repository](https://github.com/PokeAPI/sprites). Type icons by [partywhale](https://github.com/partywhale/pokemon-type-icons).
 
 > **Note:** Wild encounter location data is not yet available for Generation 8+ games (Sword/Shield, Brilliant Diamond/Shining Pearl, Legends: Arceus, Scarlet/Violet) due to a gap in PokéAPI's data. Contributions to add this data are welcome — see below.
 
