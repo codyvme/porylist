@@ -31,7 +31,7 @@ import {
   type ChainLink,
   type EvolutionDetail,
 } from "@/lib/pokeapi";
-import { cn } from "@/lib/utils";
+import { cn, formatPokemonName } from "@/lib/utils";
 
 // ── Encounter helpers ────────────────────────────────────────────────────────
 
@@ -969,9 +969,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
       : null;
   const showGameSprite = gameSprite && gameSprite !== homeSprite;
 
-  const displayName = pokemonName
-    .replace(/-/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  const displayName = formatPokemonName(pokemonName);
 
   const tabs: Array<{ id: MoveTab; label: string; count: number }> = [
     { id: "level-up", label: "Level Up",    count: filteredMoves.levelUp.length },
@@ -1057,7 +1055,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                   {prevPokemon && (
                     <>
                       <img src={`https://sprites.porylist.com/sprites/pokemon/${prevPokemon.id}.png`} alt={prevPokemon.name} className="h-6 w-6 object-contain" />
-                      <span className="max-w-[80px] truncate text-xs capitalize">{prevPokemon.name.replace(/-/g, " ")}</span>
+                      <span className="max-w-[80px] truncate text-xs">{formatPokemonName(prevPokemon.name)}</span>
                     </>
                   )}
                 </button>
@@ -1070,7 +1068,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                 >
                   {nextPokemon && (
                     <>
-                      <span className="max-w-[80px] truncate text-xs capitalize">{nextPokemon.name.replace(/-/g, " ")}</span>
+                      <span className="max-w-[80px] truncate text-xs">{formatPokemonName(nextPokemon.name)}</span>
                       <img src={`https://sprites.porylist.com/sprites/pokemon/${nextPokemon.id}.png`} alt={nextPokemon.name} className="h-6 w-6 object-contain" />
                     </>
                   )}
@@ -1333,8 +1331,8 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                           }}
                         />
                         <div>
-                          <p className="font-medium capitalize">
-                            {evo.speciesName.replace(/-/g, " ")}
+                          <p className="font-medium">
+                            {formatPokemonName(evo.speciesName)}
                           </p>
                           {evo.methods.map((method) => (
                             <p key={method} className="text-xs text-muted-foreground">{method}</p>

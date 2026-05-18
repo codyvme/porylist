@@ -39,7 +39,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { typeStyle } from "@/lib/types";
 import { ALL_TYPES } from "@/lib/type-chart";
-import { cn } from "@/lib/utils";
+import { cn, formatPokemonName } from "@/lib/utils";
 
 interface Row {
   id: number;
@@ -558,10 +558,10 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
         return (
           <div className="flex items-center gap-2">
             <button
-              className="text-left font-medium capitalize hover:underline focus:outline-none"
+              className="text-left font-medium hover:underline focus:outline-none"
               onClick={() => openModalRef.current(name)}
             >
-              {getValue().replace(/-/g, " ")}
+              {formatPokemonName(getValue())}
             </button>
             {showBtn && (
               <button

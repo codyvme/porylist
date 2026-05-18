@@ -4,7 +4,7 @@ import { typeStyle } from "@/lib/types";
 import { ALL_TYPES, computeTypeEffectiveness, offensiveCoverage } from "@/lib/type-chart";
 import { useSinglePokemon, typesForGeneration } from "@/lib/pokeapi";
 import { spriteUrl } from "@/lib/games";
-import { cn } from "@/lib/utils";
+import { cn, formatPokemonName } from "@/lib/utils";
 
 function typeIconUrl(type: string) {
   return `https://cdn.jsdelivr.net/gh/partywhale/pokemon-type-icons@main/icons/${type}.svg`;
@@ -217,8 +217,8 @@ export function TeamBuilder({ team, onRemove, onClear, expanded, onExpandedChang
                       <tbody>
                         {members.map((m, i) => (
                           <tr key={m.name} className={i % 2 === 1 ? "bg-muted/70" : ""}>
-                            <td className="max-w-[7rem] truncate py-1 pr-3 font-medium capitalize" title={m.name.replace(/-/g, " ")}>
-                              {m.name.replace(/-/g, " ")}
+                            <td className="max-w-[7rem] truncate py-1 pr-3 font-medium" title={formatPokemonName(m.name)}>
+                              {formatPokemonName(m.name)}
                             </td>
                             {ALL_TYPES.map(t => {
                               const mult = defensiveRows[i]?.[t] ?? 1;
