@@ -119,6 +119,8 @@ export function App() {
   const [showAbout, setShowAbout] = useState(false);
   const [search, setSearch] = useState("");
 
+  const [teamBuilderOpen, setTeamBuilderOpen] = useState(false);
+
   const [team, setTeam] = useState<string[]>(() => {
     const urlTeam = new URLSearchParams(window.location.search).get('team');
     if (urlTeam) {
@@ -193,7 +195,7 @@ export function App() {
           </div>
         </header>
         <main className="container py-6">
-          <PokemonTable search={search} onSearchChange={setSearch} team={team} onAddToTeam={addToTeam} onRemoveFromTeam={removeFromTeam} />
+          <PokemonTable search={search} onSearchChange={setSearch} team={team} onAddToTeam={addToTeam} onRemoveFromTeam={removeFromTeam} teamBuilderOpen={teamBuilderOpen} />
         </main>
         <footer className="border-t mt-6 pb-16">
           <div className="container py-6 space-y-1">
@@ -209,7 +211,7 @@ export function App() {
           </div>
         </footer>
         {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
-        <TeamBuilder team={team} onRemove={removeFromTeam} onClear={clearTeam} />
+        <TeamBuilder team={team} onRemove={removeFromTeam} onClear={clearTeam} expanded={teamBuilderOpen} onExpandedChange={setTeamBuilderOpen} />
       </div>
     </PersistQueryClientProvider>
   );
