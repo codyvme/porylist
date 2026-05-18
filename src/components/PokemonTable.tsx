@@ -12,7 +12,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { ArrowDown, ArrowUp, Check, ChevronDown, ChevronRight, ChevronsUpDown, ListFilter, Plus, SlidersHorizontal } from "lucide-react";
+import { ArrowDown, ArrowUp, Check, ChevronDown, ChevronRight, ChevronsUpDown, ListFilter, Plus, SlidersHorizontal, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Select } from "@/components/ui/select";
 import {
@@ -215,13 +215,25 @@ function buildRow(
   };
 }
 
-export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, teamBuilderOpen }: {
+function PokeballIcon({ caught, size = 14 }: { caught: boolean; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" aria-hidden>
+      <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M1.5 8h13" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="8" cy="8" r="2.5" fill={caught ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
+export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, teamBuilderOpen, caught, onToggleCaught }: {
   search: string;
   onSearchChange: (v: string) => void;
   team: string[];
   onAddToTeam: (name: string) => void;
   onRemoveFromTeam: (name: string) => void;
   teamBuilderOpen: boolean;
+  caught: Record<string, string[]>;
+  onToggleCaught: (name: string, gameKey: string) => void;
 }) {
   const list = usePokemonList();
   const entries = list.data?.results ?? [];
@@ -361,6 +373,12 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
   const [showBaby, setShowBaby] = useState(false);
   const [showMono, setShowMono] = useState(false);
   const [showNoEvolution, setShowNoEvolution] = useState(false);
+  const [catchFilter, setCatchFilter] = useState<"all" | "caught" | "not-caught">("all");
+  const [moveFilter, setMoveFilter] = useState("");
+  const deferredMoveFilter = useDeferredValue(moveFilter);
+
+  // Reset catch filter when game is deselected
+  useEffect(() => { if (!game) setCatchFilter("all"); }, [game]);
 
   const toggleType = useCallback((t: string) => {
     setSelectedTypes((prev) => {
@@ -393,6 +411,15 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
     }
     return targets;
   }, [speciesMap]);
+
+  const allMoveNames = useMemo(() => {
+    if (!detailsMap) return [] as string[];
+    const names = new Set<string>();
+    for (const pkmn of Object.values(detailsMap)) {
+      for (const m of pkmn.moves) names.add(m.move.name);
+    }
+    return [...names].sort();
+  }, [detailsMap]);
 
   const allRows = useMemo<Row[]>(
     () =>
@@ -444,11 +471,62 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
     if (showNoEvolution && speciesMap != null && evolutionTargets != null) {
       result = result.filter((r) => r.isNoEvolution === true);
     }
+    if (catchFilter !== "all" && game) {
+      const caughtList = caught[game] ?? [];
+      result = result.filter((r) =>
+        catchFilter === "caught" ? caughtList.includes(r.name) : !caughtList.includes(r.name),
+      );
+    }
+    if (deferredMoveFilter.trim() && detailsMap) {
+      const moveName = deferredMoveFilter.trim().toLowerCase().replace(/\s+/g, "-");
+      result = result.filter((r) => {
+        const detail = detailsMap[r.name];
+        if (!detail) return false;
+        return detail.moves.some((m) => {
+          if (m.move.name !== moveName) return false;
+          if (!selectedGame) return true;
+          return m.version_group_details.some(
+            (vgd) => VERSION_GROUP_TO_GEN[vgd.version_group.name] === selectedGame.generation,
+          );
+        });
+      });
+    }
     return result;
-  }, [allRows, selectedGame, deferredShowNational, deferredSearch, selectedTypes, showLegendary, showMythical, showBaby, showMono, showNoEvolution, speciesMap, evolutionTargets]);
+  }, [allRows, selectedGame, deferredShowNational, deferredSearch, selectedTypes, showLegendary, showMythical, showBaby, showMono, showNoEvolution, speciesMap, evolutionTargets, catchFilter, game, caught, deferredMoveFilter, detailsMap]);
+
+  const caughtProgress = useMemo(() => {
+    if (!selectedGame || !game) return null;
+    const caughtList = caught[game] ?? [];
+    const gameRows = allRows.filter((r) =>
+      deferredShowNational ? r.id <= selectedGame.genMax : isInRanges(r.id, selectedGame.nativeRanges),
+    );
+    return { count: gameRows.filter((r) => caughtList.includes(r.name)).length, total: gameRows.length };
+  }, [selectedGame, game, caught, allRows, deferredShowNational]);
 
   const showRegional = !!selectedGame && !deferredShowNational;
   const columns = useMemo<ColumnDef<Row, any>[]>(() => {
+    const caughtCol = columnHelper.display({
+      id: "caught",
+      header: () => null,
+      cell: ({ row }) => {
+        if (row.original.isLoading || !game) return null;
+        const isCaught = (caught[game] ?? []).includes(row.original.name);
+        return (
+          <button
+            onClick={(e) => { e.stopPropagation(); onToggleCaught(row.original.name, game); }}
+            className={cn(
+              "flex items-center justify-center rounded-full p-1.5 transition-colors",
+              isCaught ? "text-red-500 hover:text-red-400" : "text-muted-foreground/30 hover:text-muted-foreground",
+            )}
+            aria-label={isCaught ? `Mark ${row.original.name} as not caught` : `Mark ${row.original.name} as caught`}
+            title={isCaught ? "Mark as not caught" : "Mark as caught"}
+          >
+            <PokeballIcon caught={isCaught} size={15} />
+          </button>
+        );
+      },
+    });
+
     const spriteColumn = columnHelper.accessor("sprite", {
       header: () => null,
       enableSorting: false,
@@ -650,6 +728,7 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
     return [
       expandCol,
       spriteColumn,
+      ...(game ? [caughtCol] : []),
       idColumn,
       nameColumn,
       typesColumn,
@@ -660,7 +739,7 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
       captureRateCol,
       eggGroupsCol,
     ];
-  }, [isGen1, showRegional, selectedGame, toggleExpanded, team, onAddToTeam, onRemoveFromTeam, teamBuilderOpen]);
+  }, [isGen1, showRegional, selectedGame, toggleExpanded, team, onAddToTeam, onRemoveFromTeam, teamBuilderOpen, game, caught, onToggleCaught]);
 
   const [sorting, setSorting] = useState<SortingState>([]);
 
@@ -686,7 +765,7 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
     return () => document.removeEventListener("mousedown", handler);
   }, [filterOpen]);
 
-  const activeFilterCount = selectedTypes.size + (showLegendary ? 1 : 0) + (showMythical ? 1 : 0) + (showBaby ? 1 : 0) + (showMono ? 1 : 0) + (showNoEvolution ? 1 : 0);
+  const activeFilterCount = selectedTypes.size + (showLegendary ? 1 : 0) + (showMythical ? 1 : 0) + (showBaby ? 1 : 0) + (showMono ? 1 : 0) + (showNoEvolution ? 1 : 0) + (catchFilter !== "all" ? 1 : 0) + (moveFilter.trim() ? 1 : 0);
 
   const EXTRA_COLS = [
     { id: "height", label: "Height" },
@@ -734,8 +813,9 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
       showCaptureRate ? "70px" : "",
       showEggGroups ? "160px" : "",
     ].filter(Boolean).join(" ");
-    return `32px 72px 80px minmax(150px, 1fr) 160px ${statPart}${extraParts}`.trim();
-  }, [isGen1, columnVisibility]);
+    const caughtPart = game ? "40px " : "";
+    return `32px 72px ${caughtPart}80px minmax(150px, 1fr) 160px ${statPart}${extraParts}`.trim();
+  }, [isGen1, columnVisibility, game]);
 
   const table = useReactTable({
     data,
@@ -840,6 +920,53 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
           </button>
           {filterOpen && (
             <div className="absolute right-0 top-full z-20 mt-1 w-72 rounded-lg border bg-background p-3 shadow-lg">
+              {/* Learns Move */}
+              <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Learns Move</p>
+              <div className="relative mb-3">
+                <input
+                  type="text"
+                  list="move-datalist"
+                  value={moveFilter}
+                  onChange={(e) => setMoveFilter(e.target.value)}
+                  placeholder={selectedGame ? `e.g. surf (${selectedGame.label})` : "e.g. surf (any game)"}
+                  className="w-full rounded-md border bg-background px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+                {moveFilter && (
+                  <button
+                    onClick={() => setMoveFilter("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+                <datalist id="move-datalist">
+                  {allMoveNames.map((n) => (
+                    <option key={n} value={n.replace(/-/g, " ")} />
+                  ))}
+                </datalist>
+              </div>
+              {/* Caught Status — only when a game is selected */}
+              {game && (
+                <>
+                  <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Caught</p>
+                  <div className="mb-3 flex gap-1">
+                    {(["all", "caught", "not-caught"] as const).map((v) => (
+                      <button
+                        key={v}
+                        onClick={() => setCatchFilter(v)}
+                        className={cn(
+                          "rounded-md border px-2.5 py-1 text-xs transition-colors",
+                          catchFilter === v
+                            ? "border-primary bg-primary/10 font-medium text-primary"
+                            : "text-muted-foreground hover:bg-muted",
+                        )}
+                      >
+                        {v === "all" ? "All" : v === "caught" ? "Caught" : "Not Caught"}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
               <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Category</p>
               <div className="mb-3 space-y-1.5">
                 {[
@@ -1063,6 +1190,8 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
                       )}
                     </div>
                   </div>
+                  {/* caught: empty for variant rows */}
+                  {game && <div className="flex items-center px-3 py-3" />}
                   {/* id: empty */}
                   <div className="flex items-center px-3 py-3" />
                   {/* name */}
@@ -1170,8 +1299,14 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
           </div>
         </div>
       </div>
-      <div className="text-sm text-muted-foreground">
-        {tableRows.length.toLocaleString()} result{tableRows.length === 1 ? "" : "s"}
+      <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <span>{tableRows.length.toLocaleString()} result{tableRows.length === 1 ? "" : "s"}</span>
+        {caughtProgress && (
+          <span className="flex items-center gap-1.5">
+            <PokeballIcon caught={caughtProgress.count > 0} size={13} />
+            {caughtProgress.count.toLocaleString()} / {caughtProgress.total.toLocaleString()} caught
+          </span>
+        )}
       </div>
 
       {selectedPokemon && (() => {
@@ -1186,9 +1321,8 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
             onNavigate={openModal}
             prevPokemon={prevRow ? { name: prevRow.name, id: prevRow.id } : null}
             nextPokemon={nextRow ? { name: nextRow.name, id: nextRow.id } : null}
-            team={team}
-            onAddToTeam={onAddToTeam}
-            onRemoveFromTeam={onRemoveFromTeam}
+            caughtInGame={game ? (caught[game] ?? []).includes(selectedPokemon) : false}
+            onToggleCaught={game ? () => onToggleCaught(selectedPokemon, game) : undefined}
           />
         );
       })()}

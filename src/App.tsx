@@ -121,6 +121,23 @@ export function App() {
 
   const [teamBuilderOpen, setTeamBuilderOpen] = useState(false);
 
+  const [caught, setCaught] = useState<Record<string, string[]>>(() => {
+    try { return JSON.parse(localStorage.getItem("porylist-caught") ?? "{}"); }
+    catch { return {}; }
+  });
+  useEffect(() => {
+    localStorage.setItem("porylist-caught", JSON.stringify(caught));
+  }, [caught]);
+  const toggleCaught = useCallback((name: string, gameKey: string) => {
+    setCaught((prev) => {
+      const current = prev[gameKey] ?? [];
+      const next = current.includes(name)
+        ? current.filter((n) => n !== name)
+        : [...current, name];
+      return { ...prev, [gameKey]: next };
+    });
+  }, []);
+
   const [team, setTeam] = useState<string[]>(() => {
     const urlTeam = new URLSearchParams(window.location.search).get('team');
     if (urlTeam) {
@@ -195,7 +212,7 @@ export function App() {
           </div>
         </header>
         <main className="container py-6">
-          <PokemonTable search={search} onSearchChange={setSearch} team={team} onAddToTeam={addToTeam} onRemoveFromTeam={removeFromTeam} teamBuilderOpen={teamBuilderOpen} />
+          <PokemonTable search={search} onSearchChange={setSearch} team={team} onAddToTeam={addToTeam} onRemoveFromTeam={removeFromTeam} teamBuilderOpen={teamBuilderOpen} caught={caught} onToggleCaught={toggleCaught} />
         </main>
         <footer className="border-t mt-6 pb-16">
           <div className="container py-6 space-y-1">

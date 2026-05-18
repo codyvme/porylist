@@ -1,5 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
-import { Check, ChevronDown, ChevronLeft, ChevronRight, Plus, Sparkles, X } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Sparkles, X } from "lucide-react";
+
+function PokeballIcon({ caught, size = 14 }: { caught: boolean; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" aria-hidden>
+      <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M1.5 8h13" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="8" cy="8" r="2.5" fill={caught ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  );
+}
 import { Badge } from "@/components/ui/badge";
 import { TYPE_COLORS, typeStyle } from "@/lib/types";
 import { computeTypeEffectiveness } from "@/lib/type-chart";
@@ -275,9 +285,8 @@ interface PokemonModalProps {
   onNavigate: (name: string) => void;
   prevPokemon: { name: string; id: number } | null;
   nextPokemon: { name: string; id: number } | null;
-  team?: string[];
-  onAddToTeam?: (name: string) => void;
-  onRemoveFromTeam?: (name: string) => void;
+  caughtInGame?: boolean;
+  onToggleCaught?: () => void;
 }
 
 const STAT_LABELS: Record<string, string> = {
@@ -664,7 +673,7 @@ function findAllEvolutions(chain: ChainLink, targetName: string): DirectEvolutio
   return null;
 }
 
-export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokemon, nextPokemon, team, onAddToTeam, onRemoveFromTeam }: PokemonModalProps) {
+export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokemon, nextPokemon, caughtInGame, onToggleCaught }: PokemonModalProps) {
   const [activeTab, setActiveTab] = useState<MoveTab>("level-up");
   const [showShiny, setShowShiny] = useState(false);
   const [expandedMove, setExpandedMove] = useState<string | null>(null);
@@ -1006,26 +1015,19 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
 
             {/* Row 2 on mobile / right-side buttons on desktop */}
             <div className="flex items-center gap-2 border-t px-4 pb-3 pt-2 sm:border-0 sm:shrink-0 sm:px-6 sm:py-4 sm:pb-0 sm:pt-0">
-              {pokemon && onAddToTeam && (
+              {onToggleCaught && (
                 <button
-                  onClick={() => {
-                    if (team?.includes(pokemon.name)) onRemoveFromTeam?.(pokemon.name);
-                    else onAddToTeam(pokemon.name);
-                  }}
+                  onClick={onToggleCaught}
                   className={cn(
-                    "flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-sm font-medium transition-colors bg-background",
-                    team?.includes(pokemon.name)
-                      ? "border-primary/50 bg-primary/10 text-primary hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
-                      : team && team.length >= 6
-                      ? "cursor-not-allowed border-muted text-muted-foreground opacity-50"
-                      : "hover:bg-muted",
+                    "flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-sm font-medium transition-colors",
+                    caughtInGame
+                      ? "border-red-500/50 bg-red-500/10 text-red-500"
+                      : "bg-background hover:bg-muted",
                   )}
-                  disabled={!team?.includes(pokemon.name) && team?.length === 6}
-                  title={team?.includes(pokemon.name) ? "Remove from team" : team?.length === 6 ? "Team is full" : "Add to team"}
+                  title={caughtInGame ? "Mark as not caught" : "Mark as caught"}
                 >
-                  {team?.includes(pokemon.name)
-                    ? <><Check className="h-3.5 w-3.5" /><span className="hidden sm:inline"> In Team</span></>
-                    : <><Plus className="h-3.5 w-3.5" /><span className="hidden sm:inline"> Add to Team</span></>}
+                  <PokeballIcon caught={!!caughtInGame} size={14} />
+                  <span className="hidden sm:inline">{caughtInGame ? "Caught" : "Not Caught"}</span>
                 </button>
               )}
               <div className="flex items-center rounded-md border border-border overflow-hidden bg-background">
