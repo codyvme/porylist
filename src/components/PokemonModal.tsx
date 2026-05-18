@@ -988,16 +988,16 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                   </span>
                 )}
                 <div className="flex flex-col">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <h2 className="text-xl font-bold">{displayName}</h2>
-                    {types.map((t) => (
-                      <Badge key={t} variant="default" className="capitalize" style={typeStyle(t)}>{t}</Badge>
-                    ))}
-                  </div>
+                  <h2 className="text-xl font-bold">{displayName}</h2>
                   {species && (() => {
                     const genus = species.genera.find((g) => g.language.name === "en")?.genus;
                     return genus ? <span className="text-xs text-muted-foreground">{genus}</span> : null;
                   })()}
+                </div>
+                <div className="flex shrink-0 items-center gap-1.5">
+                  {types.map((t) => (
+                    <Badge key={t} variant="default" className="capitalize" style={typeStyle(t)}>{t}</Badge>
+                  ))}
                 </div>
               </div>
               {/* Close — top-right on mobile, right side on desktop */}
