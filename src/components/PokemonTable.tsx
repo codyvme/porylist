@@ -1173,17 +1173,24 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam }: {
         {tableRows.length.toLocaleString()} result{tableRows.length === 1 ? "" : "s"}
       </div>
 
-      {selectedPokemon && (
-        <PokemonModal
-          pokemonName={selectedPokemon}
-          game={selectedGame}
-          onClose={closeModal}
-          onNavigate={openModal}
-          team={team}
-          onAddToTeam={onAddToTeam}
-          onRemoveFromTeam={onRemoveFromTeam}
-        />
-      )}
+      {selectedPokemon && (() => {
+        const idx = tableRows.findIndex((r) => r.original.name === selectedPokemon);
+        const prevRow = idx > 0 ? tableRows[idx - 1].original : null;
+        const nextRow = idx < tableRows.length - 1 ? tableRows[idx + 1].original : null;
+        return (
+          <PokemonModal
+            pokemonName={selectedPokemon}
+            game={selectedGame}
+            onClose={closeModal}
+            onNavigate={openModal}
+            prevPokemon={prevRow ? { name: prevRow.name, id: prevRow.id } : null}
+            nextPokemon={nextRow ? { name: nextRow.name, id: nextRow.id } : null}
+            team={team}
+            onAddToTeam={onAddToTeam}
+            onRemoveFromTeam={onRemoveFromTeam}
+          />
+        );
+      })()}
     </div>
   );
 }

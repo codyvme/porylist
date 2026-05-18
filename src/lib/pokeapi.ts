@@ -119,6 +119,10 @@ export interface Pokemon {
 
 export interface PokemonSpecies {
   capture_rate: number;
+  base_happiness: number;
+  growth_rate: { name: string; url: string };
+  gender_rate: number;
+  color: { name: string; url: string };
   is_baby: boolean;
   is_legendary: boolean;
   is_mythical: boolean;

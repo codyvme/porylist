@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { Check, ChevronDown, ChevronRight, Plus, Sparkles, X } from "lucide-react";
+import { Check, ChevronDown, ChevronLeft, ChevronRight, Plus, Sparkles, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { typeStyle } from "@/lib/types";
+import { TYPE_COLORS, typeStyle } from "@/lib/types";
 import { computeTypeEffectiveness } from "@/lib/type-chart";
 import { GAME_VERSION_GROUPS, GAME_VERSIONS, spriteUrl, type GameOption } from "@/lib/games";
 import {
@@ -273,6 +273,8 @@ interface PokemonModalProps {
   game: GameOption | undefined;
   onClose: () => void;
   onNavigate: (name: string) => void;
+  prevPokemon: { name: string; id: number } | null;
+  nextPokemon: { name: string; id: number } | null;
   team?: string[];
   onAddToTeam?: (name: string) => void;
   onRemoveFromTeam?: (name: string) => void;
@@ -662,7 +664,7 @@ function findAllEvolutions(chain: ChainLink, targetName: string): DirectEvolutio
   return null;
 }
 
-export function PokemonModal({ pokemonName, game, onClose, onNavigate, team, onAddToTeam, onRemoveFromTeam }: PokemonModalProps) {
+export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokemon, nextPokemon, team, onAddToTeam, onRemoveFromTeam }: PokemonModalProps) {
   const [activeTab, setActiveTab] = useState<MoveTab>("level-up");
   const [showShiny, setShowShiny] = useState(false);
   const [expandedMove, setExpandedMove] = useState<string | null>(null);
@@ -670,10 +672,12 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, team, onA
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft" && prevPokemon) onNavigate(prevPokemon.name);
+      if (e.key === "ArrowRight" && nextPokemon) onNavigate(nextPokemon.name);
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [onClose]);
+  }, [onClose, onNavigate, prevPokemon, nextPokemon]);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -962,35 +966,45 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, team, onA
         />
 
         {/* Modal */}
-        <div className="relative z-10 w-full max-w-4xl rounded-xl border bg-background shadow-2xl">
+        <div
+          className="relative z-10 w-full max-w-4xl rounded-xl border bg-background overflow-hidden"
+          style={types[0] ? {
+            borderTopColor: TYPE_COLORS[types[0]],
+            borderTopWidth: 4,
+            boxShadow: `0 0 0 1px ${TYPE_COLORS[types[0]]}30, 0 25px 60px ${TYPE_COLORS[types[0]]}30, 0 8px 24px rgba(0,0,0,0.4)`,
+          } : { boxShadow: "0 25px 60px rgba(0,0,0,0.4)" }}
+        >
           {/* Header */}
-          <div className="flex items-center justify-between gap-6 border-b px-6 py-4">
-            <div className="flex min-w-0 flex-1 items-center gap-6">
+          <div
+            className="flex items-center justify-between gap-2 border-b px-4 py-3 sm:gap-6 sm:px-6 sm:py-4"
+            style={types[0] ? { background: `linear-gradient(135deg, ${TYPE_COLORS[types[0]]}40 0%, ${TYPE_COLORS[types[0]]}10 50%, transparent 100%)` } : undefined}
+          >
+            <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-6">
               <div className="flex items-center gap-2.5">
                 {pokemon && (
                   <span className="shrink-0 font-mono text-sm text-muted-foreground">
                     #{String(pokemon.id).padStart(4, "0")}
                   </span>
                 )}
-                <div className="flex flex-col gap-0">
-                  <h2 className="text-xl font-bold">{displayName}</h2>
+                <div className="flex flex-col gap-1">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <h2 className="text-xl font-bold">{displayName}</h2>
+                    <div className="hidden items-center gap-1.5 sm:flex">
+                      {types.map((t) => (
+                        <Badge key={t} variant="default" className="capitalize" style={typeStyle(t)}>{t}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 sm:hidden">
+                    {types.map((t) => (
+                      <Badge key={t} variant="default" className="capitalize" style={typeStyle(t)}>{t}</Badge>
+                    ))}
+                  </div>
                   {species && (() => {
                     const genus = species.genera.find((g) => g.language.name === "en")?.genus;
                     return genus ? <span className="text-xs text-muted-foreground">{genus}</span> : null;
                   })()}
                 </div>
-              </div>
-              <div className="flex items-center gap-1.5">
-                {types.map((t) => (
-                  <Badge
-                    key={t}
-                    variant="default"
-                    className="capitalize"
-                    style={typeStyle(t)}
-                  >
-                    {t}
-                  </Badge>
-                ))}
               </div>
             </div>
             <div className="flex shrink-0 items-center gap-2">
@@ -1001,7 +1015,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, team, onA
                     else onAddToTeam(pokemon.name);
                   }}
                   className={cn(
-                    "flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-sm font-medium transition-colors",
+                    "flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-sm font-medium transition-colors bg-background",
                     team?.includes(pokemon.name)
                       ? "border-primary/50 bg-primary/10 text-primary hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
                       : team && team.length >= 6
@@ -1012,13 +1026,44 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, team, onA
                   title={team?.includes(pokemon.name) ? "Remove from team" : team?.length === 6 ? "Team is full" : "Add to team"}
                 >
                   {team?.includes(pokemon.name)
-                    ? <><Check className="h-3.5 w-3.5" /> In Team</>
-                    : <><Plus className="h-3.5 w-3.5" /> Add to Team</>}
+                    ? <><Check className="h-3.5 w-3.5" /><span className="hidden sm:inline">In Team</span></>
+                    : <><Plus className="h-3.5 w-3.5" /><span className="hidden sm:inline">Add to Team</span></>}
                 </button>
               )}
+              <div className="flex items-center rounded-md border border-border overflow-hidden bg-background">
+                <button
+                  onClick={() => prevPokemon && onNavigate(prevPokemon.name)}
+                  disabled={!prevPokemon}
+                  className="flex items-center gap-1.5 px-1.5 py-1 sm:pl-2 sm:pr-3 hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
+                  aria-label="Previous Pokémon"
+                >
+                  <ChevronLeft className="h-4 w-4 shrink-0" />
+                  {prevPokemon && (
+                    <>
+                      <img src={`https://sprites.porylist.com/sprites/pokemon/${prevPokemon.id}.png`} alt={prevPokemon.name} className="hidden h-6 w-6 object-contain sm:block" />
+                      <span className="hidden max-w-[80px] truncate text-xs capitalize sm:inline">{prevPokemon.name.replace(/-/g, " ")}</span>
+                    </>
+                  )}
+                </button>
+                <div className="w-px self-stretch bg-border" />
+                <button
+                  onClick={() => nextPokemon && onNavigate(nextPokemon.name)}
+                  disabled={!nextPokemon}
+                  className="flex items-center gap-1.5 px-1.5 py-1 sm:pl-3 sm:pr-2 hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
+                  aria-label="Next Pokémon"
+                >
+                  {nextPokemon && (
+                    <>
+                      <span className="hidden max-w-[80px] truncate text-xs capitalize sm:inline">{nextPokemon.name.replace(/-/g, " ")}</span>
+                      <img src={`https://sprites.porylist.com/sprites/pokemon/${nextPokemon.id}.png`} alt={nextPokemon.name} className="hidden h-6 w-6 object-contain sm:block" />
+                    </>
+                  )}
+                  <ChevronRight className="h-4 w-4 shrink-0" />
+                </button>
+              </div>
               <button
                 onClick={onClose}
-                className="rounded-md p-1.5 hover:bg-muted"
+                className="rounded-md border border-border bg-background p-1.5 hover:bg-muted"
                 aria-label="Close"
               >
                 <X className="h-5 w-5" />
@@ -1166,6 +1211,82 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, team, onA
                   </div>
                 </div>
               </div>
+
+              {/* Pokédex Data */}
+              {(pokemon || species) && (() => {
+                const GROWTH_RATE_LABELS: Record<string, string> = {
+                  "slow": "Slow",
+                  "medium": "Medium",
+                  "fast": "Fast",
+                  "medium-slow": "Medium Slow",
+                  "slow-then-very-fast": "Erratic",
+                  "fast-then-very-slow": "Fluctuating",
+                };
+                const EV_STAT_LABELS: Record<string, string> = {
+                  "hp": "HP", "attack": "Atk", "defense": "Def",
+                  "special-attack": "Sp. Atk", "special-defense": "Sp. Def", "speed": "Spd",
+                };
+                const evYields = pokemon?.stats
+                  .filter((s) => s.effort > 0)
+                  .map((s) => `${s.effort} ${EV_STAT_LABELS[s.stat.name] ?? s.stat.name}`)
+                  .join(", ");
+
+                const genderRate = species?.gender_rate;
+                const femalePct = genderRate != null && genderRate !== -1 ? (genderRate / 8) * 100 : null;
+                const malePct = femalePct != null ? 100 - femalePct : null;
+
+                const textRows = [
+                  { label: "EV Yield", value: evYields || "—" },
+                  { label: "Growth Rate", value: species ? (GROWTH_RATE_LABELS[species.growth_rate.name] ?? species.growth_rate.name) : "—" },
+                  { label: "Color", value: species ? species.color.name : "—" },
+                  { label: "Base Friendship", value: species != null ? String(species.base_happiness) : "—" },
+                  { label: "Egg Groups", value: species ? species.egg_groups.map((g) => g.name.replace(/-/g, " ")).join(", ") : "—" },
+                ];
+
+                const genderCell = genderRate != null && (
+                  <div className="flex items-center gap-2">
+                    <dt className="shrink-0 text-xs text-muted-foreground">Gender</dt>
+                    <dd className="flex flex-1 items-center gap-1.5">
+                      {genderRate === -1 ? (
+                        <span className="text-sm font-medium text-muted-foreground">Genderless</span>
+                      ) : (
+                        <>
+                          <span className="text-xs font-medium text-blue-400">♂{malePct}%</span>
+                          <div className="h-2 flex-1 overflow-hidden rounded-full">
+                            <div className="flex h-full">
+                              {malePct! > 0 && <div className="h-full bg-blue-400" style={{ width: `${malePct}%` }} />}
+                              {femalePct! > 0 && <div className="h-full bg-pink-400" style={{ width: `${femalePct}%` }} />}
+                            </div>
+                          </div>
+                          <span className="text-xs font-medium text-pink-400">♀{femalePct}%</span>
+                        </>
+                      )}
+                    </dd>
+                  </div>
+                );
+
+                return (
+                  <div className="border-t px-6 py-5">
+                    <dl className="grid grid-cols-1 gap-y-2 sm:grid-cols-3 sm:gap-x-6">
+                      {/* Row 1: Gender, EV Yield, Growth Rate */}
+                      {genderCell}
+                      {textRows.slice(0, 2).map(({ label, value }) => (
+                        <div key={label} className="flex items-baseline gap-2">
+                          <dt className="shrink-0 text-xs text-muted-foreground">{label}</dt>
+                          <dd className="truncate text-sm font-medium capitalize">{value}</dd>
+                        </div>
+                      ))}
+                      {/* Row 2: Color, Base Friendship, Egg Groups */}
+                      {textRows.slice(2).map(({ label, value }) => (
+                        <div key={label} className="flex items-baseline gap-2">
+                          <dt className="shrink-0 text-xs text-muted-foreground">{label}</dt>
+                          <dd className="truncate text-sm font-medium capitalize">{value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </div>
+                );
+              })()}
 
               {/* Evolutions */}
               {allEvolutions && allEvolutions.length > 0 && (
