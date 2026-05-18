@@ -987,13 +987,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                     #{String(pokemon.id).padStart(4, "0")}
                   </span>
                 )}
-                <div className="flex flex-col">
-                  <h2 className="text-xl font-bold">{displayName}</h2>
-                  {species && (() => {
-                    const genus = species.genera.find((g) => g.language.name === "en")?.genus;
-                    return genus ? <span className="text-xs text-muted-foreground">{genus}</span> : null;
-                  })()}
-                </div>
+                <h2 className="text-xl font-bold">{displayName}</h2>
                 <div className="flex shrink-0 items-center gap-1.5">
                   {types.map((t) => (
                     <Badge key={t} variant="default" className="capitalize" style={typeStyle(t)}>{t}</Badge>
@@ -1030,8 +1024,8 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                   title={team?.includes(pokemon.name) ? "Remove from team" : team?.length === 6 ? "Team is full" : "Add to team"}
                 >
                   {team?.includes(pokemon.name)
-                    ? <><Check className="h-3.5 w-3.5" /> In Team</>
-                    : <><Plus className="h-3.5 w-3.5" /> Add to Team</>}
+                    ? <><Check className="h-3.5 w-3.5" /><span className="hidden sm:inline"> In Team</span></>
+                    : <><Plus className="h-3.5 w-3.5" /><span className="hidden sm:inline"> Add to Team</span></>}
                 </button>
               )}
               <div className="flex items-center rounded-md border border-border overflow-hidden bg-background">
@@ -1240,6 +1234,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                 const femalePct = genderRate != null && genderRate !== -1 ? (genderRate / 8) * 100 : null;
                 const malePct = femalePct != null ? 100 - femalePct : null;
 
+                const genus = species?.genera.find((g) => g.language.name === "en")?.genus;
                 const textRows = [
                   { label: "EV Yield", value: evYields || "—" },
                   { label: "Growth Rate", value: species ? (GROWTH_RATE_LABELS[species.growth_rate.name] ?? species.growth_rate.name) : "—" },
@@ -1273,6 +1268,13 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                 return (
                   <div className="border-t px-6 py-5">
                     <dl className="grid grid-cols-1 gap-y-2 sm:grid-cols-3 sm:gap-x-6">
+                      {/* Row 0: Category (full width) */}
+                      {genus && (
+                        <div className="flex items-baseline gap-2 sm:col-span-3">
+                          <dt className="shrink-0 text-xs text-muted-foreground">Category</dt>
+                          <dd className="text-sm font-medium">{genus}</dd>
+                        </div>
+                      )}
                       {/* Row 1: Gender, EV Yield, Growth Rate */}
                       {genderCell}
                       {textRows.slice(0, 2).map(({ label, value }) => (
