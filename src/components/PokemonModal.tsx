@@ -704,6 +704,11 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
   const { data: evolutionChain } = useEvolutionChain(species?.evolution_chain.url ?? null);
   const { data: encounterData, isLoading: encountersLoading } = usePokemonEncounters(pokemon?.id ?? null);
 
+  // Fetch the base form's data to inherit egg moves (PokeAPI only lists egg moves on the base form)
+  const baseSpeciesName = evolutionChain?.chain.species.name ?? null;
+  const isBaseForm = baseSpeciesName === pokemon?.species.name;
+  const { data: basePokemon } = useSinglePokemon(!isBaseForm ? baseSpeciesName : null);
+
   const generation = game?.generation;
 
   const versionGroups = useMemo(() => {
@@ -847,6 +852,17 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
       }
     }
 
+    // Inherit egg moves from the base form — PokeAPI only lists them on the first evolution
+    if (basePokemon) {
+      for (const m of basePokemon.moves) {
+        for (const vgd of m.version_group_details) {
+          if (!activeVGs.includes(vgd.version_group.name)) continue;
+          if (vgd.move_learn_method.name === "egg") eggSet.add(m.move.name);
+          break;
+        }
+      }
+    }
+
     const levelUp = [...levelUpMap.values()];
     const egg = [...eggSet].map((name) => ({ name, level: 0 }));
     const machine = [...machineSet].map((name) => ({ name, level: 0 }));
@@ -858,7 +874,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
     tutor.sort((a, b) => a.name.localeCompare(b.name));
 
     return { levelUp, egg, machine, tutor };
-  }, [pokemon, activeVGs]);
+  }, [pokemon, activeVGs, basePokemon]);
 
   const activeMoves = useMemo(() => {
     switch (activeTab) {
