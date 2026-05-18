@@ -941,7 +941,7 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
                 )}
                 <datalist id="move-datalist">
                   {allMoveNames.map((n) => (
-                    <option key={n} value={n.replace(/-/g, " ")} />
+                    <option key={n} value={n.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())} />
                   ))}
                 </datalist>
               </div>
