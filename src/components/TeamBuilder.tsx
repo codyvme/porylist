@@ -32,10 +32,11 @@ interface Props {
   team: string[];
   onRemove: (name: string) => void;
   onClear: () => void;
+  expanded: boolean;
+  onExpandedChange: (v: boolean) => void;
 }
 
-export function TeamBuilder({ team, onRemove, onClear }: Props) {
-  const [expanded, setExpanded] = useState(false);
+export function TeamBuilder({ team, onRemove, onClear, expanded, onExpandedChange }: Props) {
   const [copied, setCopied] = useState(false);
   const handleShare = useCallback(() => {
     navigator.clipboard.writeText(window.location.href);
@@ -90,7 +91,7 @@ export function TeamBuilder({ team, onRemove, onClear }: Props) {
       {/* Always-visible header */}
       <div
         className="container flex h-14 cursor-pointer items-center justify-between gap-3"
-        onClick={() => setExpanded(e => !e)}
+        onClick={() => onExpandedChange(!expanded)}
         role="button"
         aria-label={expanded ? "Collapse team builder" : "Expand team builder"}
       >

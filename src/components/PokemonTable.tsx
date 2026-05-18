@@ -215,12 +215,13 @@ function buildRow(
   };
 }
 
-export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam }: {
+export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, teamBuilderOpen }: {
   search: string;
   onSearchChange: (v: string) => void;
   team: string[];
   onAddToTeam: (name: string) => void;
   onRemoveFromTeam: (name: string) => void;
+  teamBuilderOpen: boolean;
 }) {
   const list = usePokemonList();
   const entries = list.data?.results ?? [];
@@ -475,7 +476,7 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam }: {
         const name = row.original.name;
         const inTeam = team.includes(name);
         const full = team.length >= 6;
-        const showBtn = !row.original.isLoading && (inTeam || !full);
+        const showBtn = teamBuilderOpen && !row.original.isLoading && (inTeam || !full);
         return (
           <div className="flex items-center gap-2">
             <button
@@ -659,7 +660,7 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam }: {
       captureRateCol,
       eggGroupsCol,
     ];
-  }, [isGen1, showRegional, selectedGame, toggleExpanded, team, onAddToTeam, onRemoveFromTeam]);
+  }, [isGen1, showRegional, selectedGame, toggleExpanded, team, onAddToTeam, onRemoveFromTeam, teamBuilderOpen]);
 
   const [sorting, setSorting] = useState<SortingState>([]);
 
