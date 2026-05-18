@@ -928,7 +928,7 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
                   list="move-datalist"
                   value={moveFilter}
                   onChange={(e) => setMoveFilter(e.target.value)}
-                  placeholder={selectedGame ? `e.g. surf (${selectedGame.label})` : "e.g. surf (any game)"}
+                  placeholder={selectedGame ? `e.g. Surf (${selectedGame.label})` : "e.g. Surf (any game)"}
                   className="w-full rounded-md border bg-background px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
                 />
                 {moveFilter && (
