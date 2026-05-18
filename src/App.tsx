@@ -62,24 +62,26 @@ function AboutModal({ onClose }: { onClose: () => void }) {
           </p>
           <p>
             Use the <strong className="text-foreground">Filter</strong> button
-            to narrow results by type, or to show only legendary or mythical
-            Pokémon. Use <strong className="text-foreground">Columns</strong> to
-            toggle optional columns like height, weight, catch rate, and egg group.
+            to narrow results by type, show only legendary or mythical Pokémon,
+            filter by move learnability, or show only caught/uncaught Pokémon.
+            Use <strong className="text-foreground">Columns</strong> to toggle
+            optional columns like height, weight, catch rate, and egg group.
           </p>
           <p>
             Click any Pokémon's name to open a detail view with its sprite,
-            abilities, base stats, type effectiveness, Pokédex entry, and full
-            move list for the selected game.
+            abilities, base stats, type effectiveness, Pokédex entry, evolution
+            chain, encounter locations, and full move list for the selected game.
+            Mark it as caught with the Pokéball button.
           </p>
           <p>
             The <strong className="text-foreground">Team Builder</strong> panel
             at the bottom lets you pick up to 6 Pokémon. Expand it to see a
             defensive matchups grid (per-type damage multipliers for each member
             plus a shared weakness count) and an offensive STAB coverage summary.
-            Your team is saved automatically.
+            Your team is saved automatically and can be shared via the share button.
           </p>
           <p>
-            Data and sprites are sourced from{" "}
+            Data is sourced from{" "}
             <a
               href="https://pokeapi.co"
               target="_blank"
@@ -88,7 +90,8 @@ function AboutModal({ onClose }: { onClose: () => void }) {
             >
               PokéAPI
             </a>{" "}
-            and the{" "}
+            and served as static JSON from Cloudflare R2 — no live API calls at
+            runtime. Sprites from the{" "}
             <a
               href="https://github.com/PokeAPI/sprites"
               target="_blank"
