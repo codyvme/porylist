@@ -694,7 +694,7 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
         const v = getValue();
         if (v <= 0) return <span className="font-mono tabular-nums text-sm">—</span>;
         const lbs = (v * 0.220462).toFixed(1);
-        return <span className="font-mono tabular-nums text-sm">{`${lbs} lbs`}</span>;
+        return <span className="font-mono tabular-nums text-sm whitespace-nowrap">{`${lbs} lbs`}</span>;
       },
     });
 
@@ -809,7 +809,7 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
     const extraParts = [
       showBst ? "76px" : "",
       showHeight ? "80px" : "",
-      showWeight ? "80px" : "",
+      showWeight ? "112px" : "",
       showCaptureRate ? "70px" : "",
       showEggGroups ? "160px" : "",
     ].filter(Boolean).join(" ");
