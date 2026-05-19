@@ -6,6 +6,7 @@ import { useRouteData, type RouteEncounter, type RouteLocation } from "@/lib/pok
 import { spriteUrl } from "@/lib/games";
 import { PokemonModal } from "@/components/PokemonModal";
 import { Switch } from "@/components/ui/switch";
+import { Tooltip } from "@/components/ui/tooltip";
 import { cn, formatPokemonName } from "@/lib/utils";
 
 const VERSION_LABELS: Record<string, string> = {
@@ -144,9 +145,9 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
               </span>
               <span className="text-xs tabular-nums text-muted-foreground min-w-[32px]">{enc.chance}%</span>
               {enc.timeOfDay && (
-                <span className="text-sm" title={enc.timeOfDay.charAt(0).toUpperCase() + enc.timeOfDay.slice(1) + " only"}>
-                  {TIME_ICON[enc.timeOfDay]}
-                </span>
+                <Tooltip content={enc.timeOfDay.charAt(0).toUpperCase() + enc.timeOfDay.slice(1) + " only"}>
+                  <span className="cursor-default text-sm">{TIME_ICON[enc.timeOfDay]}</span>
+                </Tooltip>
               )}
             </div>
           );
