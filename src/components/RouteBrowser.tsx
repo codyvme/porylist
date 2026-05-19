@@ -145,7 +145,7 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
               </span>
               <span className="text-xs tabular-nums text-muted-foreground min-w-[32px]">{enc.chance}%</span>
               {enc.timeOfDay && (
-                <Tooltip content={enc.timeOfDay.charAt(0).toUpperCase() + enc.timeOfDay.slice(1) + " only"}>
+                <Tooltip content={enc.timeOfDay.charAt(0).toUpperCase() + enc.timeOfDay.slice(1)}>
                   <span className="cursor-default text-sm">{TIME_ICON[enc.timeOfDay]}</span>
                 </Tooltip>
               )}
