@@ -1263,7 +1263,7 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
                           className="max-h-full w-auto"
                           onError={(e) => {
                             const img = e.currentTarget;
-                            img.onError = null;
+                            img.onerror = null;
                             img.src = `https://sprites.porylist.com/sprites/pokemon/${detail!.id}.png`;
                           }}
                         />
