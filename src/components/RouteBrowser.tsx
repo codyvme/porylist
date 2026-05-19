@@ -326,7 +326,7 @@ export function RouteBrowser({ caught, onToggleCaught }: {
       )}
 
       {game && GAMES_WITH_ROUTES.has(game) && (
-        <div className="grid grid-cols-[280px_1fr] gap-4 overflow-hidden rounded-md border" style={{ height: "calc(100vh - 260px)" }}>
+        <div className="grid grid-cols-[280px_1fr] overflow-hidden rounded-md border" style={{ height: "calc(100vh - 260px)" }}>
           {/* Location list */}
           <div className="flex min-h-0 flex-col border-r">
             <div className="flex-shrink-0 border-b p-2">
