@@ -195,13 +195,9 @@ function LocationDetail({ location, versions, selectedVersion, spriteVersion, ga
 
   return (
     <div>
-      {versions.length > 1 && (
+      {versions.length > 1 && selectedVersion && (
         <div className="mb-3 flex items-center gap-1.5 text-xs text-muted-foreground">
-          <span>
-            {selectedVersion
-              ? `Showing ${VERSION_LABELS[selectedVersion] ?? selectedVersion} encounters`
-              : `Showing all versions combined — pick a version above for exact rates`}
-          </span>
+          <span>Showing {VERSION_LABELS[selectedVersion] ?? selectedVersion} encounters</span>
         </div>
       )}
       {byMethod.map(([method, { label, encounters }]) => (
@@ -265,6 +261,13 @@ export function RouteBrowser({ caught, onToggleCaught }: {
     }
     return [...versionSet].sort();
   }, [routeData]);
+
+  // Auto-select the first version when data loads (no "All" option)
+  useEffect(() => {
+    if (actualVersions.length > 0 && !selectedVersion) {
+      setSelectedVersion(actualVersions[0]);
+    }
+  }, [actualVersions, selectedVersion]);
 
   const filteredLocations = useMemo(() => {
     if (!routeData) return [];
@@ -349,21 +352,13 @@ export function RouteBrowser({ caught, onToggleCaught }: {
           <div className="flex items-center gap-1.5">
             <span className="text-xs text-muted-foreground font-medium">Version:</span>
             <div className="flex rounded-md border overflow-hidden text-xs font-medium">
-              <button
-                onClick={() => setSelectedVersion("")}
-                className={cn(
-                  "px-2.5 py-1 transition-colors",
-                  selectedVersion === "" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted",
-                )}
-              >
-                All
-              </button>
-              {actualVersions.map((v) => (
+              {actualVersions.map((v, i) => (
                 <button
                   key={v}
-                  onClick={() => setSelectedVersion(selectedVersion === v ? "" : v)}
+                  onClick={() => setSelectedVersion(v)}
                   className={cn(
-                    "px-2.5 py-1 border-l transition-colors",
+                    "px-2.5 py-1 transition-colors",
+                    i > 0 && "border-l",
                     selectedVersion === v ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted",
                   )}
                 >
@@ -465,7 +460,9 @@ export function RouteBrowser({ caught, onToggleCaught }: {
             <span className="flex items-center gap-1.5">
               <PokeballIcon caught={gameProgress.count > 0} size={13} />
               <span>
-                <span className="font-medium text-foreground">{selectedGame!.label}</span>
+                <span className="font-medium text-foreground">
+                  {selectedVersion ? (VERSION_LABELS[selectedVersion] ?? selectedVersion) : selectedGame!.label}
+                </span>
                 {": "}
                 {gameProgress.count.toLocaleString()} / {gameProgress.total.toLocaleString()} caught via routes
               </span>
