@@ -59,70 +59,40 @@ function AboutModal({ onClose }: { onClose: () => void }) {
           <X className="h-4 w-4" />
         </button>
         <h2 className="mb-3 text-lg font-semibold">About Porylist</h2>
-        <div className="space-y-2 text-sm text-muted-foreground">
+        <div className="space-y-4 text-sm text-muted-foreground">
           <p>
-            Porylist is a Pokédex browsing and team-building tool for filtering,
-            sorting, and analyzing Pokémon by game, type, and base stats.
+            Porylist is a Pokédex and catch-tracking tool built for players who
+            want more than a plain list. Browse and filter Pokémon by game,
+            generation, type, and stats — then dive into individual detail pages
+            for abilities, evolutions, move lists, and type matchups tailored to
+            your selected game.
           </p>
           <p>
-            Use the <strong className="text-foreground">Game</strong> dropdown
-            to filter Pokémon to those available in a specific game, with
-            game-accurate typings and sprites. Enable{" "}
-            <strong className="text-foreground">National Dex</strong> to show
-            all Pokémon up to that generation instead.
+            The Catch Tracker tab lets you explore per-route encounter tables,
+            track which Pokémon you've caught version-by-version, and measure
+            your progress across a game's regional or national Pokédex. Sign in
+            to sync your data across devices.
           </p>
-          <p>
-            Use the <strong className="text-foreground">Filter</strong> button
-            to narrow results by type, show only legendary or mythical Pokémon,
-            filter by move learnability, or show only caught/uncaught Pokémon.
-            Use <strong className="text-foreground">Columns</strong> to toggle
-            optional columns like height, weight, catch rate, and egg group.
-          </p>
-          <p>
-            Click any Pokémon's name to open a detail view with its sprite,
-            abilities, base stats, type effectiveness, Pokédex entry, evolution
-            chain, encounter locations, and full move list for the selected game.
-            Mark it as caught with the Pokéball button.
-          </p>
-          <p>
-            The <strong className="text-foreground">Team Builder</strong> panel
-            at the bottom lets you pick up to 6 Pokémon. Expand it to see a
-            defensive matchups grid (per-type damage multipliers for each member
-            plus a shared weakness count) and an offensive STAB coverage summary.
-            Your team is saved automatically and can be shared via the share button.
-          </p>
-          <p>
-            Data is sourced from{" "}
-            <a
-              href="https://pokeapi.co"
-              target="_blank"
-              rel="noreferrer"
-              className="text-foreground underline"
-            >
-              PokéAPI
-            </a>{" "}
-            and served as static JSON from Cloudflare R2 — no live API calls at
-            runtime. Sprites from the{" "}
-            <a
-              href="https://github.com/PokeAPI/sprites"
-              target="_blank"
-              rel="noreferrer"
-              className="text-foreground underline"
-            >
-              PokeAPI sprites repo
-            </a>
-            . Type icons by{" "}
-            <a
-              href="https://github.com/partywhale/pokemon-type-icons"
-              target="_blank"
-              rel="noreferrer"
-              className="text-foreground underline"
-            >
-              partywhale
-            </a>
-            .
-          </p>
-          <p className="pt-2 text-xs text-muted-foreground/60">
+
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground/70">Built with</p>
+            <ul className="space-y-1">
+              <li>
+                <a href="https://pokeapi.co" target="_blank" rel="noreferrer" className="text-foreground underline">PokéAPI</a>
+                {" — "}Pokémon data, encounter tables, and move lists
+              </li>
+              <li>
+                <a href="https://github.com/PokeAPI/sprites" target="_blank" rel="noreferrer" className="text-foreground underline">PokeAPI sprites</a>
+                {" — "}Pokémon sprites
+              </li>
+              <li>
+                <a href="https://github.com/partywhale/pokemon-type-icons" target="_blank" rel="noreferrer" className="text-foreground underline">partywhale/pokemon-type-icons</a>
+                {" — "}Type badge icons
+              </li>
+            </ul>
+          </div>
+
+          <p className="pt-1 text-xs text-muted-foreground/60">
             &copy; {new Date().getFullYear()} Porylist — an independent fan site not affiliated with Nintendo, Game Freak, or The Pokémon Company.
           </p>
         </div>
