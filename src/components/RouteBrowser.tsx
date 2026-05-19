@@ -298,7 +298,7 @@ export function RouteBrowser({ caught, onToggleCaught }: {
   }, [routeData, game, caught, selectedGame, showNational]);
 
   return (
-    <div className="space-y-4">
+    <div className="flex h-full flex-col gap-4">
       {/* Controls row */}
       <div className="flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-3">
@@ -357,20 +357,20 @@ export function RouteBrowser({ caught, onToggleCaught }: {
 
       {/* No data notice for gen 8+ */}
       {game && !GAMES_WITH_ROUTES.has(game) && (
-        <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
+        <div className="flex-1 min-h-0 flex items-center justify-center rounded-lg border border-dashed text-center text-sm text-muted-foreground">
           Route data isn't available for this game yet — PokéAPI doesn't include encounter data for Gen 8+ games.
         </div>
       )}
 
       {/* Main layout */}
       {!game && (
-        <div className="rounded-lg border border-dashed p-16 text-center text-sm text-muted-foreground">
+        <div className="flex-1 min-h-0 flex items-center justify-center rounded-lg border border-dashed text-center text-sm text-muted-foreground">
           Select a game to browse its routes and encounter tables.
         </div>
       )}
 
       {game && GAMES_WITH_ROUTES.has(game) && (
-        <div className="grid grid-cols-[280px_1fr] overflow-hidden rounded-md border" style={{ height: "calc(100vh - 260px)" }}>
+        <div className="flex-1 min-h-0 grid grid-cols-[280px_1fr] overflow-hidden rounded-md border">
           {/* Location list */}
           <div className="flex min-h-0 flex-col border-r">
             <div className="flex-shrink-0 border-b p-2">

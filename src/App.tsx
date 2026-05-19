@@ -122,6 +122,9 @@ function AboutModal({ onClose }: { onClose: () => void }) {
             </a>
             .
           </p>
+          <p className="pt-2 text-xs text-muted-foreground/60">
+            &copy; {new Date().getFullYear()} Porylist — an independent fan site not affiliated with Nintendo, Game Freak, or The Pokémon Company.
+          </p>
         </div>
       </div>
     </div>
@@ -370,8 +373,8 @@ export function App() {
       client={queryClient}
       persistOptions={{ persister, maxAge: 1000 * 60 * 60 * 24 * 30 }}
     >
-      <div className="min-h-screen bg-background">
-        <header className="border-b border-slate-700/60 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900">
+      <div className="h-screen flex flex-col overflow-hidden bg-background">
+        <header className="flex-shrink-0 border-b border-slate-700/60 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900">
           <div className="container flex items-center gap-4 py-4">
             <div className="flex items-center shrink-0">
               <img
@@ -424,7 +427,7 @@ export function App() {
           </div>
         </header>
         {/* Tab bar */}
-        <div className="border-b bg-background">
+        <div className="flex-shrink-0 border-b bg-background">
           <div className="container flex gap-0">
             {([
               { id: "pokedex", label: "Pokédex", Icon: List },
@@ -446,7 +449,7 @@ export function App() {
             ))}
           </div>
         </div>
-        <main className="container py-6">
+        <main className={cn("flex-1 min-h-0 container py-6 flex flex-col", activeTab === "pokedex" && "pb-16")}>
           {activeTab === "pokedex" && (
             <PokemonTable search={search} onSearchChange={setSearch} team={team} onAddToTeam={addToTeam} onRemoveFromTeam={removeFromTeam} teamBuilderOpen={teamBuilderOpen} caught={caught} onToggleCaught={toggleCaught} />
           )}
@@ -454,19 +457,6 @@ export function App() {
             <RouteBrowser caught={caught} onToggleCaught={toggleCaught} />
           )}
         </main>
-        <footer className={`border-t mt-6 ${activeTab === "pokedex" ? "pb-16" : ""}`}>
-          <div className="container py-6 space-y-1">
-            <p className="text-xs text-muted-foreground">
-              &copy; {new Date().getFullYear()} Porylist
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Porylist is an independent fan site and is not affiliated with,
-              endorsed by, or connected to Nintendo, Game Freak, or The Pokémon
-              Company. All Pokémon names, characters, and related media are
-              trademarks and &copy; of their respective owners.
-            </p>
-          </div>
-        </footer>
         {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
         {showSignIn && <SignInModal onClose={() => setShowSignIn(false)} />}
         {activeTab === "pokedex" && <TeamBuilder team={team} onRemove={removeFromTeam} onClear={clearTeam} expanded={teamBuilderOpen} onExpandedChange={setTeamBuilderOpen} />}

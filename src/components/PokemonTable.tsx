@@ -900,7 +900,7 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
   }
 
   return (
-    <div className="space-y-3">
+    <div className="flex h-full flex-col gap-3">
       <div className="flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-3">
           <label className="text-sm font-medium text-muted-foreground">
@@ -1114,11 +1114,10 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
         </div>
         </div>
       </div>
-      <div className="overflow-hidden rounded-md border">
+      <div className="flex-1 min-h-0 overflow-hidden rounded-md border">
         <div
           ref={scrollRef}
-          className="overflow-auto"
-          style={{ height: "calc(100vh - 260px)" }}
+          className="h-full overflow-auto"
         >
           <div
             style={{
