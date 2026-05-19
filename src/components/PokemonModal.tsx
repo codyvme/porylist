@@ -1117,7 +1117,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                     <img
                       src={homeSprite}
                       alt={displayName}
-                      className="h-36 w-36 object-contain sm:h-48 sm:w-48"
+                      className="h-36 w-36 rounded-lg bg-white object-contain sm:h-48 sm:w-48"
                       onError={(e) => {
                         const img = e.target as HTMLImageElement;
                         if (pokemon) {

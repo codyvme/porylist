@@ -110,7 +110,7 @@ export function TeamBuilder({ team, onRemove, onClear, expanded, onExpandedChang
                   key={i}
                   className={cn(
                     "relative flex h-10 w-10 items-center justify-center rounded border",
-                    m ? "border-border bg-muted/30" : "border-dashed border-muted-foreground/25",
+                    m ? "border-border bg-white" : "border-dashed border-muted-foreground/25",
                   )}
                 >
                   {m ? (

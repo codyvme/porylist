@@ -573,7 +573,7 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
       enableSorting: false,
       cell: ({ row }) => (
         <button
-          className="flex h-14 w-14 items-center justify-center rounded hover:opacity-80 transition-opacity"
+          className="flex h-14 w-14 items-center justify-center rounded bg-white hover:opacity-80 transition-opacity"
           onClick={() => openModalRef.current(row.original.name)}
           aria-label={`Open ${row.original.name} details`}
           tabIndex={-1}
@@ -1254,7 +1254,7 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
                   <div className="flex items-center px-3 py-3" />
                   {/* sprite */}
                   <div className="flex items-center px-3 py-3">
-                    <div className="flex h-14 w-14 items-center justify-center">
+                    <div className="flex h-14 w-14 items-center justify-center rounded bg-white">
                       {formSprite ? (
                         <img
                           src={formSprite}

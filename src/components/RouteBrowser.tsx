@@ -118,7 +118,7 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
               <img
                 src={spriteUrl(enc.id, spriteVersion)}
                 alt={enc.name}
-                className="h-10 w-10 object-contain flex-shrink-0"
+                className="h-10 w-10 flex-shrink-0 rounded bg-white object-contain"
                 loading="lazy"
                 onError={(e) => {
                   const img = e.currentTarget;
