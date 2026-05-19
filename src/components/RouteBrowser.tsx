@@ -103,6 +103,18 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
           const isCaught = (caught[game] ?? []).includes(enc.name);
           return (
             <div key={`${enc.id}-${method}-${i}`} className="flex items-center gap-3 rounded-md px-2 py-1 hover:bg-muted/50">
+              {game && (
+                <button
+                  onClick={() => onToggleCaught(enc.name, game)}
+                  className={cn(
+                    "flex items-center justify-center rounded-full p-1.5 transition-colors",
+                    isCaught ? "text-red-500 hover:text-red-400" : "text-muted-foreground/30 hover:text-muted-foreground",
+                  )}
+                  aria-label={isCaught ? `Mark ${enc.name} as not caught` : `Mark ${enc.name} as caught`}
+                >
+                  <PokeballIcon caught={isCaught} size={15} />
+                </button>
+              )}
               <img
                 src={spriteUrl(enc.id, spriteVersion)}
                 alt={enc.name}
@@ -124,18 +136,6 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
                 {enc.minLevel === enc.maxLevel ? `Lv ${enc.minLevel}` : `Lv ${enc.minLevel}–${enc.maxLevel}`}
               </span>
               <span className="text-xs tabular-nums text-muted-foreground min-w-[32px]">{enc.chance}%</span>
-              {game && (
-                <button
-                  onClick={() => onToggleCaught(enc.name, game)}
-                  className={cn(
-                    "ml-auto flex items-center justify-center rounded-full p-1.5 transition-colors",
-                    isCaught ? "text-red-500 hover:text-red-400" : "text-muted-foreground/30 hover:text-muted-foreground",
-                  )}
-                  aria-label={isCaught ? `Mark ${enc.name} as not caught` : `Mark ${enc.name} as caught`}
-                >
-                  <PokeballIcon caught={isCaught} size={15} />
-                </button>
-              )}
             </div>
           );
         })}
