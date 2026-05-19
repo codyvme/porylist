@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { Select } from "@/components/ui/select";
-import { GAMES } from "@/lib/games";
+import { GAMES, GAMES_BY_VALUE } from "@/lib/games";
 import { useRouteData, type RouteEncounter, type RouteLocation } from "@/lib/pokeapi";
 import { spriteUrl } from "@/lib/games";
+import { PokemonModal } from "@/components/PokemonModal";
 import { cn, formatPokemonName } from "@/lib/utils";
 
 const VERSION_LABELS: Record<string, string> = {
@@ -22,6 +23,27 @@ const VERSION_LABELS: Record<string, string> = {
   "scarlet": "Scarlet", "violet": "Violet",
   "legends-arceus": "Legends: Arceus",
   "brilliant-diamond": "Brilliant Diamond", "shining-pearl": "Shining Pearl",
+};
+
+const METHOD_ICONS: Record<string, string> = {
+  "walk":             "🌿",
+  "grass-spots":      "🌿",
+  "dark-grass-spots": "🌿",
+  "surf":             "🌊",
+  "surf-spots":       "🌊",
+  "old-rod":          "🎣",
+  "good-rod":         "🎣",
+  "super-rod":        "🎣",
+  "super-rod-spots":  "🎣",
+  "rock-smash":       "🪨",
+  "headbutt":         "🌳",
+  "headbutt-normal":  "🌳",
+  "headbutt-special": "🌳",
+  "honey-tree":       "🍯",
+  "cave-spots":       "🦇",
+  "bridge-spots":     "🌉",
+  "gift":             "🎁",
+  "gift-egg":         "🎁",
 };
 
 // Method display order
@@ -49,40 +71,88 @@ function aggregateEncounters(encounters: RouteEncounter[]): RouteEncounter[] {
   return [...map.values()];
 }
 
-function EncounterGroup({ method, methodLabel, encounters }: {
+function PokeballIcon({ caught, size = 14 }: { caught: boolean; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" aria-hidden>
+      <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M1.5 8h13" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="8" cy="8" r="2.5" fill={caught ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
+function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, caught, onToggleCaught, onOpen }: {
   method: string;
   methodLabel: string;
   encounters: RouteEncounter[];
+  spriteVersion: string | undefined;
+  game: string;
+  caught: Record<string, string[]>;
+  onToggleCaught: (name: string, gameKey: string) => void;
+  onOpen: (name: string) => void;
 }) {
   const sorted = [...encounters].sort((a, b) => b.chance - a.chance || a.id - b.id);
+  const icon = METHOD_ICONS[method];
   return (
     <div>
-      <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{methodLabel}</p>
+      <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        {icon && <span className="mr-1">{icon}</span>}{methodLabel}
+      </p>
       <div className="space-y-1 mb-4">
-        {sorted.map((enc, i) => (
-          <div key={`${enc.id}-${method}-${i}`} className="flex items-center gap-3 rounded-md px-2 py-1 hover:bg-muted/50">
-            <img
-              src={spriteUrl(enc.id, undefined)}
-              alt={enc.name}
-              className="h-10 w-10 object-contain flex-shrink-0"
-              loading="lazy"
-            />
-            <span className="min-w-[140px] font-medium text-sm">{formatPokemonName(enc.name)}</span>
-            <span className="text-xs text-muted-foreground tabular-nums min-w-[56px]">
-              {enc.minLevel === enc.maxLevel ? `Lv ${enc.minLevel}` : `Lv ${enc.minLevel}–${enc.maxLevel}`}
-            </span>
-            <span className="text-xs tabular-nums text-muted-foreground">{enc.chance}%</span>
-          </div>
-        ))}
+        {sorted.map((enc, i) => {
+          const isCaught = (caught[game] ?? []).includes(enc.name);
+          return (
+            <div key={`${enc.id}-${method}-${i}`} className="flex items-center gap-3 rounded-md px-2 py-1 hover:bg-muted/50">
+              <img
+                src={spriteUrl(enc.id, spriteVersion)}
+                alt={enc.name}
+                className="h-10 w-10 object-contain flex-shrink-0"
+                loading="lazy"
+                onError={(e) => {
+                  const img = e.currentTarget;
+                  img.onerror = null;
+                  img.src = spriteUrl(enc.id, undefined);
+                }}
+              />
+              <button
+                className="text-left font-medium text-sm hover:underline focus:outline-none min-w-[140px]"
+                onClick={() => onOpen(enc.name)}
+              >
+                {formatPokemonName(enc.name)}
+              </button>
+              <span className="text-xs text-muted-foreground tabular-nums min-w-[56px]">
+                {enc.minLevel === enc.maxLevel ? `Lv ${enc.minLevel}` : `Lv ${enc.minLevel}–${enc.maxLevel}`}
+              </span>
+              <span className="text-xs tabular-nums text-muted-foreground min-w-[32px]">{enc.chance}%</span>
+              {game && (
+                <button
+                  onClick={() => onToggleCaught(enc.name, game)}
+                  className={cn(
+                    "ml-auto flex items-center justify-center rounded-full p-1.5 transition-colors",
+                    isCaught ? "text-red-500 hover:text-red-400" : "text-muted-foreground/30 hover:text-muted-foreground",
+                  )}
+                  aria-label={isCaught ? `Mark ${enc.name} as not caught` : `Mark ${enc.name} as caught`}
+                >
+                  <PokeballIcon caught={isCaught} size={15} />
+                </button>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 }
 
-function LocationDetail({ location, versions, selectedVersion }: {
+function LocationDetail({ location, versions, selectedVersion, spriteVersion, game, caught, onToggleCaught, onOpen }: {
   location: RouteLocation;
   versions: string[];
   selectedVersion: string;
+  spriteVersion: string | undefined;
+  game: string;
+  caught: Record<string, string[]>;
+  onToggleCaught: (name: string, gameKey: string) => void;
+  onOpen: (name: string) => void;
 }) {
   const filtered = selectedVersion
     ? location.encounters.filter((e) => e.version === selectedVersion)
@@ -120,7 +190,17 @@ function LocationDetail({ location, versions, selectedVersion }: {
         </div>
       )}
       {byMethod.map(([method, { label, encounters }]) => (
-        <EncounterGroup key={method} method={method} methodLabel={label} encounters={encounters} />
+        <EncounterGroup
+          key={method}
+          method={method}
+          methodLabel={label}
+          encounters={encounters}
+          spriteVersion={spriteVersion}
+          game={game}
+          caught={caught}
+          onToggleCaught={onToggleCaught}
+          onOpen={onOpen}
+        />
       ))}
     </div>
   );
@@ -133,11 +213,18 @@ const GAMES_WITH_ROUTES = new Set([
   "x-y", "omega-ruby-alpha-sapphire", "sun-moon", "ultra-sun-ultra-moon", "lets-go",
 ]);
 
-export function RouteBrowser() {
+export function RouteBrowser({ caught, onToggleCaught }: {
+  caught: Record<string, string[]>;
+  onToggleCaught: (name: string, gameKey: string) => void;
+}) {
   const [game, setGame] = useState("");
   const [locationKey, setLocationKey] = useState<string | null>(null);
   const [locationSearch, setLocationSearch] = useState("");
   const [selectedVersion, setSelectedVersion] = useState("");
+  const [selectedPokemon, setSelectedPokemon] = useState<string | null>(null);
+
+  const selectedGame = game ? GAMES_BY_VALUE[game] : undefined;
+  const spriteVersion = selectedGame?.spriteVersion;
 
   const routeDataQuery = useRouteData(game || null);
   const routeData = routeDataQuery.data;
@@ -274,9 +361,7 @@ export function RouteBrowser() {
           <div className="overflow-y-auto p-4">
             {!selectedLocation && (
               <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-                {routeData
-                  ? "Select a location from the list."
-                  : null}
+                {routeData ? "Select a location from the list." : null}
               </div>
             )}
             {selectedLocation && (
@@ -286,11 +371,29 @@ export function RouteBrowser() {
                   location={selectedLocation}
                   versions={actualVersions}
                   selectedVersion={selectedVersion}
+                  spriteVersion={spriteVersion}
+                  game={game}
+                  caught={caught}
+                  onToggleCaught={onToggleCaught}
+                  onOpen={setSelectedPokemon}
                 />
               </>
             )}
           </div>
         </div>
+      )}
+
+      {selectedPokemon && (
+        <PokemonModal
+          pokemonName={selectedPokemon}
+          game={selectedGame}
+          onClose={() => setSelectedPokemon(null)}
+          onNavigate={setSelectedPokemon}
+          prevPokemon={null}
+          nextPokemon={null}
+          caughtInGame={game ? (caught[game] ?? []).includes(selectedPokemon) : false}
+          onToggleCaught={game ? () => onToggleCaught(selectedPokemon, game) : undefined}
+        />
       )}
     </div>
   );
