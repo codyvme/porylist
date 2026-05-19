@@ -449,6 +449,8 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
       result = deferredShowNational
         ? result.filter((r) => r.id <= selectedGame.genMax)
         : result.filter((r) => isInRanges(r.id, selectedGame.nativeRanges));
+    } else {
+      result = result.filter((r) => r.id <= 1025);
     }
     if (q) {
       result = result.filter((r) =>
