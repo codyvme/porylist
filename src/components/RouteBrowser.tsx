@@ -55,11 +55,17 @@ function methodOrder(method: string) {
   return i === -1 ? 99 : i;
 }
 
-// Aggregate encounters by Pokémon+method across versions (for "All" view)
+const TIME_ICON: Record<string, string> = {
+  morning: "🌅",
+  day:     "☀️",
+  night:   "🌙",
+};
+
+// Aggregate encounters by Pokémon+method+timeOfDay across versions (for "All" view)
 function aggregateEncounters(encounters: RouteEncounter[]): RouteEncounter[] {
   const map = new Map<string, RouteEncounter>();
   for (const enc of encounters) {
-    const key = `${enc.id}:${enc.method}`;
+    const key = `${enc.id}:${enc.method}:${enc.timeOfDay}`;
     if (!map.has(key)) {
       map.set(key, { ...enc, version: "" });
     } else {
@@ -137,6 +143,11 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
                 {enc.minLevel === enc.maxLevel ? `Lv ${enc.minLevel}` : `Lv ${enc.minLevel}–${enc.maxLevel}`}
               </span>
               <span className="text-xs tabular-nums text-muted-foreground min-w-[32px]">{enc.chance}%</span>
+              {enc.timeOfDay && (
+                <span className="text-sm" title={enc.timeOfDay.charAt(0).toUpperCase() + enc.timeOfDay.slice(1) + " only"}>
+                  {TIME_ICON[enc.timeOfDay]}
+                </span>
+              )}
             </div>
           );
         })}
