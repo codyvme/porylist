@@ -496,3 +496,24 @@ export function useEvolutionChain(url: string | null) {
     gcTime: 1000 * 60 * 60 * 24 * 30,
   });
 }
+
+export interface VersionExclusiveEntry {
+  key: string;
+  label: string;
+  exclusiveIds: number[];
+}
+
+export interface VersionExclusiveGroup {
+  versions: VersionExclusiveEntry[];
+}
+
+export type VersionExclusivesData = Record<string, VersionExclusiveGroup>;
+
+export function useVersionExclusives() {
+  return useQuery({
+    queryKey: ["version-exclusives"],
+    queryFn: () => fetchJson<VersionExclusivesData>(`${BASE}/version-exclusives`),
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 60 * 24 * 30,
+  });
+}
