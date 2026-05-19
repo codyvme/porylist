@@ -251,7 +251,7 @@ export function App() {
             <PokemonTable search={search} onSearchChange={setSearch} team={team} onAddToTeam={addToTeam} onRemoveFromTeam={removeFromTeam} teamBuilderOpen={teamBuilderOpen} caught={caught} onToggleCaught={toggleCaught} />
           )}
           {activeTab === "routes" && (
-            <RouteBrowser />
+            <RouteBrowser caught={caught} onToggleCaught={toggleCaught} />
           )}
         </main>
         <footer className="border-t mt-6 pb-16">
