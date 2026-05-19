@@ -1289,8 +1289,6 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
                       <span className="text-sm">—</span>
                     </div>
                   )}
-                  {/* team btn: not applicable to variant rows */}
-                  <div className="flex items-center px-3 py-3" />
                 </div>
               );
             })}
