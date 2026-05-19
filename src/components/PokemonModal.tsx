@@ -18,6 +18,7 @@ import {
   typesForGeneration,
   useSinglePokemon,
   usePokemonSpecies,
+  usePokemonFormData,
   useMoveDetails,
   useAbilityDetails,
   useMachineDetails,
@@ -700,6 +701,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
   }, [activeTab]);
 
   const { data: pokemon, isLoading } = useSinglePokemon(pokemonName);
+  const { data: formDataMap } = usePokemonFormData([pokemonName]);
   const { data: species } = usePokemonSpecies(pokemon?.species.name ?? null);
   const { data: evolutionChain } = useEvolutionChain(species?.evolution_chain.url ?? null);
   const { data: encounterData, isLoading: encountersLoading } = usePokemonEncounters(pokemon?.id ?? null);
@@ -969,7 +971,8 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
       : null;
   const showGameSprite = gameSprite && gameSprite !== homeSprite;
 
-  const displayName = formatPokemonName(pokemonName);
+  const formEnglishName = formDataMap?.[pokemonName]?.names.find((n) => n.language.name === "en")?.name;
+  const displayName = formEnglishName ?? formatPokemonName(pokemonName);
 
   const tabs: Array<{ id: MoveTab; label: string; count: number }> = [
     { id: "level-up", label: "Level Up",    count: filteredMoves.levelUp.length },
