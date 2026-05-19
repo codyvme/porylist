@@ -1,0 +1,298 @@
+import { useMemo, useState } from "react";
+import { Search } from "lucide-react";
+import { Select } from "@/components/ui/select";
+import { GAMES } from "@/lib/games";
+import { useRouteData, type RouteEncounter, type RouteLocation } from "@/lib/pokeapi";
+import { spriteUrl } from "@/lib/games";
+import { cn, formatPokemonName } from "@/lib/utils";
+
+// Method display order
+const METHOD_ORDER = ["walk", "surf", "old-rod", "good-rod", "super-rod", "rock-smash", "headbutt", "headbutt-normal", "headbutt-special", "honey-tree", "grass-spots", "dark-grass-spots", "cave-spots", "bridge-spots", "surf-spots", "super-rod-spots", "gift", "gift-egg"];
+
+function methodOrder(method: string) {
+  const i = METHOD_ORDER.indexOf(method);
+  return i === -1 ? 99 : i;
+}
+
+// Aggregate encounters by Pokémon+method across versions (for "All" view)
+function aggregateEncounters(encounters: RouteEncounter[]): RouteEncounter[] {
+  const map = new Map<string, RouteEncounter>();
+  for (const enc of encounters) {
+    const key = `${enc.id}:${enc.method}`;
+    if (!map.has(key)) {
+      map.set(key, { ...enc, version: "" });
+    } else {
+      const ex = map.get(key)!;
+      ex.minLevel = Math.min(ex.minLevel, enc.minLevel);
+      ex.maxLevel = Math.max(ex.maxLevel, enc.maxLevel);
+      ex.chance = Math.max(ex.chance, enc.chance);
+    }
+  }
+  return [...map.values()];
+}
+
+function EncounterGroup({ method, methodLabel, encounters }: {
+  method: string;
+  methodLabel: string;
+  encounters: RouteEncounter[];
+}) {
+  const sorted = [...encounters].sort((a, b) => b.chance - a.chance || a.id - b.id);
+  return (
+    <div>
+      <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{methodLabel}</p>
+      <div className="space-y-1 mb-4">
+        {sorted.map((enc, i) => (
+          <div key={`${enc.id}-${method}-${i}`} className="flex items-center gap-3 rounded-md px-2 py-1 hover:bg-muted/50">
+            <img
+              src={spriteUrl(enc.id, undefined)}
+              alt={enc.name}
+              className="h-10 w-10 object-contain flex-shrink-0"
+              loading="lazy"
+            />
+            <span className="min-w-[140px] font-medium text-sm">{formatPokemonName(enc.name)}</span>
+            <span className="text-xs text-muted-foreground tabular-nums min-w-[56px]">
+              {enc.minLevel === enc.maxLevel ? `Lv ${enc.minLevel}` : `Lv ${enc.minLevel}–${enc.maxLevel}`}
+            </span>
+            <span className="text-xs tabular-nums text-muted-foreground">{enc.chance}%</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LocationDetail({ location, versions, selectedVersion }: {
+  location: RouteLocation;
+  versions: string[];
+  selectedVersion: string;
+}) {
+  const filtered = selectedVersion
+    ? location.encounters.filter((e) => e.version === selectedVersion)
+    : aggregateEncounters(location.encounters);
+
+  const byMethod = useMemo(() => {
+    const groups = new Map<string, { label: string; encounters: RouteEncounter[] }>();
+    for (const enc of filtered) {
+      if (!groups.has(enc.method)) {
+        groups.set(enc.method, { label: enc.methodLabel, encounters: [] });
+      }
+      groups.get(enc.method)!.encounters.push(enc);
+    }
+    return [...groups.entries()]
+      .sort(([a], [b]) => methodOrder(a) - methodOrder(b));
+  }, [filtered]);
+
+  if (filtered.length === 0) {
+    return (
+      <p className="py-8 text-center text-sm text-muted-foreground">
+        No encounters found for this version.
+      </p>
+    );
+  }
+
+  return (
+    <div>
+      {versions.length > 1 && (
+        <div className="mb-3 flex items-center gap-1.5 text-xs text-muted-foreground">
+          <span>
+            {selectedVersion
+              ? `Showing ${selectedVersion} encounters`
+              : `Showing all versions combined — pick a version above for exact rates`}
+          </span>
+        </div>
+      )}
+      {byMethod.map(([method, { label, encounters }]) => (
+        <EncounterGroup key={method} method={method} methodLabel={label} encounters={encounters} />
+      ))}
+    </div>
+  );
+}
+
+// Games that have route data (gen 8+ don't have PokeAPI encounter data)
+const GAMES_WITH_ROUTES = new Set([
+  "red-blue-yellow", "gold-silver-crystal", "ruby-sapphire-emerald", "firered-leafgreen",
+  "diamond-pearl-platinum", "heartgold-soulsilver", "black-white", "black2-white2",
+  "x-y", "omega-ruby-alpha-sapphire", "sun-moon", "ultra-sun-ultra-moon", "lets-go",
+]);
+
+export function RouteBrowser() {
+  const [game, setGame] = useState("");
+  const [locationKey, setLocationKey] = useState<string | null>(null);
+  const [locationSearch, setLocationSearch] = useState("");
+  const [selectedVersion, setSelectedVersion] = useState("");
+
+  const routeDataQuery = useRouteData(game || null);
+  const routeData = routeDataQuery.data;
+
+  // Derive actual versions present in this game's data
+  const actualVersions = useMemo(() => {
+    if (!routeData) return [];
+    const versionSet = new Set<string>();
+    for (const loc of routeData.locations) {
+      for (const enc of loc.encounters) versionSet.add(enc.version);
+    }
+    return [...versionSet].sort();
+  }, [routeData]);
+
+  const filteredLocations = useMemo(() => {
+    if (!routeData) return [];
+    const q = locationSearch.trim().toLowerCase();
+    if (!q) return routeData.locations;
+    return routeData.locations.filter((l) => l.label.toLowerCase().includes(q));
+  }, [routeData, locationSearch]);
+
+  const selectedLocation = useMemo(
+    () => routeData?.locations.find((l) => l.key === locationKey) ?? null,
+    [routeData, locationKey],
+  );
+
+  const handleGameChange = (newGame: string) => {
+    setGame(newGame);
+    setLocationKey(null);
+    setLocationSearch("");
+    setSelectedVersion("");
+  };
+
+  // Version labels from actual data
+  const versionLabels: Record<string, string> = {
+    "red": "Red", "blue": "Blue", "yellow": "Yellow",
+    "gold": "Gold", "silver": "Silver", "crystal": "Crystal",
+    "ruby": "Ruby", "sapphire": "Sapphire", "emerald": "Emerald",
+    "firered": "FireRed", "leafgreen": "LeafGreen",
+    "diamond": "Diamond", "pearl": "Pearl", "platinum": "Platinum",
+    "heartgold": "HeartGold", "soulsilver": "SoulSilver",
+    "black": "Black", "white": "White", "black-2": "Black 2", "white-2": "White 2",
+    "x": "X", "y": "Y",
+    "omega-ruby": "Omega Ruby", "alpha-sapphire": "Alpha Sapphire",
+    "sun": "Sun", "moon": "Moon",
+    "ultra-sun": "Ultra Sun", "ultra-moon": "Ultra Moon",
+    "lets-go-pikachu": "Let's Go, Pikachu!", "lets-go-eevee": "Let's Go, Eevee!",
+    "scarlet": "Scarlet", "violet": "Violet",
+    "legends-arceus": "Legends: Arceus",
+    "brilliant-diamond": "Brilliant Diamond", "shining-pearl": "Shining Pearl",
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Controls row */}
+      <div className="flex flex-wrap items-center gap-4">
+        <div className="flex items-center gap-3">
+          <label className="text-sm font-medium text-muted-foreground">Game</label>
+          <Select value={game} onChange={(e) => handleGameChange(e.target.value)} className="min-w-[260px]">
+            <option value="">Select a game…</option>
+            {GAMES.filter((g) => GAMES_WITH_ROUTES.has(g.value)).map((g) => (
+              <option key={g.value} value={g.value}>{g.label}</option>
+            ))}
+          </Select>
+        </div>
+        {actualVersions.length > 1 && (
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-muted-foreground font-medium">Version:</span>
+            <div className="flex rounded-md border overflow-hidden text-xs font-medium">
+              <button
+                onClick={() => setSelectedVersion("")}
+                className={cn(
+                  "px-2.5 py-1 transition-colors",
+                  selectedVersion === "" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted",
+                )}
+              >
+                All
+              </button>
+              {actualVersions.map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setSelectedVersion(selectedVersion === v ? "" : v)}
+                  className={cn(
+                    "px-2.5 py-1 border-l transition-colors",
+                    selectedVersion === v ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted",
+                  )}
+                >
+                  {versionLabels[v] ?? v}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* No data notice for gen 8+ */}
+      {game && !GAMES_WITH_ROUTES.has(game) && (
+        <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
+          Route data isn't available for this game yet — PokéAPI doesn't include encounter data for Gen 8+ games.
+        </div>
+      )}
+
+      {/* Main layout */}
+      {!game && (
+        <div className="rounded-lg border border-dashed p-16 text-center text-sm text-muted-foreground">
+          Select a game to browse its routes and encounter tables.
+        </div>
+      )}
+
+      {game && GAMES_WITH_ROUTES.has(game) && (
+        <div className="grid grid-cols-[280px_1fr] gap-4 overflow-hidden rounded-md border" style={{ height: "calc(100vh - 260px)" }}>
+          {/* Location list */}
+          <div className="flex flex-col border-r">
+            <div className="border-b p-2">
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="text"
+                  value={locationSearch}
+                  onChange={(e) => setLocationSearch(e.target.value)}
+                  placeholder="Search locations…"
+                  className="w-full rounded-md border bg-background py-1.5 pl-8 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              {routeDataQuery.isLoading && (
+                <div className="space-y-1 p-2">
+                  {Array.from({ length: 12 }).map((_, i) => (
+                    <div key={i} className="h-8 animate-pulse rounded bg-muted" />
+                  ))}
+                </div>
+              )}
+              {filteredLocations.map((loc) => (
+                <button
+                  key={loc.key}
+                  onClick={() => setLocationKey(loc.key)}
+                  className={cn(
+                    "w-full px-3 py-2 text-left text-sm transition-colors hover:bg-muted",
+                    locationKey === loc.key ? "bg-muted font-medium text-foreground" : "text-muted-foreground",
+                  )}
+                >
+                  {loc.label}
+                </button>
+              ))}
+              {routeData && filteredLocations.length === 0 && (
+                <p className="p-4 text-center text-sm text-muted-foreground">No locations found.</p>
+              )}
+            </div>
+          </div>
+
+          {/* Encounter detail */}
+          <div className="overflow-y-auto p-4">
+            {!selectedLocation && (
+              <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                {routeData
+                  ? "Select a location from the list."
+                  : null}
+              </div>
+            )}
+            {selectedLocation && (
+              <>
+                <h2 className="mb-4 text-lg font-semibold">{selectedLocation.label}</h2>
+                <LocationDetail
+                  location={selectedLocation}
+                  versions={actualVersions}
+                  selectedVersion={selectedVersion}
+                />
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

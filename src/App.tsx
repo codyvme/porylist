@@ -1,10 +1,12 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { persister, queryClient } from "@/lib/query-client";
 import { PokemonTable } from "@/components/PokemonTable";
+import { RouteBrowser } from "@/components/RouteBrowser";
 import { TeamBuilder } from "@/components/TeamBuilder";
-import { CircleHelp, Moon, Search, Sun, X } from "lucide-react";
+import { CircleHelp, List, Map, Moon, Search, Sun, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 function useTheme() {
   const [isDark, setIsDark] = useState(() => {
@@ -117,9 +119,12 @@ function AboutModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+type Tab = "pokedex" | "routes";
+
 export function App() {
   const { isDark, toggle } = useTheme();
   const [showAbout, setShowAbout] = useState(false);
+  const [activeTab, setActiveTab] = useState<Tab>("pokedex");
   const [search, setSearch] = useState("");
 
   const [teamBuilderOpen, setTeamBuilderOpen] = useState(false);
@@ -187,14 +192,18 @@ export function App() {
               <h1 className="text-2xl font-bold tracking-tight text-white">Porylist</h1>
             </div>
             <div className="relative flex-1">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search…"
-                className="pl-9 w-full border-slate-600 bg-slate-800/80 text-white placeholder:text-slate-400 focus-visible:border-blue-500 focus-visible:ring-blue-500/30"
-                aria-label="Search Pokémon"
-              />
+              {activeTab === "pokedex" && (
+                <>
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <Input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search…"
+                    className="pl-9 w-full border-slate-600 bg-slate-800/80 text-white placeholder:text-slate-400 focus-visible:border-blue-500 focus-visible:ring-blue-500/30"
+                    aria-label="Search Pokémon"
+                  />
+                </>
+              )}
             </div>
             <div className="flex items-center gap-1">
               <button
@@ -214,8 +223,36 @@ export function App() {
             </div>
           </div>
         </header>
+        {/* Tab bar */}
+        <div className="border-b bg-background">
+          <div className="container flex gap-0">
+            {([
+              { id: "pokedex", label: "Pokédex", Icon: List },
+              { id: "routes", label: "Route Browser", Icon: Map },
+            ] as { id: Tab; label: string; Icon: React.ComponentType<{ className?: string }> }[]).map(({ id, label, Icon }) => (
+              <button
+                key={id}
+                onClick={() => setActiveTab(id)}
+                className={cn(
+                  "flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors",
+                  activeTab === id
+                    ? "border-primary text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <Icon className="h-4 w-4" />
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
         <main className="container py-6">
-          <PokemonTable search={search} onSearchChange={setSearch} team={team} onAddToTeam={addToTeam} onRemoveFromTeam={removeFromTeam} teamBuilderOpen={teamBuilderOpen} caught={caught} onToggleCaught={toggleCaught} />
+          {activeTab === "pokedex" && (
+            <PokemonTable search={search} onSearchChange={setSearch} team={team} onAddToTeam={addToTeam} onRemoveFromTeam={removeFromTeam} teamBuilderOpen={teamBuilderOpen} caught={caught} onToggleCaught={toggleCaught} />
+          )}
+          {activeTab === "routes" && (
+            <RouteBrowser />
+          )}
         </main>
         <footer className="border-t mt-6 pb-16">
           <div className="container py-6 space-y-1">

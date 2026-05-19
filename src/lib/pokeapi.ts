@@ -509,6 +509,37 @@ export interface VersionExclusiveGroup {
 
 export type VersionExclusivesData = Record<string, VersionExclusiveGroup>;
 
+export interface RouteEncounter {
+  id: number;
+  name: string;
+  version: string;
+  method: string;
+  methodLabel: string;
+  minLevel: number;
+  maxLevel: number;
+  chance: number;
+}
+
+export interface RouteLocation {
+  key: string;
+  label: string;
+  encounters: RouteEncounter[];
+}
+
+export interface RouteData {
+  locations: RouteLocation[];
+}
+
+export function useRouteData(gameValue: string | null) {
+  return useQuery({
+    queryKey: ["route-data", gameValue],
+    enabled: gameValue != null,
+    queryFn: () => fetchJson<RouteData>(`${BASE}/route-data/${gameValue}`),
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 60 * 24 * 30,
+  });
+}
+
 export function useVersionExclusives() {
   return useQuery({
     queryKey: ["version-exclusives"],
