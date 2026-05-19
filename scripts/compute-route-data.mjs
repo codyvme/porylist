@@ -82,12 +82,20 @@ function locationLabel(key) {
 }
 
 // ── Step 1: Read all encounter files and build an inverted index ───────────────
-// locationKey → pokemonId → pokemonName → versionName → methodName → { minLevel, maxLevel, chance }
+// locationKey → pokemonId → versionName → `method:timeOfDay` → { method, timeOfDay, minLevel, maxLevel, chance }
 
 console.log("Reading encounter files…");
 
-// Map: locationKey → Map(pokemonKey → { id, name, versionDetails })
-// versionDetails: Map(versionName → Map(methodName → { minLevel, maxLevel, totalChance }))
+function getTimeOfDay(conditionValues) {
+  for (const cv of conditionValues) {
+    if (cv.name === "time-morning") return "morning";
+    if (cv.name === "time-day")     return "day";
+    if (cv.name === "time-night")   return "night";
+  }
+  return "";
+}
+
+// Map: locationKey → Map(pokemonId → { id, name, versions: Map(versionName → Map(slotKey → {...})) })
 const locationMap = new Map();
 
 for (let id = 1; id <= 1025; id++) {
@@ -100,7 +108,6 @@ for (let id = 1; id <= 1025; id++) {
     if (!locationMap.has(locKey)) locationMap.set(locKey, new Map());
     const pokemonMap = locationMap.get(locKey);
 
-    // Derive Pokémon name from the encounters.json path (use id as key, load name lazily)
     if (!pokemonMap.has(id)) {
       pokemonMap.set(id, { id, name: null, versions: new Map() });
     }
@@ -109,14 +116,16 @@ for (let id = 1; id <= 1025; id++) {
     for (const vd of area.version_details) {
       const vName = vd.version.name;
       if (!entry.versions.has(vName)) entry.versions.set(vName, new Map());
-      const methodMap = entry.versions.get(vName);
+      const slotMap = entry.versions.get(vName);
 
       for (const enc of vd.encounter_details) {
         const mName = enc.method.name;
-        if (!methodMap.has(mName)) {
-          methodMap.set(mName, { minLevel: enc.min_level, maxLevel: enc.max_level, chance: enc.chance });
+        const timeOfDay = getTimeOfDay(enc.condition_values);
+        const slotKey = `${mName}:${timeOfDay}`;
+        if (!slotMap.has(slotKey)) {
+          slotMap.set(slotKey, { method: mName, timeOfDay, minLevel: enc.min_level, maxLevel: enc.max_level, chance: enc.chance });
         } else {
-          const existing = methodMap.get(mName);
+          const existing = slotMap.get(slotKey);
           existing.minLevel = Math.min(existing.minLevel, enc.min_level);
           existing.maxLevel = Math.max(existing.maxLevel, enc.max_level);
           existing.chance += enc.chance;
@@ -146,15 +155,16 @@ for (const [gameValue, versions] of Object.entries(GAME_VERSIONS)) {
     for (const [id, entry] of pokemonMap) {
       const name = idToName.get(id);
       if (!name) continue;
-      for (const [vName, methodMap] of entry.versions) {
+      for (const [vName, slotMap] of entry.versions) {
         if (!versionSet.has(vName)) continue;
-        for (const [mName, { minLevel, maxLevel, chance }] of methodMap) {
+        for (const { method, timeOfDay, minLevel, maxLevel, chance } of slotMap.values()) {
           encounters.push({
             id,
             name,
             version: vName,
-            method: mName,
-            methodLabel: methodLabel(mName),
+            method,
+            methodLabel: methodLabel(method),
+            timeOfDay,
             minLevel,
             maxLevel,
             chance,

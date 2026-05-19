@@ -247,11 +247,12 @@ export function typesForGeneration(
 }
 
 async function fetchJson<T>(url: string): Promise<T> {
-  // Rewrite data.porylist.com URLs: strip query params, ensure .json suffix
+  // Rewrite data.porylist.com URLs: ensure .json suffix, preserve query params for CDN cache busting
   let resolved = url;
   if (url.startsWith(BASE)) {
-    resolved = url.split("?")[0];
-    if (!resolved.endsWith(".json")) resolved += ".json";
+    const [path, query] = url.split("?");
+    const withExt = path.endsWith(".json") ? path : `${path}.json`;
+    resolved = query ? `${withExt}?${query}` : withExt;
   }
   const res = await fetch(resolved);
   if (!res.ok) throw new Error(`${res.status}: ${resolved}`);
@@ -515,6 +516,7 @@ export interface RouteEncounter {
   version: string;
   method: string;
   methodLabel: string;
+  timeOfDay: string;  // "morning" | "day" | "night" | ""
   minLevel: number;
   maxLevel: number;
   chance: number;
@@ -534,7 +536,7 @@ export function useRouteData(gameValue: string | null) {
   return useQuery({
     queryKey: ["route-data", gameValue],
     enabled: gameValue != null,
-    queryFn: () => fetchJson<RouteData>(`${BASE}/route-data/${gameValue}`),
+    queryFn: () => fetchJson<RouteData>(`${BASE}/route-data/${gameValue}?v=2`),
     staleTime: Infinity,
     gcTime: 1000 * 60 * 60 * 24 * 30,
   });
