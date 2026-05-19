@@ -573,7 +573,7 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
       enableSorting: false,
       cell: ({ row }) => (
         <button
-          className="flex h-14 w-14 items-center justify-center rounded bg-white hover:opacity-80 transition-opacity"
+          className="flex h-14 w-14 items-center justify-center rounded hover:opacity-80 transition-opacity"
           onClick={() => openModalRef.current(row.original.name)}
           aria-label={`Open ${row.original.name} details`}
           tabIndex={-1}
@@ -1183,7 +1183,7 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
                 return (
                   <div
                     key={row.id}
-                    className="absolute left-0 top-0 grid w-full border-b transition-colors hover:bg-muted/50"
+                    className="absolute left-0 top-0 grid w-full border-b bg-white transition-colors hover:bg-muted/50"
                     style={{
                       gridTemplateColumns: gridTemplate,
                       transform: `translateY(${vRow.start}px)`,
@@ -1244,7 +1244,7 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
               return (
                 <div
                   key={`variant-${formName}`}
-                  className="absolute left-0 top-0 grid w-full border-b bg-muted/20"
+                  className="absolute left-0 top-0 grid w-full border-b bg-white"
                   style={{
                     gridTemplateColumns: gridTemplate,
                     transform: `translateY(${vRow.start}px)`,
@@ -1254,7 +1254,7 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
                   <div className="flex items-center px-3 py-3" />
                   {/* sprite */}
                   <div className="flex items-center px-3 py-3">
-                    <div className="flex h-14 w-14 items-center justify-center rounded bg-white">
+                    <div className="flex h-14 w-14 items-center justify-center">
                       {formSprite ? (
                         <img
                           src={formSprite}

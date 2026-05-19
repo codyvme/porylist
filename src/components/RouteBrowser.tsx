@@ -118,7 +118,7 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
               <img
                 src={spriteUrl(enc.id, spriteVersion)}
                 alt={enc.name}
-                className="h-10 w-10 flex-shrink-0 rounded bg-white object-contain"
+                className="h-10 w-10 flex-shrink-0 object-contain"
                 loading="lazy"
                 onError={(e) => {
                   const img = e.currentTarget;
@@ -368,7 +368,7 @@ export function RouteBrowser({ caught, onToggleCaught }: {
           </div>
 
           {/* Encounter detail */}
-          <div className="overflow-y-auto p-4">
+          <div className="overflow-y-auto bg-white p-4">
             {!selectedLocation && (
               <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
                 {routeData ? "Select a location from the list." : null}
