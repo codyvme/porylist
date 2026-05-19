@@ -232,8 +232,8 @@ export function RouteBrowser() {
       {game && GAMES_WITH_ROUTES.has(game) && (
         <div className="grid grid-cols-[280px_1fr] gap-4 overflow-hidden rounded-md border" style={{ height: "calc(100vh - 260px)" }}>
           {/* Location list */}
-          <div className="flex flex-col border-r">
-            <div className="border-b p-2">
+          <div className="flex min-h-0 flex-col border-r">
+            <div className="flex-shrink-0 border-b p-2">
               <div className="relative">
                 <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                 <input
