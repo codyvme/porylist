@@ -24,6 +24,7 @@ import {
   useFormDetails,
   usePokemonFormData,
   usePokemonList,
+  useVersionExclusives,
   VERSION_GROUP_TO_GEN,
   type Pokemon,
   type PokemonFormDataMap,
@@ -245,7 +246,12 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
 
   const [game, setGame] = useState<string>("");
   const [showNational, setShowNational] = useState<boolean>(false);
+  const [exclusiveVersion, setExclusiveVersion] = useState<string>("");
   const deferredGame = useDeferredValue(game);
+  const deferredExclusiveVersion = useDeferredValue(exclusiveVersion);
+
+  const versionExclusivesQuery = useVersionExclusives();
+  const versionExclusivesData = versionExclusivesQuery.data;
   const deferredShowNational = useDeferredValue(showNational);
   const deferredSearch = useDeferredValue(search);
   const selectedGame = deferredGame ? GAMES_BY_VALUE[deferredGame] : undefined;
@@ -398,8 +404,11 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
   const [moveFilter, setMoveFilter] = useState("");
   const deferredMoveFilter = useDeferredValue(moveFilter);
 
-  // Reset catch filter when game is deselected
-  useEffect(() => { if (!game) setCatchFilter("all"); }, [game]);
+  // Reset catch filter and exclusive version when game is deselected
+  useEffect(() => {
+    if (!game) setCatchFilter("all");
+    setExclusiveVersion("");
+  }, [game]);
 
   const toggleType = useCallback((t: string) => {
     setSelectedTypes((prev) => {
@@ -500,6 +509,15 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
         catchFilter === "caught" ? caughtList.includes(r.name) : !caughtList.includes(r.name),
       );
     }
+    if (deferredExclusiveVersion && game && versionExclusivesData?.[game]) {
+      const versionEntry = versionExclusivesData[game].versions.find(
+        (v) => v.key === deferredExclusiveVersion,
+      );
+      if (versionEntry) {
+        const idSet = new Set(versionEntry.exclusiveIds);
+        result = result.filter((r) => idSet.has(r.id));
+      }
+    }
     if (deferredMoveFilter.trim() && detailsMap) {
       const moveName = deferredMoveFilter.trim().toLowerCase().replace(/\s+/g, "-");
       result = result.filter((r) => {
@@ -515,7 +533,7 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
       });
     }
     return result;
-  }, [allRows, selectedGame, deferredShowNational, deferredSearch, selectedTypes, showLegendary, showMythical, showBaby, showMono, showNoEvolution, speciesMap, evolutionTargets, catchFilter, game, caught, deferredMoveFilter, detailsMap]);
+  }, [allRows, selectedGame, deferredShowNational, deferredSearch, selectedTypes, showLegendary, showMythical, showBaby, showMono, showNoEvolution, speciesMap, evolutionTargets, catchFilter, game, caught, deferredMoveFilter, detailsMap, deferredExclusiveVersion, versionExclusivesData]);
 
   const caughtProgress = useMemo(() => {
     if (!selectedGame || !game) return null;
@@ -788,7 +806,7 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
     return () => document.removeEventListener("mousedown", handler);
   }, [filterOpen]);
 
-  const activeFilterCount = selectedTypes.size + (showLegendary ? 1 : 0) + (showMythical ? 1 : 0) + (showBaby ? 1 : 0) + (showMono ? 1 : 0) + (showNoEvolution ? 1 : 0) + (catchFilter !== "all" ? 1 : 0) + (moveFilter.trim() ? 1 : 0);
+  const activeFilterCount = selectedTypes.size + (showLegendary ? 1 : 0) + (showMythical ? 1 : 0) + (showBaby ? 1 : 0) + (showMono ? 1 : 0) + (showNoEvolution ? 1 : 0) + (catchFilter !== "all" ? 1 : 0) + (moveFilter.trim() ? 1 : 0) + (exclusiveVersion ? 1 : 0);
 
   const EXTRA_COLS = [
     { id: "height", label: "Height" },
@@ -924,6 +942,37 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
           />
           National Dex
         </label>
+        {game && versionExclusivesData?.[game] && (() => {
+          const pair = versionExclusivesData[game].versions;
+          return (
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-muted-foreground font-medium">Exclusives:</span>
+              <div className="flex rounded-md border overflow-hidden text-xs font-medium">
+                <button
+                  onClick={() => setExclusiveVersion("")}
+                  className={cn(
+                    "px-2.5 py-1 transition-colors",
+                    exclusiveVersion === "" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted",
+                  )}
+                >
+                  All
+                </button>
+                {pair.map((v) => (
+                  <button
+                    key={v.key}
+                    onClick={() => setExclusiveVersion(exclusiveVersion === v.key ? "" : v.key)}
+                    className={cn(
+                      "px-2.5 py-1 border-l transition-colors",
+                      exclusiveVersion === v.key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted",
+                    )}
+                  >
+                    {v.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
         <div className="relative ml-auto flex items-center gap-2">
         <div className="relative" ref={filterRef}>
           <button
