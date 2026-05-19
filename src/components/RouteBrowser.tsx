@@ -89,12 +89,13 @@ function PokeballIcon({ caught, size = 14 }: { caught: boolean; size?: number })
   );
 }
 
-function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, caught, onToggleCaught, onOpen }: {
+function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, caughtKey, caught, onToggleCaught, onOpen }: {
   method: string;
   methodLabel: string;
   encounters: RouteEncounter[];
   spriteVersion: string | undefined;
   game: string;
+  caughtKey: string;
   caught: Record<string, string[]>;
   onToggleCaught: (name: string, gameKey: string) => void;
   onOpen: (name: string) => void;
@@ -108,12 +109,12 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
       </p>
       <div className="space-y-1 mb-4">
         {sorted.map((enc, i) => {
-          const isCaught = (caught[game] ?? []).includes(enc.name);
+          const isCaught = (caught[caughtKey] ?? []).includes(enc.name);
           return (
             <div key={`${enc.id}-${method}-${i}`} className="flex items-center gap-3 rounded-md px-2 py-1 hover:bg-muted/50">
               {game && (
                 <button
-                  onClick={() => onToggleCaught(enc.name, game)}
+                  onClick={() => onToggleCaught(enc.name, caughtKey)}
                   className={cn(
                     "flex items-center justify-center rounded-full p-1.5 transition-colors",
                     isCaught ? "text-red-500 hover:text-red-400" : "text-muted-foreground/30 hover:text-muted-foreground",
@@ -157,12 +158,13 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
   );
 }
 
-function LocationDetail({ location, versions, selectedVersion, spriteVersion, game, caught, onToggleCaught, onOpen }: {
+function LocationDetail({ location, versions, selectedVersion, spriteVersion, game, caughtKey, caught, onToggleCaught, onOpen }: {
   location: RouteLocation;
   versions: string[];
   selectedVersion: string;
   spriteVersion: string | undefined;
   game: string;
+  caughtKey: string;
   caught: Record<string, string[]>;
   onToggleCaught: (name: string, gameKey: string) => void;
   onOpen: (name: string) => void;
@@ -210,6 +212,7 @@ function LocationDetail({ location, versions, selectedVersion, spriteVersion, ga
           encounters={encounters}
           spriteVersion={spriteVersion}
           game={game}
+          caughtKey={caughtKey}
           caught={caught}
           onToggleCaught={onToggleCaught}
           onOpen={onOpen}
@@ -283,18 +286,23 @@ export function RouteBrowser({ caught, onToggleCaught }: {
     setShowNational(false);
   };
 
+  // When a specific version is selected (e.g. "gold"), track catches under that
+  // key so Gold and Crystal stay separate. When "All" is selected, use the
+  // group key (e.g. "gold-silver-crystal").
+  const caughtKey = selectedVersion || game;
+
   // Catch progress: unique Pokémon in the current location
   const locationProgress = useMemo(() => {
     if (!selectedLocation || !game) return null;
-    const caughtList = caught[game] ?? [];
+    const caughtList = caught[caughtKey] ?? [];
     const uniqueNames = [...new Set(selectedLocation.encounters.map((e) => e.name))];
     return { count: uniqueNames.filter((n) => caughtList.includes(n)).length, total: uniqueNames.length };
-  }, [selectedLocation, game, caught]);
+  }, [selectedLocation, caughtKey, caught]);
 
   // Catch progress: unique Pokémon catchable across all routes in this game
   const gameProgress = useMemo(() => {
     if (!routeData || !game || !selectedGame) return null;
-    const caughtList = caught[game] ?? [];
+    const caughtList = caught[caughtKey] ?? [];
     const uniqueEntries = new Map<string, number>(); // name → id
     for (const loc of routeData.locations) {
       for (const enc of loc.encounters) {
@@ -307,7 +315,7 @@ export function RouteBrowser({ caught, onToggleCaught }: {
     const total = filtered.length;
     const count = filtered.filter(([name]) => caughtList.includes(name)).length;
     return { count, total };
-  }, [routeData, game, caught, selectedGame, showNational]);
+  }, [routeData, caughtKey, caught, selectedGame, showNational]);
 
   return (
     <div className="flex h-full flex-col gap-4">
@@ -439,6 +447,7 @@ export function RouteBrowser({ caught, onToggleCaught }: {
                   selectedVersion={selectedVersion}
                   spriteVersion={spriteVersion}
                   game={game}
+                  caughtKey={caughtKey}
                   caught={caught}
                   onToggleCaught={onToggleCaught}
                   onOpen={setSelectedPokemon}
@@ -479,8 +488,8 @@ export function RouteBrowser({ caught, onToggleCaught }: {
           onNavigate={setSelectedPokemon}
           prevPokemon={null}
           nextPokemon={null}
-          caughtInGame={game ? (caught[game] ?? []).includes(selectedPokemon) : false}
-          onToggleCaught={game ? () => onToggleCaught(selectedPokemon, game) : undefined}
+          caughtInGame={game ? (caught[caughtKey] ?? []).includes(selectedPokemon) : false}
+          onToggleCaught={game ? () => onToggleCaught(selectedPokemon, caughtKey) : undefined}
         />
       )}
     </div>
