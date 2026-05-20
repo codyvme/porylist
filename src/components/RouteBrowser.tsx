@@ -112,7 +112,7 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
         {sorted.map((enc, i) => {
           const isCaught = (caught[caughtKey] ?? []).includes(enc.name);
           return (
-            <div key={`${enc.id}-${method}-${i}`} className="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-muted/50">
+            <div key={`${enc.id}-${method}-${i}`} className="flex items-center gap-2 rounded-md px-2 py-0.5 hover:bg-muted/50">
               {game && (
                 <button
                   onClick={() => onToggleCaught(enc.name, caughtKey)}
@@ -128,7 +128,7 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
               <img
                 src={spriteUrl(enc.id, spriteVersion)}
                 alt={enc.name}
-                className="h-8 w-8 flex-shrink-0 object-contain sm:h-10 sm:w-10"
+                className="h-8 w-8 flex-shrink-0 object-contain sm:h-14 sm:w-14"
                 loading="lazy"
                 onError={(e) => {
                   const img = e.currentTarget;
