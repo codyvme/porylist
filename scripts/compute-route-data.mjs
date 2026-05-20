@@ -17,6 +17,13 @@ const OUT_DIR = join(DATA_DIR, "route-data");
 
 if (!existsSync(OUT_DIR)) mkdirSync(OUT_DIR, { recursive: true });
 
+// Manual location ordering per game group.
+// Keys are listed in exploration order; anything not listed falls back to alphabetical.
+const manualOrderPath = join(__dirname, "location-order-manual.json");
+const manualOrderData = existsSync(manualOrderPath)
+  ? JSON.parse(readFileSync(manualOrderPath, "utf8"))
+  : {};
+
 
 const GAME_VERSIONS = {
   "red-blue-yellow":               ["red", "blue", "yellow"],
@@ -190,7 +197,15 @@ for (const [gameValue, versions] of Object.entries(GAME_VERSIONS)) {
     });
   }
 
-  locations.sort((a, b) => a.label.localeCompare(b.label));
+  // Use manual ordering if available for this game, otherwise alphabetical.
+  const manualOrder = manualOrderData[gameValue] ?? [];
+  const manualIndex = new Map(manualOrder.map((key, i) => [key, i]));
+  locations.sort((a, b) => {
+    const aIdx = manualIndex.get(a.key) ?? 9999;
+    const bIdx = manualIndex.get(b.key) ?? 9999;
+    if (aIdx !== bIdx) return aIdx - bIdx;
+    return a.label.localeCompare(b.label);
+  });
 
   const outPath = join(OUT_DIR, `${gameValue}.json`);
   writeFileSync(outPath, JSON.stringify({ locations }, null, 0));
