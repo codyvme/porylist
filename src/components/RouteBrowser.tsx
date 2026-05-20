@@ -305,17 +305,18 @@ export function RouteBrowser({ caught, onToggleCaught }: {
   // Catch progress: unique Pokémon catchable across all routes in this game.
   // Uses the full route data as the source of truth — no ID filtering — so
   // cross-gen Pokémon (e.g. Pidgey in Johto routes) are counted correctly.
+  // Also returns dexTotal (genMax) so the footer can show X/dex alongside X/routes.
   const gameProgress = useMemo(() => {
-    if (!routeData || !game) return null;
+    if (!routeData || !game || !selectedGame) return null;
     const caughtList = caught[caughtKey] ?? [];
     const uniqueNames = new Set<string>();
     for (const loc of routeData.locations) {
       for (const enc of loc.encounters) uniqueNames.add(enc.name);
     }
-    const total = uniqueNames.size;
+    const routeTotal = uniqueNames.size;
     const count = [...uniqueNames].filter((n) => caughtList.includes(n)).length;
-    return { count, total };
-  }, [routeData, game, caughtKey, caught]);
+    return { count, routeTotal, dexTotal: selectedGame.genMax };
+  }, [routeData, game, selectedGame, caughtKey, caught]);
 
   return (
     <div className="flex h-full flex-col gap-4">
@@ -439,14 +440,15 @@ export function RouteBrowser({ caught, onToggleCaught }: {
       {game && GAMES_WITH_ROUTES.has(game) && (gameProgress || locationProgress) && (
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           {gameProgress ? (
-            <span className="flex items-center gap-1.5">
+            <span className="flex items-center gap-2">
               <PokeballIcon caught={gameProgress.count > 0} size={13} />
-              <span>
-                <span className="font-medium text-foreground">
-                  {selectedVersion ? (VERSION_LABELS[selectedVersion] ?? selectedVersion) : selectedGame!.label}
-                </span>
-                {": "}
-                {gameProgress.count.toLocaleString()} / {gameProgress.total.toLocaleString()} caught via routes
+              <span className="font-medium text-foreground">
+                {selectedVersion ? (VERSION_LABELS[selectedVersion] ?? selectedVersion) : selectedGame!.label}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span>{gameProgress.count} / {gameProgress.routeTotal} via routes</span>
+                <span className="text-muted-foreground/40">·</span>
+                <span>{gameProgress.count} / {gameProgress.dexTotal} dex</span>
               </span>
             </span>
           ) : <span />}
