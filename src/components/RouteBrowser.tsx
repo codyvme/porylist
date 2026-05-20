@@ -69,15 +69,25 @@ function aggregateEncounters(encounters: RouteEncounter[]): RouteEncounter[] {
   for (const enc of encounters) {
     const key = `${enc.id}:${enc.method}:${enc.timeOfDay}`;
     if (!map.has(key)) {
-      map.set(key, { ...enc, version: "" });
+      map.set(key, { ...enc, version: "", heldItems: [...enc.heldItems] });
     } else {
       const ex = map.get(key)!;
       ex.minLevel = Math.min(ex.minLevel, enc.minLevel);
       ex.maxLevel = Math.max(ex.maxLevel, enc.maxLevel);
       ex.chance = Math.max(ex.chance, enc.chance);
+      // Merge held items (deduplicate by item name)
+      for (const hi of enc.heldItems) {
+        if (!ex.heldItems.some((h) => h.item === hi.item)) {
+          ex.heldItems.push(hi);
+        }
+      }
     }
   }
   return [...map.values()];
+}
+
+function formatItemName(name: string): string {
+  return name.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function PokeballIcon({ caught, size = 14 }: { caught: boolean; size?: number }) {
@@ -142,12 +152,19 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
                   img.src = spriteUrl(enc.id, undefined);
                 }}
               />
-              <button
-                className="flex-1 min-w-0 truncate text-left font-medium text-sm hover:underline focus:outline-none"
-                onClick={() => onOpen(enc.name)}
-              >
-                {formatPokemonName(enc.name)}
-              </button>
+              <div className="flex-1 min-w-0">
+                <button
+                  className="block truncate text-left font-medium text-sm hover:underline focus:outline-none max-w-full"
+                  onClick={() => onOpen(enc.name)}
+                >
+                  {formatPokemonName(enc.name)}
+                </button>
+                {enc.heldItems.length > 0 && (
+                  <p className="truncate text-xs text-muted-foreground">
+                    🎒 {enc.heldItems.map((h) => `${formatItemName(h.item)} (${h.rarity}%)`).join(", ")}
+                  </p>
+                )}
+              </div>
               <span className="flex-shrink-0 text-xs text-muted-foreground tabular-nums whitespace-nowrap">
                 {enc.minLevel === enc.maxLevel ? `Lv ${enc.minLevel}` : `Lv ${enc.minLevel}–${enc.maxLevel}`}
               </span>
@@ -439,6 +456,33 @@ export function RouteBrowser({ caught, onToggleCaught }: {
     return { count, routeTotal, dexTotal: selectedGame.genMax };
   }, [routeData, game, selectedGame, caughtKey, caught]);
 
+  // Ordered unique Pokémon in the current location — used for prev/next in the modal
+  const locationPokemonList = useMemo(() => {
+    if (!selectedLocation) return [];
+    const encounters = selectedVersion
+      ? selectedLocation.encounters.filter((e) => e.version === selectedVersion)
+      : aggregateEncounters(selectedLocation.encounters);
+    // Mirror display order: group by method (method order), within each method sort by chance desc then id asc
+    const byMethod = new Map<string, RouteEncounter[]>();
+    for (const enc of encounters) {
+      if (!byMethod.has(enc.method)) byMethod.set(enc.method, []);
+      byMethod.get(enc.method)!.push(enc);
+    }
+    const seen = new Set<string>();
+    const ordered: { name: string; id: number }[] = [];
+    const sortedMethods = [...byMethod.entries()].sort(([a], [b]) => methodOrder(a) - methodOrder(b));
+    for (const [, encs] of sortedMethods) {
+      const sorted = [...encs].sort((a, b) => b.chance - a.chance || a.id - b.id);
+      for (const enc of sorted) {
+        if (!seen.has(enc.name)) {
+          seen.add(enc.name);
+          ordered.push({ name: enc.name, id: enc.id });
+        }
+      }
+    }
+    return ordered;
+  }, [selectedLocation, selectedVersion]);
+
   // Full Pokémon list up to genMax — used for the "missing from dex" modal
   const pokemonListQuery = usePokemonList(selectedGame?.genMax ?? 0);
 
@@ -675,18 +719,23 @@ export function RouteBrowser({ caught, onToggleCaught }: {
         />
       )}
 
-      {selectedPokemon && (
-        <PokemonModal
-          pokemonName={selectedPokemon}
-          game={selectedGame}
-          onClose={() => setSelectedPokemon(null)}
-          onNavigate={setSelectedPokemon}
-          prevPokemon={null}
-          nextPokemon={null}
-          caughtInGame={game ? (caught[caughtKey] ?? []).includes(selectedPokemon) : false}
-          onToggleCaught={game ? () => onToggleCaught(selectedPokemon, caughtKey) : undefined}
-        />
-      )}
+      {selectedPokemon && (() => {
+        const idx = locationPokemonList.findIndex((p) => p.name === selectedPokemon);
+        const prevPokemon = idx > 0 ? locationPokemonList[idx - 1] : null;
+        const nextPokemon = idx !== -1 && idx < locationPokemonList.length - 1 ? locationPokemonList[idx + 1] : null;
+        return (
+          <PokemonModal
+            pokemonName={selectedPokemon}
+            game={selectedGame}
+            onClose={() => setSelectedPokemon(null)}
+            onNavigate={setSelectedPokemon}
+            prevPokemon={prevPokemon}
+            nextPokemon={nextPokemon}
+            caughtInGame={game ? (caught[caughtKey] ?? []).includes(selectedPokemon) : false}
+            onToggleCaught={game ? () => onToggleCaught(selectedPokemon, caughtKey) : undefined}
+          />
+        );
+      })()}
     </div>
   );
 }
