@@ -17,6 +17,37 @@ const OUT_DIR = join(DATA_DIR, "route-data");
 
 if (!existsSync(OUT_DIR)) mkdirSync(OUT_DIR, { recursive: true });
 
+// Location ordering data produced by fetch-location-order.mjs
+// Maps location-area name → { generationName: gameIndex }
+const locationOrderPath = join(__dirname, "location-order.json");
+const locationOrder = existsSync(locationOrderPath)
+  ? JSON.parse(readFileSync(locationOrderPath, "utf8"))
+  : {};
+
+if (Object.keys(locationOrder).length === 0) {
+  console.warn("⚠  location-order.json not found — locations will be sorted alphabetically.");
+  console.warn("   Run: node scripts/fetch-location-order.mjs\n");
+}
+
+// Maps each game group to the PokeAPI generation name used for game_index lookups.
+// PokeAPI only has game_indices for gen-iv onward, so earlier games use the
+// closest available generation (the remakes share the same region ordering).
+const GAME_GENERATION = {
+  "red-blue-yellow":              "generation-iv",  // Kanto — uses FRLG/HGSS indices
+  "gold-silver-crystal":          "generation-iv",  // Johto — uses HGSS indices
+  "ruby-sapphire-emerald":        "generation-vi",  // Hoenn — uses ORAS indices
+  "firered-leafgreen":            "generation-iv",  // Kanto — uses FRLG/HGSS indices
+  "diamond-pearl-platinum":       "generation-iv",
+  "heartgold-soulsilver":         "generation-iv",
+  "black-white":                  "generation-v",
+  "black2-white2":                "generation-v",
+  "x-y":                          "generation-vi",
+  "omega-ruby-alpha-sapphire":    "generation-vi",
+  "sun-moon":                     "generation-vii",
+  "ultra-sun-ultra-moon":         "generation-vii",
+  "lets-go":                      "generation-iv",  // Kanto
+};
+
 const GAME_VERSIONS = {
   "red-blue-yellow":               ["red", "blue", "yellow"],
   "gold-silver-crystal":           ["gold", "silver", "crystal"],
@@ -189,8 +220,15 @@ for (const [gameValue, versions] of Object.entries(GAME_VERSIONS)) {
     });
   }
 
-  // Sort locations alphabetically by label
-  locations.sort((a, b) => a.label.localeCompare(b.label));
+  // Sort locations by in-game order (game_index from PokeAPI), falling back
+  // to alphabetical for any locations not present in location-order.json.
+  const gen = GAME_GENERATION[gameValue];
+  locations.sort((a, b) => {
+    const aIdx = gen ? (locationOrder[a.key]?.[gen] ?? 9999) : 9999;
+    const bIdx = gen ? (locationOrder[b.key]?.[gen] ?? 9999) : 9999;
+    if (aIdx !== bIdx) return aIdx - bIdx;
+    return a.label.localeCompare(b.label);
+  });
 
   const outPath = join(OUT_DIR, `${gameValue}.json`);
   writeFileSync(outPath, JSON.stringify({ locations }, null, 0));
