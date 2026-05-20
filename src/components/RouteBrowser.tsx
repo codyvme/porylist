@@ -90,7 +90,7 @@ function PokeballIcon({ caught, size = 14 }: { caught: boolean; size?: number })
   );
 }
 
-function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, caughtKey, caught, onToggleCaught, onOpen }: {
+function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, caughtKey, caught, onToggleCaught, onOpen, filterUncaught }: {
   method: string;
   methodLabel: string;
   encounters: RouteEncounter[];
@@ -100,8 +100,14 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
   caught: Record<string, string[]>;
   onToggleCaught: (name: string, gameKey: string) => void;
   onOpen: (name: string) => void;
+  filterUncaught: boolean;
 }) {
-  const sorted = [...encounters].sort((a, b) => b.chance - a.chance || a.id - b.id);
+  const caughtList = caught[caughtKey] ?? [];
+  const sorted = [...encounters]
+    .sort((a, b) => b.chance - a.chance || a.id - b.id)
+    .filter((enc) => !filterUncaught || !caughtList.includes(enc.name));
+
+  if (sorted.length === 0) return null;
   const icon = METHOD_ICONS[method];
   return (
     <div>
@@ -110,7 +116,7 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
       </p>
       <div className="space-y-1 mb-4">
         {sorted.map((enc, i) => {
-          const isCaught = (caught[caughtKey] ?? []).includes(enc.name);
+          const isCaught = caughtList.includes(enc.name);
           return (
             <div key={`${enc.id}-${method}-${i}`} className="flex items-center gap-2 rounded-md px-2 py-0.5 hover:bg-muted/50">
               {game && (
@@ -159,7 +165,7 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
   );
 }
 
-function LocationDetail({ location, versions, selectedVersion, spriteVersion, game, caughtKey, caught, onToggleCaught, onOpen }: {
+function LocationDetail({ location, versions, selectedVersion, spriteVersion, game, caughtKey, caught, onToggleCaught, onOpen, filterUncaught }: {
   location: RouteLocation;
   versions: string[];
   selectedVersion: string;
@@ -169,6 +175,7 @@ function LocationDetail({ location, versions, selectedVersion, spriteVersion, ga
   caught: Record<string, string[]>;
   onToggleCaught: (name: string, gameKey: string) => void;
   onOpen: (name: string) => void;
+  filterUncaught: boolean;
 }) {
   const filtered = selectedVersion
     ? location.encounters.filter((e) => e.version === selectedVersion)
@@ -194,6 +201,10 @@ function LocationDetail({ location, versions, selectedVersion, spriteVersion, ga
     );
   }
 
+  const allCaught = filterUncaught && byMethod.every(([, { encounters }]) =>
+    encounters.every((enc) => (caught[caughtKey] ?? []).includes(enc.name))
+  );
+
   return (
     <div>
       {versions.length > 1 && selectedVersion && (
@@ -201,20 +212,27 @@ function LocationDetail({ location, versions, selectedVersion, spriteVersion, ga
           <span>Showing {VERSION_LABELS[selectedVersion] ?? selectedVersion} encounters</span>
         </div>
       )}
-      {byMethod.map(([method, { label, encounters }]) => (
-        <EncounterGroup
-          key={method}
-          method={method}
-          methodLabel={label}
-          encounters={encounters}
-          spriteVersion={spriteVersion}
-          game={game}
-          caughtKey={caughtKey}
-          caught={caught}
-          onToggleCaught={onToggleCaught}
-          onOpen={onOpen}
-        />
-      ))}
+      {allCaught ? (
+        <p className="py-8 text-center text-sm text-muted-foreground">
+          You've caught everything here! 🎉
+        </p>
+      ) : (
+        byMethod.map(([method, { label, encounters }]) => (
+          <EncounterGroup
+            key={method}
+            method={method}
+            methodLabel={label}
+            encounters={encounters}
+            spriteVersion={spriteVersion}
+            game={game}
+            caughtKey={caughtKey}
+            caught={caught}
+            onToggleCaught={onToggleCaught}
+            onOpen={onOpen}
+            filterUncaught={filterUncaught}
+          />
+        ))
+      )}
     </div>
   );
 }
@@ -335,6 +353,7 @@ export function RouteBrowser({ caught, onToggleCaught }: {
   const [selectedVersion, setSelectedVersion] = useState(() => new URLSearchParams(window.location.search).get("routeVersion") ?? "");
   const [selectedPokemon, setSelectedPokemon] = useState<string | null>(null);
   const [missingMode, setMissingMode] = useState<"routes" | "dex" | null>(null);
+  const [filterUncaught, setFilterUncaught] = useState(false);
 
   // Keep URL in sync so refresh/share preserves the current view
   useEffect(() => {
@@ -567,7 +586,23 @@ export function RouteBrowser({ caught, onToggleCaught }: {
             )}
             {selectedLocation && (
               <>
-                <h2 className="mb-4 text-lg font-semibold">{selectedLocation.label}</h2>
+                <div className="mb-4 flex items-center justify-between gap-2">
+                  <h2 className="text-lg font-semibold">{selectedLocation.label}</h2>
+                  {game && (
+                    <button
+                      onClick={() => setFilterUncaught((v) => !v)}
+                      className={cn(
+                        "flex flex-shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+                        filterUncaught
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border text-muted-foreground hover:border-foreground hover:text-foreground",
+                      )}
+                    >
+                      <PokeballIcon caught={filterUncaught} size={11} />
+                      Uncaught only
+                    </button>
+                  )}
+                </div>
                 <LocationDetail
                   location={selectedLocation}
                   versions={actualVersions}
@@ -578,6 +613,7 @@ export function RouteBrowser({ caught, onToggleCaught }: {
                   caught={caught}
                   onToggleCaught={onToggleCaught}
                   onOpen={setSelectedPokemon}
+                  filterUncaught={filterUncaught}
                 />
               </>
             )}
