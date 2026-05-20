@@ -12,7 +12,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { ArrowDown, ArrowUp, Check, ChevronDown, ChevronRight, ChevronsUpDown, ListFilter, Plus, SlidersHorizontal, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Check, ChevronDown, ChevronRight, ChevronsUpDown, ListFilter, Plus, Search, SlidersHorizontal, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Select } from "@/components/ui/select";
 import {
@@ -33,11 +33,9 @@ import {
 import {
   GAMES,
   GAMES_BY_VALUE,
-  isInRanges,
   regionalNumber,
   spriteUrl,
 } from "@/lib/games";
-import { Switch } from "@/components/ui/switch";
 import { typeStyle } from "@/lib/types";
 import { ALL_TYPES } from "@/lib/type-chart";
 import { cn, formatPokemonName } from "@/lib/utils";
@@ -226,9 +224,7 @@ function PokeballIcon({ caught, size = 14 }: { caught: boolean; size?: number })
   );
 }
 
-export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, teamBuilderOpen, caught, onToggleCaught }: {
-  search: string;
-  onSearchChange: (v: string) => void;
+export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderOpen, caught, onToggleCaught }: {
   team: string[];
   onAddToTeam: (name: string) => void;
   onRemoveFromTeam: (name: string) => void;
@@ -244,15 +240,14 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
 
   const allEntriesQuery = useAllPokemonEntries();
 
+  const [search, setSearch] = useState("");
   const [game, setGame] = useState<string>("");
-  const [showNational, setShowNational] = useState<boolean>(false);
   const [exclusiveVersion, setExclusiveVersion] = useState<string>("");
   const deferredGame = useDeferredValue(game);
   const deferredExclusiveVersion = useDeferredValue(exclusiveVersion);
 
   const versionExclusivesQuery = useVersionExclusives();
   const versionExclusivesData = versionExclusivesQuery.data;
-  const deferredShowNational = useDeferredValue(showNational);
   const deferredSearch = useDeferredValue(search);
   const selectedGame = deferredGame ? GAMES_BY_VALUE[deferredGame] : undefined;
   const spriteVersion = selectedGame?.spriteVersion;
@@ -476,9 +471,7 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
     const q = deferredSearch.trim().toLowerCase();
     let result = allRows;
     if (selectedGame) {
-      result = deferredShowNational
-        ? result.filter((r) => r.id <= selectedGame.genMax)
-        : result.filter((r) => isInRanges(r.id, selectedGame.nativeRanges));
+      result = result.filter((r) => r.id <= selectedGame.genMax);
     } else {
       result = result.filter((r) => r.id <= 1025);
     }
@@ -533,10 +526,10 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
       });
     }
     return result;
-  }, [allRows, selectedGame, deferredShowNational, deferredSearch, selectedTypes, showLegendary, showMythical, showBaby, showMono, showNoEvolution, speciesMap, evolutionTargets, catchFilter, game, caught, deferredMoveFilter, detailsMap, deferredExclusiveVersion, versionExclusivesData]);
+  }, [allRows, selectedGame, deferredSearch, selectedTypes, showLegendary, showMythical, showBaby, showMono, showNoEvolution, speciesMap, evolutionTargets, catchFilter, game, caught, deferredMoveFilter, detailsMap, deferredExclusiveVersion, versionExclusivesData]);
 
 
-  const showRegional = !!selectedGame && !deferredShowNational;
+  const showRegional = false;
   const columns = useMemo<ColumnDef<Row, any>[]>(() => {
     const caughtCol = columnHelper.display({
       id: "caught",
@@ -901,6 +894,27 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
 
   return (
     <div className="flex h-full flex-col gap-3">
+      {/* Search bar */}
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search Pokémon…"
+          className="w-full rounded-md border bg-background py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+          aria-label="Search Pokémon"
+        />
+        {search && (
+          <button
+            onClick={() => setSearch("")}
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            aria-label="Clear search"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
       <div className="flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-3">
           <label className="text-sm font-medium text-muted-foreground">
@@ -919,21 +933,6 @@ export function PokemonTable({ search, team, onAddToTeam, onRemoveFromTeam, team
             ))}
           </Select>
         </div>
-        <label
-          className={cn(
-            "flex items-center gap-2 text-sm font-medium",
-            game
-              ? "cursor-pointer text-foreground"
-              : "cursor-not-allowed text-muted-foreground/60",
-          )}
-        >
-          <Switch
-            checked={showNational}
-            onChange={(e) => setShowNational(e.target.checked)}
-            disabled={!game}
-          />
-          National Dex
-        </label>
         {game && versionExclusivesData?.[game] && (() => {
           const pair = versionExclusivesData[game].versions;
           return (

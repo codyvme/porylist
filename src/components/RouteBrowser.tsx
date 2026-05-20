@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Search, X } from "lucide-react";
+import { ArrowLeft, Search, X } from "lucide-react";
 import { Select } from "@/components/ui/select";
 import { GAMES, GAMES_BY_VALUE } from "@/lib/games";
 import { useRouteData, usePokemonList, type RouteEncounter, type RouteLocation } from "@/lib/pokeapi";
@@ -112,12 +112,12 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
         {sorted.map((enc, i) => {
           const isCaught = (caught[caughtKey] ?? []).includes(enc.name);
           return (
-            <div key={`${enc.id}-${method}-${i}`} className="flex items-center gap-3 rounded-md px-2 py-1 hover:bg-muted/50">
+            <div key={`${enc.id}-${method}-${i}`} className="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-muted/50">
               {game && (
                 <button
                   onClick={() => onToggleCaught(enc.name, caughtKey)}
                   className={cn(
-                    "flex items-center justify-center rounded-full p-1.5 transition-colors",
+                    "flex flex-shrink-0 items-center justify-center rounded-full p-1.5 transition-colors",
                     isCaught ? "text-red-500 hover:text-red-400" : "text-muted-foreground/30 hover:text-muted-foreground",
                   )}
                   aria-label={isCaught ? `Mark ${enc.name} as not caught` : `Mark ${enc.name} as caught`}
@@ -128,7 +128,7 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
               <img
                 src={spriteUrl(enc.id, spriteVersion)}
                 alt={enc.name}
-                className="h-10 w-10 flex-shrink-0 object-contain"
+                className="h-8 w-8 flex-shrink-0 object-contain sm:h-10 sm:w-10"
                 loading="lazy"
                 onError={(e) => {
                   const img = e.currentTarget;
@@ -137,18 +137,18 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
                 }}
               />
               <button
-                className="text-left font-medium text-sm hover:underline focus:outline-none min-w-[140px]"
+                className="flex-1 min-w-0 truncate text-left font-medium text-sm hover:underline focus:outline-none"
                 onClick={() => onOpen(enc.name)}
               >
                 {formatPokemonName(enc.name)}
               </button>
-              <span className="text-xs text-muted-foreground tabular-nums min-w-[56px]">
+              <span className="flex-shrink-0 text-xs text-muted-foreground tabular-nums whitespace-nowrap">
                 {enc.minLevel === enc.maxLevel ? `Lv ${enc.minLevel}` : `Lv ${enc.minLevel}–${enc.maxLevel}`}
               </span>
-              <span className="text-xs tabular-nums text-muted-foreground min-w-[32px]">{enc.chance}%</span>
+              <span className="hidden sm:inline flex-shrink-0 text-xs tabular-nums text-muted-foreground">{enc.chance}%</span>
               {enc.timeOfDay && (
                 <Tooltip content={enc.timeOfDay.charAt(0).toUpperCase() + enc.timeOfDay.slice(1)}>
-                  <span className="cursor-default text-sm">{TIME_ICON[enc.timeOfDay]}</span>
+                  <span className="flex-shrink-0 cursor-default text-sm">{TIME_ICON[enc.timeOfDay]}</span>
                 </Tooltip>
               )}
             </div>
@@ -502,9 +502,12 @@ export function RouteBrowser({ caught, onToggleCaught }: {
       )}
 
       {game && GAMES_WITH_ROUTES.has(game) && (
-        <div className="flex-1 min-h-0 grid grid-cols-[280px_1fr] overflow-hidden rounded-md border">
-          {/* Location list */}
-          <div className="flex min-h-0 flex-col border-r">
+        <div className="flex flex-col flex-1 min-h-0 overflow-hidden rounded-md border sm:grid sm:grid-cols-[280px_1fr]">
+          {/* Location list — full screen on mobile when no location selected, sidebar on sm+ */}
+          <div className={cn(
+            "flex flex-1 min-h-0 flex-col sm:border-r",
+            selectedLocation ? "hidden sm:flex" : "flex",
+          )}>
             <div className="flex-shrink-0 border-b p-2">
               <div className="relative">
                 <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
@@ -543,12 +546,24 @@ export function RouteBrowser({ caught, onToggleCaught }: {
             </div>
           </div>
 
-          {/* Encounter detail */}
-          <div className="overflow-y-auto bg-white p-4">
+          {/* Encounter detail — full screen on mobile when location selected, panel on sm+ */}
+          <div className={cn(
+            "overflow-y-auto bg-white",
+            selectedLocation ? "flex flex-col" : "hidden sm:flex sm:items-center sm:justify-center",
+          )}>
+            {/* Back button — mobile only */}
+            {selectedLocation && (
+              <button
+                className="sm:hidden flex items-center gap-1.5 border-b px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground w-full flex-shrink-0"
+                onClick={() => setLocationKey(null)}
+              >
+                <ArrowLeft className="h-4 w-4" />
+                All locations
+              </button>
+            )}
+            <div className={cn(selectedLocation ? "p-4 flex-1 overflow-y-auto" : "text-sm text-muted-foreground")}>
             {!selectedLocation && (
-              <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-                {routeData ? "Select a location from the list." : null}
-              </div>
+              <span>{routeData ? "Select a location from the list." : null}</span>
             )}
             {selectedLocation && (
               <>
@@ -566,40 +581,42 @@ export function RouteBrowser({ caught, onToggleCaught }: {
                 />
               </>
             )}
+            </div>
           </div>
         </div>
       )}
 
       {/* Catch progress footer */}
       {game && GAMES_WITH_ROUTES.has(game) && (gameProgress || locationProgress) && (
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          {gameProgress ? (
-            <span className="flex items-center gap-2">
-              <PokeballIcon caught={gameProgress.count > 0} size={13} />
-              <span className="font-medium text-foreground">
-                {selectedVersion ? (VERSION_LABELS[selectedVersion] ?? selectedVersion) : selectedGame!.label}
-              </span>
+        <div className="flex flex-col gap-1 text-sm text-muted-foreground sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-2 sm:gap-y-0">
+          {gameProgress && (
+            <>
               <span className="flex items-center gap-1.5">
-                <button
-                  onClick={() => setMissingMode("routes")}
-                  className="hover:text-foreground hover:underline transition-colors"
-                >
-                  {gameProgress.count} / {gameProgress.routeTotal} via routes
-                </button>
-                <span className="text-muted-foreground/40">·</span>
-                <button
-                  onClick={() => setMissingMode("dex")}
-                  className="hover:text-foreground hover:underline transition-colors"
-                >
-                  {gameProgress.count} / {gameProgress.dexTotal} dex
-                </button>
+                <PokeballIcon caught={gameProgress.count > 0} size={13} />
+                <span className="font-medium text-foreground">
+                  {selectedVersion ? (VERSION_LABELS[selectedVersion] ?? selectedVersion) : selectedGame!.label}
+                </span>
               </span>
-            </span>
-          ) : <span />}
+              <span className="hidden sm:inline text-muted-foreground/40">·</span>
+              <button
+                onClick={() => setMissingMode("routes")}
+                className="hover:text-foreground hover:underline transition-colors text-left"
+              >
+                {gameProgress.count} / {gameProgress.routeTotal} routes
+              </button>
+              <span className="hidden sm:inline text-muted-foreground/40">·</span>
+              <button
+                onClick={() => setMissingMode("dex")}
+                className="hover:text-foreground hover:underline transition-colors text-left"
+              >
+                {gameProgress.count} / {gameProgress.dexTotal} dex
+              </button>
+              {locationProgress && <span className="hidden sm:inline text-muted-foreground/40">·</span>}
+            </>
+          )}
           {locationProgress && (
-            <span className="flex items-center gap-1.5">
-              <PokeballIcon caught={locationProgress.count > 0} size={13} />
-              {locationProgress.count} / {locationProgress.total} in this location
+            <span>
+              {locationProgress.count} / {locationProgress.total} here
             </span>
           )}
         </div>
