@@ -371,6 +371,8 @@ export function RouteBrowser({ caught, onToggleCaught }: {
   const [selectedPokemon, setSelectedPokemon] = useState<string | null>(null);
   const [missingMode, setMissingMode] = useState<"routes" | "dex" | null>(null);
   const [filterUncaught, setFilterUncaught] = useState(false);
+  const [listMode, setListMode] = useState<"locations" | "pokemon">("locations");
+  const [pokemonSearch, setPokemonSearch] = useState("");
 
   // Keep URL in sync so refresh/share preserves the current view
   useEffect(() => {
@@ -417,11 +419,37 @@ export function RouteBrowser({ caught, onToggleCaught }: {
     [routeData, locationKey],
   );
 
+  // Pokémon search: find all locations containing a matching Pokémon
+  const pokemonSearchResults = useMemo(() => {
+    if (!routeData || !pokemonSearch.trim()) return [];
+    const q = pokemonSearch.trim().toLowerCase();
+    const results: { location: RouteLocation; encounters: RouteEncounter[] }[] = [];
+    for (const loc of routeData.locations) {
+      const encounters = selectedVersion
+        ? loc.encounters.filter((e) => e.version === selectedVersion)
+        : aggregateEncounters(loc.encounters);
+      const matching = encounters.filter(
+        (e) => e.name.toLowerCase().includes(q) || formatPokemonName(e.name).toLowerCase().includes(q),
+      );
+      if (matching.length === 0) continue;
+      // Deduplicate by method+timeOfDay, keeping best chance
+      const deduped = new Map<string, RouteEncounter>();
+      for (const enc of matching) {
+        const key = `${enc.method}:${enc.timeOfDay}`;
+        if (!deduped.has(key) || enc.chance > deduped.get(key)!.chance) deduped.set(key, enc);
+      }
+      results.push({ location: loc, encounters: [...deduped.values()].sort((a, b) => methodOrder(a.method) - methodOrder(b.method)) });
+    }
+    return results;
+  }, [routeData, pokemonSearch, selectedVersion]);
+
   const handleGameChange = (newGame: string) => {
     setGame(newGame);
     setLocationKey(null);
     setLocationSearch("");
     setSelectedVersion("");
+    setListMode("locations");
+    setPokemonSearch("");
   };
 
   // When a specific version is selected (e.g. "gold"), track catches under that
@@ -571,18 +599,53 @@ export function RouteBrowser({ caught, onToggleCaught }: {
             "flex flex-1 min-h-0 flex-col sm:border-r",
             selectedLocation ? "hidden sm:flex" : "flex",
           )}>
-            <div className="flex-shrink-0 border-b p-2">
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-                <input
-                  type="text"
-                  value={locationSearch}
-                  onChange={(e) => setLocationSearch(e.target.value)}
-                  placeholder="Search locations…"
-                  className="w-full rounded-md border bg-background py-1.5 pl-8 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-                />
+            {/* Mode toggle */}
+            <div className="flex-shrink-0 border-b">
+              <div className="flex text-xs font-medium">
+                <button
+                  onClick={() => setListMode("locations")}
+                  className={cn(
+                    "flex-1 py-2 transition-colors",
+                    listMode === "locations" ? "border-b-2 border-primary text-foreground" : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  Locations
+                </button>
+                <button
+                  onClick={() => setListMode("pokemon")}
+                  className={cn(
+                    "flex-1 py-2 transition-colors",
+                    listMode === "pokemon" ? "border-b-2 border-primary text-foreground" : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  Find Pokémon
+                </button>
+              </div>
+              <div className="p-2">
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                  {listMode === "locations" ? (
+                    <input
+                      type="text"
+                      value={locationSearch}
+                      onChange={(e) => setLocationSearch(e.target.value)}
+                      placeholder="Search locations…"
+                      className="w-full rounded-md border bg-background py-1.5 pl-8 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                    />
+                  ) : (
+                    <input
+                      type="text"
+                      value={pokemonSearch}
+                      onChange={(e) => setPokemonSearch(e.target.value)}
+                      placeholder="e.g. Ralts, Pikachu…"
+                      className="w-full rounded-md border bg-background py-1.5 pl-8 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                      autoFocus
+                    />
+                  )}
+                </div>
               </div>
             </div>
+
             <div className="flex-1 overflow-y-auto">
               {routeDataQuery.isLoading && (
                 <div className="space-y-1 p-2">
@@ -591,20 +654,61 @@ export function RouteBrowser({ caught, onToggleCaught }: {
                   ))}
                 </div>
               )}
-              {filteredLocations.map((loc) => (
-                <button
-                  key={loc.key}
-                  onClick={() => setLocationKey(loc.key)}
-                  className={cn(
-                    "w-full px-3 py-2 text-left text-sm transition-colors hover:bg-muted",
-                    locationKey === loc.key ? "bg-muted font-medium text-foreground" : "text-muted-foreground",
+
+              {/* Locations mode */}
+              {listMode === "locations" && (
+                <>
+                  {filteredLocations.map((loc) => (
+                    <button
+                      key={loc.key}
+                      onClick={() => setLocationKey(loc.key)}
+                      className={cn(
+                        "w-full px-3 py-2 text-left text-sm transition-colors hover:bg-muted",
+                        locationKey === loc.key ? "bg-muted font-medium text-foreground" : "text-muted-foreground",
+                      )}
+                    >
+                      {loc.label}
+                    </button>
+                  ))}
+                  {routeData && filteredLocations.length === 0 && (
+                    <p className="p-4 text-center text-sm text-muted-foreground">No locations found.</p>
                   )}
-                >
-                  {loc.label}
-                </button>
-              ))}
-              {routeData && filteredLocations.length === 0 && (
-                <p className="p-4 text-center text-sm text-muted-foreground">No locations found.</p>
+                </>
+              )}
+
+              {/* Find Pokémon mode */}
+              {listMode === "pokemon" && (
+                <>
+                  {!pokemonSearch.trim() && (
+                    <p className="p-4 text-center text-sm text-muted-foreground">
+                      Type a Pokémon name to find where it appears.
+                    </p>
+                  )}
+                  {pokemonSearch.trim() && pokemonSearchResults.length === 0 && (
+                    <p className="p-4 text-center text-sm text-muted-foreground">
+                      Not found in any location for this game.
+                    </p>
+                  )}
+                  {pokemonSearchResults.map(({ location, encounters }) => (
+                    <button
+                      key={location.key}
+                      onClick={() => { setLocationKey(location.key); setListMode("locations"); }}
+                      className={cn(
+                        "w-full px-3 py-2 text-left transition-colors hover:bg-muted",
+                        locationKey === location.key ? "bg-muted" : "",
+                      )}
+                    >
+                      <span className="block text-sm font-medium text-foreground">{location.label}</span>
+                      <span className="block text-xs text-muted-foreground">
+                        {encounters.map((e) => {
+                          const icon = METHOD_ICONS[e.method] ?? "";
+                          const level = e.minLevel === e.maxLevel ? `Lv ${e.minLevel}` : `Lv ${e.minLevel}–${e.maxLevel}`;
+                          return `${icon} ${level}`.trim();
+                        }).join(" · ")}
+                      </span>
+                    </button>
+                  ))}
+                </>
               )}
             </div>
           </div>
