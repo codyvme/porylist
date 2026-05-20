@@ -510,6 +510,11 @@ export interface VersionExclusiveGroup {
 
 export type VersionExclusivesData = Record<string, VersionExclusiveGroup>;
 
+export interface HeldItem {
+  item: string;
+  rarity: number;
+}
+
 export interface RouteEncounter {
   id: number;
   name: string;
@@ -520,6 +525,7 @@ export interface RouteEncounter {
   minLevel: number;
   maxLevel: number;
   chance: number;
+  heldItems: HeldItem[];
 }
 
 export interface RouteLocation {

@@ -24,6 +24,12 @@ const manualOrderData = existsSync(manualOrderPath)
   ? JSON.parse(readFileSync(manualOrderPath, "utf8"))
   : {};
 
+// Held items lookup: pokemonId (string) → versionName → [{item, rarity}]
+const heldItemsPath = join(DATA_DIR, "held-items.json");
+const heldItemsData = existsSync(heldItemsPath)
+  ? JSON.parse(readFileSync(heldItemsPath, "utf8"))
+  : {};
+
 
 const GAME_VERSIONS = {
   "red-blue-yellow":               ["red", "blue", "yellow"],
@@ -168,6 +174,7 @@ for (const [gameValue, versions] of Object.entries(GAME_VERSIONS)) {
       for (const [vName, slotMap] of entry.versions) {
         if (!versionSet.has(vName)) continue;
         for (const { method, timeOfDay, minLevel, maxLevel, chance } of slotMap.values()) {
+          const heldItems = heldItemsData[String(id)]?.[vName] ?? [];
           encounters.push({
             id,
             name,
@@ -178,6 +185,7 @@ for (const [gameValue, versions] of Object.entries(GAME_VERSIONS)) {
             minLevel,
             maxLevel,
             chance,
+            heldItems,
           });
         }
       }
