@@ -291,13 +291,16 @@ export function RouteBrowser({ caught, onToggleCaught }: {
   // group key (e.g. "gold-silver-crystal").
   const caughtKey = selectedVersion || game;
 
-  // Catch progress: unique Pokémon in the current location
+  // Catch progress: unique Pokémon in the current location for the selected version
   const locationProgress = useMemo(() => {
     if (!selectedLocation || !game) return null;
     const caughtList = caught[caughtKey] ?? [];
-    const uniqueNames = [...new Set(selectedLocation.encounters.map((e) => e.name))];
+    const encounters = selectedVersion
+      ? selectedLocation.encounters.filter((e) => e.version === selectedVersion)
+      : selectedLocation.encounters;
+    const uniqueNames = [...new Set(encounters.map((e) => e.name))];
     return { count: uniqueNames.filter((n) => caughtList.includes(n)).length, total: uniqueNames.length };
-  }, [selectedLocation, caughtKey, caught]);
+  }, [selectedLocation, selectedVersion, caughtKey, caught]);
 
   // Catch progress: unique Pokémon catchable across all routes in this game.
   // Uses the full route data as the source of truth — no ID filtering — so
