@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { Select } from "@/components/ui/select";
-import { GAMES, GAMES_BY_VALUE, isInRanges } from "@/lib/games";
+import { GAMES, GAMES_BY_VALUE } from "@/lib/games";
 import { useRouteData, type RouteEncounter, type RouteLocation } from "@/lib/pokeapi";
 import { spriteUrl } from "@/lib/games";
 import { PokemonModal } from "@/components/PokemonModal";
-import { Switch } from "@/components/ui/switch";
 import { Tooltip } from "@/components/ui/tooltip";
 import { cn, formatPokemonName } from "@/lib/utils";
 
@@ -233,7 +232,6 @@ export function RouteBrowser({ caught, onToggleCaught }: {
   const [locationKey, setLocationKey] = useState<string | null>(() => new URLSearchParams(window.location.search).get("route"));
   const [locationSearch, setLocationSearch] = useState("");
   const [selectedVersion, setSelectedVersion] = useState(() => new URLSearchParams(window.location.search).get("routeVersion") ?? "");
-  const [showNational, setShowNational] = useState(false);
   const [selectedPokemon, setSelectedPokemon] = useState<string | null>(null);
 
   // Keep URL in sync so refresh/share preserves the current view
@@ -286,7 +284,6 @@ export function RouteBrowser({ caught, onToggleCaught }: {
     setLocationKey(null);
     setLocationSearch("");
     setSelectedVersion("");
-    setShowNational(false);
   };
 
   // When a specific version is selected (e.g. "gold"), track catches under that
@@ -302,23 +299,20 @@ export function RouteBrowser({ caught, onToggleCaught }: {
     return { count: uniqueNames.filter((n) => caughtList.includes(n)).length, total: uniqueNames.length };
   }, [selectedLocation, caughtKey, caught]);
 
-  // Catch progress: unique Pokémon catchable across all routes in this game
+  // Catch progress: unique Pokémon catchable across all routes in this game.
+  // Uses the full route data as the source of truth — no ID filtering — so
+  // cross-gen Pokémon (e.g. Pidgey in Johto routes) are counted correctly.
   const gameProgress = useMemo(() => {
-    if (!routeData || !game || !selectedGame) return null;
+    if (!routeData || !game) return null;
     const caughtList = caught[caughtKey] ?? [];
-    const uniqueEntries = new Map<string, number>(); // name → id
+    const uniqueNames = new Set<string>();
     for (const loc of routeData.locations) {
-      for (const enc of loc.encounters) {
-        if (!uniqueEntries.has(enc.name)) uniqueEntries.set(enc.name, enc.id);
-      }
+      for (const enc of loc.encounters) uniqueNames.add(enc.name);
     }
-    const filtered = [...uniqueEntries.entries()].filter(([, id]) =>
-      showNational ? id <= selectedGame.genMax : isInRanges(id, selectedGame.nativeRanges),
-    );
-    const total = filtered.length;
-    const count = filtered.filter(([name]) => caughtList.includes(name)).length;
+    const total = uniqueNames.size;
+    const count = [...uniqueNames].filter((n) => caughtList.includes(n)).length;
     return { count, total };
-  }, [routeData, caughtKey, caught, selectedGame, showNational]);
+  }, [routeData, game, caughtKey, caught]);
 
   return (
     <div className="flex h-full flex-col gap-4">
@@ -333,21 +327,6 @@ export function RouteBrowser({ caught, onToggleCaught }: {
             ))}
           </Select>
         </div>
-        <label
-          className={cn(
-            "flex items-center gap-2 text-sm font-medium",
-            game
-              ? "cursor-pointer text-foreground"
-              : "cursor-not-allowed text-muted-foreground/60",
-          )}
-        >
-          <Switch
-            checked={showNational}
-            onChange={(e) => setShowNational(e.target.checked)}
-            disabled={!game}
-          />
-          National Dex
-        </label>
         {actualVersions.length > 1 && (
           <div className="flex items-center gap-1.5">
             <span className="text-xs text-muted-foreground font-medium">Version:</span>
