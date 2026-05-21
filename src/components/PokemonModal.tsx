@@ -13,7 +13,7 @@ function PokeballIcon({ caught, size = 14 }: { caught: boolean; size?: number })
 import { Badge } from "@/components/ui/badge";
 import { TYPE_COLORS, typeStyle } from "@/lib/types";
 import { computeTypeEffectiveness } from "@/lib/type-chart";
-import { GAME_VERSION_GROUPS, GAME_VERSIONS, spriteUrl, type GameOption } from "@/lib/games";
+import { GAME_VERSION_GROUPS, GAME_VERSIONS, GAMES, spriteUrl, type GameOption } from "@/lib/games";
 import {
   typesForGeneration,
   useSinglePokemon,
@@ -718,15 +718,19 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
     return GAME_VERSION_GROUPS[game.value] ?? ["scarlet-violet"];
   }, [game]);
 
-  const encounterVersions = useMemo(() => {
-    if (!game) return [];
-    return GAME_VERSIONS[game.value] ?? [];
-  }, [game]);
-
-  const processedLocations = useMemo(() => {
-    if (!encounterData || encounterVersions.length === 0) return [];
-    return processEncounters(encounterData, encounterVersions);
-  }, [encounterData, encounterVersions]);
+  // All games where this Pokémon has wild encounters, in game release order
+  const allGamesLocations = useMemo(() => {
+    if (!encounterData) return [];
+    return GAMES
+      .map((g) => {
+        const versions = GAME_VERSIONS[g.value];
+        if (!versions) return null;
+        const locations = processEncounters(encounterData, versions);
+        if (locations.length === 0) return null;
+        return { game: g, locations };
+      })
+      .filter((x): x is { game: GameOption; locations: ProcessedLocation[] } => x !== null);
+  }, [encounterData]);
 
   const types = useMemo(
     () => (pokemon ? typesForGeneration(pokemon, generation) : []),
@@ -1405,87 +1409,80 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
               )}
 
               {/* Locations */}
-              {game && (
-                <div className="border-t px-6 py-5">
-                  <h3 className="mb-4 text-base font-semibold">
-                    Locations
-                    <span className="ml-2 text-xs font-normal text-muted-foreground">{game.label}</span>
-                  </h3>
-                  {encountersLoading ? (
-                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                      {[1, 2, 3].map((i) => (
-                        <div key={i} className="h-12 animate-pulse rounded-lg bg-muted" />
-                      ))}
+              <div className="border-t px-6 py-5">
+                <h3 className="mb-4 text-base font-semibold">Locations</h3>
+                {encountersLoading ? (
+                  <div className="space-y-2">
+                    {[1, 2, 3].map((i) => <div key={i} className="h-8 animate-pulse rounded bg-muted" />)}
+                  </div>
+                ) : allGamesLocations.length === 0 ? (
+                  <p className="text-sm italic text-muted-foreground">
+                    Not found in the wild in any supported game.
+                  </p>
+                ) : (() => {
+                  // Flatten all rows into a single table
+                  const rows: { gameLabel: string; isSelected: boolean; locName: string; versions: string[]; method: string; conditions: string[]; levelRange: string; chance: number; isFirstInGame: boolean; isFirstInLoc: boolean; }[] = [];
+                  for (const { game: g, locations } of allGamesLocations) {
+                    const isSelected = game?.value === g.value;
+                    let firstInGame = true;
+                    for (const loc of locations) {
+                      let firstInLoc = true;
+                      for (const m of loc.methods) {
+                        const levelRange = m.minLevel === m.maxLevel ? `${m.minLevel}` : `${m.minLevel}–${m.maxLevel}`;
+                        rows.push({ gameLabel: g.label, isSelected, locName: loc.name, versions: m.versions, method: m.method, conditions: m.conditions, levelRange, chance: m.chance, isFirstInGame: firstInGame, isFirstInLoc: firstInLoc });
+                        firstInGame = false;
+                        firstInLoc = false;
+                      }
+                    }
+                  }
+                  const hasVersionLabels = rows.some((r) => r.versions.length > 0);
+                  return (
+                    <div className="overflow-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b text-left text-xs font-medium text-muted-foreground">
+                            <th className="pb-2 pr-4">Game</th>
+                            <th className="pb-2 pr-4">Location</th>
+                            {hasVersionLabels && <th className="pb-2 pr-4">Version</th>}
+                            <th className="pb-2 pr-4">Method</th>
+                            <th className="pb-2 pr-4">Levels</th>
+                            <th className="pb-2 text-right">Chance</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border/50">
+                          {rows.map((row, i) => {
+                            const methodLabel = METHOD_LABELS[row.method] ?? row.method.replace(/-/g, " ");
+                            const condLabel = row.conditions.map((c) => CONDITION_LABELS[c] ?? c).join(", ");
+                            return (
+                              <tr key={i} className="hover:bg-muted/30">
+                                <td className={cn("py-1.5 pr-4 font-medium whitespace-nowrap", row.isSelected && "text-primary")}>
+                                  {row.isFirstInGame ? row.gameLabel : ""}
+                                </td>
+                                <td className="py-1.5 pr-4 text-muted-foreground whitespace-nowrap">
+                                  {row.isFirstInLoc ? row.locName : ""}
+                                </td>
+                                {hasVersionLabels && (
+                                  <td className="py-1.5 pr-4">
+                                    <div className="flex flex-wrap gap-1">
+                                      {row.versions.map((v) => <VersionBadge key={v} version={v} />)}
+                                    </div>
+                                  </td>
+                                )}
+                                <td className="py-1.5 pr-4 text-muted-foreground">
+                                  {methodLabel}
+                                  {condLabel && <span className="ml-1 text-xs opacity-70">({condLabel})</span>}
+                                </td>
+                                <td className="py-1.5 pr-4 font-mono tabular-nums text-muted-foreground">{row.levelRange}</td>
+                                <td className="py-1.5 text-right font-mono tabular-nums text-muted-foreground">{row.chance}%</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
                     </div>
-                  ) : processedLocations.length === 0 ? (
-                    <p className="text-sm italic text-muted-foreground">
-                      {game.generation != null && game.generation >= 8
-                        ? `Location data is not yet available for ${game.label}.`
-                        : `Not found in the wild in ${game.label}. May be obtained via trade, gift, or event.`}
-                    </p>
-                  ) : (() => {
-                    const hasVersionLabels = processedLocations.some((loc) =>
-                      loc.methods.some((m) => m.versions.length > 0)
-                    );
-                    return (
-                      <div className="overflow-auto">
-                        <table className="w-full text-sm">
-                          <thead>
-                            <tr className="border-b text-left text-xs font-medium text-muted-foreground">
-                              <th className="pb-2 pr-4">Location</th>
-                              {hasVersionLabels && <th className="pb-2 pr-4">Version</th>}
-                              <th className="pb-2 pr-4">Method</th>
-                              <th className="pb-2 pr-4">Levels</th>
-                              <th className="pb-2 text-right">Chance</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-border/50">
-                            {processedLocations.flatMap((loc) =>
-                              loc.methods.map((m, mi) => {
-                                const methodLabel = METHOD_LABELS[m.method] ?? m.method.replace(/-/g, " ");
-                                const condLabel = m.conditions
-                                  .map((c) => CONDITION_LABELS[c] ?? c)
-                                  .join(", ");
-                                const levelRange = m.minLevel === m.maxLevel
-                                  ? `${m.minLevel}`
-                                  : `${m.minLevel}–${m.maxLevel}`;
-                                return (
-                                  <tr key={`${loc.name}|${m.method}|${m.conditions.join()}|${m.versions.join()}`} className="hover:bg-muted/30">
-                                    <td className="py-1.5 pr-4 font-medium">
-                                      {mi === 0 ? loc.name : ""}
-                                    </td>
-                                    {hasVersionLabels && (
-                                      <td className="py-1.5 pr-4">
-                                        <div className="flex flex-wrap gap-1">
-                                          {m.versions.map((v) => (
-                                            <VersionBadge key={v} version={v} />
-                                          ))}
-                                        </div>
-                                      </td>
-                                    )}
-                                    <td className="py-1.5 pr-4 text-muted-foreground">
-                                      {methodLabel}
-                                      {condLabel ? (
-                                        <span className="ml-1 text-xs opacity-70">({condLabel})</span>
-                                      ) : null}
-                                    </td>
-                                    <td className="py-1.5 pr-4 font-mono tabular-nums text-muted-foreground">
-                                      {levelRange}
-                                    </td>
-                                    <td className="py-1.5 text-right font-mono tabular-nums text-muted-foreground">
-                                      {m.chance}%
-                                    </td>
-                                  </tr>
-                                );
-                              })
-                            )}
-                          </tbody>
-                        </table>
-                      </div>
-                    );
-                  })()}
-                </div>
-              )}
+                  );
+                })()}
+              </div>
 
               {/* Moves */}
               <div className="border-t">
