@@ -918,7 +918,7 @@ export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderO
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search Pokémon…"
-            className="h-9 w-full rounded-md border border-input bg-background pl-8 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            className="h-9 w-full rounded-md border border-input bg-background pl-8 pr-8 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             aria-label="Search Pokémon"
           />
           {search && (

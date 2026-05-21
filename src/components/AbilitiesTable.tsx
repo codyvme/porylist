@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
-import { ChevronDown, ChevronUp, ChevronsUpDown, Search } from "lucide-react";
+import { ChevronDown, ChevronUp, ChevronsUpDown, Search, X } from "lucide-react";
 import { useAbilityList, type AbilityListEntry } from "@/lib/pokeapi";
 import { GAMES, type GameOption } from "@/lib/games";
 import { AbilityModal } from "@/components/AbilityModal";
+import { Select } from "@/components/ui/select";
 
 type SortKey = "id" | "displayName";
 type SortDir = "asc" | "desc";
@@ -72,8 +73,7 @@ export function AbilitiesTable() {
     <div className="flex min-h-0 flex-1 flex-col gap-3">
       {/* Filters */}
       <div className="flex flex-wrap gap-2">
-        <select
-          className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+        <Select
           value={selectedGame?.value ?? ""}
           onChange={(e) => {
             const g = GAMES.find((g) => g.value === e.target.value) ?? null;
@@ -84,16 +84,25 @@ export function AbilitiesTable() {
           {GAMES.map((g) => (
             <option key={g.value} value={g.value}>{g.label}</option>
           ))}
-        </select>
+        </Select>
 
         <div className="relative min-w-48 flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
-            className="h-9 w-full rounded-md border border-input bg-background pl-8 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+            className="h-9 w-full rounded-md border border-input bg-background pl-8 pr-8 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             placeholder="Search abilities or effects…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              aria-label="Clear search"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
       </div>
 

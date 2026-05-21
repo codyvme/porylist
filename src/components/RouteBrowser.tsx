@@ -291,7 +291,7 @@ function MissingModal({ title, missing, spriteVersion, onOpen, onToggleCaught, c
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search…"
-                className="w-36 rounded-md border bg-background py-1 pl-8 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-36 rounded-md border bg-background py-1 pl-8 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                 autoFocus
               />
             </div>
@@ -671,7 +671,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget }: {
                       value={locationSearch}
                       onChange={(e) => setLocationSearch(e.target.value)}
                       placeholder="Search locations…"
-                      className="w-full rounded-md border bg-background py-1.5 pl-8 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="w-full rounded-md border bg-background py-1.5 pl-8 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                     />
                   ) : (
                     <div ref={pokemonSearchRef} className="relative">
@@ -686,7 +686,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget }: {
                         }}
                         onFocus={() => setShowSuggestions(true)}
                         placeholder="e.g. Ralts, Pikachu…"
-                        className="w-full rounded-md border bg-background py-1.5 pl-8 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="w-full rounded-md border bg-background py-1.5 pl-8 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                         autoFocus
                         autoComplete="off"
                       />

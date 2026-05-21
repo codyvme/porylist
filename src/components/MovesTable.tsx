@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
-import { ChevronDown, ChevronUp, ChevronsUpDown, Search } from "lucide-react";
+import { ChevronDown, ChevronUp, ChevronsUpDown, Search, X } from "lucide-react";
 import { TYPE_COLORS } from "@/lib/types";
 import { useMoveList, type MoveListEntry } from "@/lib/pokeapi";
 import { GAMES, type GameOption } from "@/lib/games";
 import { MoveModal } from "@/components/MoveModal";
+import { Select } from "@/components/ui/select";
 
 // ── Category badge ─────────────────────────────────────────────────────────────
 
@@ -125,8 +126,7 @@ export function MovesTable() {
       {/* Filters */}
       <div className="flex flex-wrap gap-2">
         {/* Game selector */}
-        <select
-          className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+        <Select
           value={selectedGame?.value ?? ""}
           onChange={(e) => {
             const g = GAMES.find((g) => g.value === e.target.value) ?? null;
@@ -137,20 +137,28 @@ export function MovesTable() {
           {GAMES.map((g) => (
             <option key={g.value} value={g.value}>{g.label}</option>
           ))}
-        </select>
+        </Select>
 
         <div className="relative min-w-48 flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
-            className="h-9 w-full rounded-md border border-input bg-background pl-8 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+            className="h-9 w-full rounded-md border border-input bg-background pl-8 pr-8 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             placeholder="Search moves…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              aria-label="Clear search"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
 
-        <select
-          className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+        <Select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
         >
@@ -158,10 +166,9 @@ export function MovesTable() {
           {types.map((t) => (
             <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
           ))}
-        </select>
+        </Select>
 
-        <select
-          className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+        <Select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
         >
@@ -169,7 +176,7 @@ export function MovesTable() {
           <option value="physical">Physical</option>
           <option value="special">Special</option>
           <option value="status">Status</option>
-        </select>
+        </Select>
       </div>
 
       <p className="text-sm text-muted-foreground">
