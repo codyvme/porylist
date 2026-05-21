@@ -1,20 +1,6 @@
 import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 
-const BASE = "https://data.porylist.com";
-
-/**
- * Rewrites a full PokeAPI URL (e.g. for machine or evolution-chain endpoints)
- * to a local static-data path. Machine URLs look like:
- *   https://pokeapi.co/api/v2/machine/1/
- * Evolution-chain URLs look like:
- *   https://pokeapi.co/api/v2/evolution-chain/1/
- */
-function localUrl(pokeApiUrl: string): string {
-  const id = pokeApiUrl.match(/\/(\d+)\/?$/)?.[1];
-  if (pokeApiUrl.includes("/machine/") && id) return `${BASE}/machine/${id}.json`;
-  if (pokeApiUrl.includes("/evolution-chain/") && id) return `${BASE}/evolution-chain/${id}.json`;
-  return pokeApiUrl; // fallback: use as-is
-}
+const BASE = "https://pokeapi.co/api/v2";
 
 export interface PokemonListEntry {
   name: string;
@@ -247,15 +233,8 @@ export function typesForGeneration(
 }
 
 async function fetchJson<T>(url: string): Promise<T> {
-  // Rewrite data.porylist.com URLs: ensure .json suffix, preserve query params for CDN cache busting
-  let resolved = url;
-  if (url.startsWith(BASE)) {
-    const [path, query] = url.split("?");
-    const withExt = path.endsWith(".json") ? path : `${path}.json`;
-    resolved = query ? `${withExt}?${query}` : withExt;
-  }
-  const res = await fetch(resolved);
-  if (!res.ok) throw new Error(`${res.status}: ${resolved}`);
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`${res.status}: ${url}`);
   return res.json() as Promise<T>;
 }
 
@@ -470,7 +449,7 @@ export function useMachineDetails(urls: string[]) {
   return useQueries({
     queries: urls.map((url) => ({
       queryKey: ["machine", url],
-      queryFn: () => fetchJson<MachineDetail>(localUrl(url)),
+      queryFn: () => fetchJson<MachineDetail>(url),
       staleTime: Infinity,
       gcTime: 1000 * 60 * 60 * 24 * 30,
     })),
@@ -492,7 +471,7 @@ export function useEvolutionChain(url: string | null) {
   return useQuery({
     queryKey: ["evolution-chain", url],
     enabled: url != null,
-    queryFn: () => fetchJson<EvolutionChain>(localUrl(url!)),
+    queryFn: () => fetchJson<EvolutionChain>(url!),
     staleTime: Infinity,
     gcTime: 1000 * 60 * 60 * 24 * 30,
   });
@@ -542,7 +521,7 @@ export function useRouteData(gameValue: string | null) {
   return useQuery({
     queryKey: ["route-data", gameValue],
     enabled: gameValue != null,
-    queryFn: () => fetchJson<RouteData>(`${BASE}/route-data/${gameValue}?v=7`),
+    queryFn: () => fetchJson<RouteData>(`/data/route-data/${gameValue}.json`),
     staleTime: Infinity,
     gcTime: 1000 * 60 * 60 * 24 * 30,
   });

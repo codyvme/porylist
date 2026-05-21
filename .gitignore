@@ -11,5 +11,7 @@ public/data/**
 !public/data/moves.json
 !public/data/abilities.json
 !public/data/version-exclusives.json
+!public/data/route-data/
+!public/data/route-data/*.json
 .data-manifest.json
 .claude/
