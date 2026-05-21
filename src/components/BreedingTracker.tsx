@@ -129,11 +129,12 @@ function ProjectCard({
             {project.shinyHunting && (
               <Star className="h-3.5 w-3.5 shrink-0 text-violet-500" />
             )}
+            <span className="ml-auto shrink-0 text-xs text-muted-foreground">
+              {totalEggs} egg{totalEggs !== 1 ? "s" : ""}
+            </span>
           </div>
           <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
             <span>{game?.label ?? project.gameValue}</span>
-            <span>·</span>
-            <span>{totalEggs} egg{totalEggs !== 1 ? "s" : ""}</span>
             {successHatch && <span>· ✓ #{project.hatches.indexOf(successHatch) + 1}</span>}
           </div>
           {project.targetIVs.length > 0 && (
@@ -196,6 +197,12 @@ function NewProjectForm({
   const [masuda, setMasuda] = useState(false);
   const [shiny, setShiny] = useState(false);
   const [moveSearch, setMoveSearch] = useState("");
+
+  // Abilities for the selected species
+  const speciesAbilities = useMemo(() => {
+    if (!speciesSlug || !summaryList) return null;
+    return summaryList.find((s) => s.name === speciesSlug)?.abilities ?? null;
+  }, [speciesSlug, summaryList]);
   const [eggMoves, setEggMoves] = useState<string[]>([]);
   const [showMoveDrop, setShowMoveDrop] = useState(false);
 
@@ -265,7 +272,7 @@ function NewProjectForm({
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-6 overflow-y-auto">
+    <div className="flex flex-1 flex-col gap-6 overflow-y-auto px-1">
       <div className="flex items-center gap-3">
         <button onClick={onCancel} className="rounded-md p-1.5 hover:bg-muted">
           <ArrowLeft className="h-4 w-4" />
@@ -378,9 +385,29 @@ function NewProjectForm({
           <label className="text-sm font-medium">Ability</label>
           <Select value={ability} onChange={(e) => setAbility(e.target.value as AbilitySlot)} className="w-full">
             <option value="any">Any ability</option>
-            <option value="slot1">Ability slot 1</option>
-            <option value="slot2">Ability slot 2</option>
-            <option value="hidden">Hidden Ability</option>
+            {speciesAbilities ? (
+              <>
+                {speciesAbilities
+                  .filter((a) => !a.is_hidden)
+                  .sort((a, b) => a.slot - b.slot)
+                  .map((a) => (
+                    <option key={a.slot} value={`slot${a.slot}` as AbilitySlot}>
+                      {capitalize(a.ability.name.replace(/-/g, " "))} (Slot {a.slot})
+                    </option>
+                  ))}
+                {speciesAbilities.filter((a) => a.is_hidden).map((a) => (
+                  <option key="hidden" value="hidden">
+                    {capitalize(a.ability.name.replace(/-/g, " "))} (Hidden)
+                  </option>
+                ))}
+              </>
+            ) : (
+              <>
+                <option value="slot1">Ability slot 1</option>
+                <option value="slot2">Ability slot 2</option>
+                <option value="hidden">Hidden Ability</option>
+              </>
+            )}
           </Select>
         </div>
 
@@ -441,16 +468,26 @@ function NewProjectForm({
         </div>
 
         {/* Options */}
-        <div className="flex flex-col gap-2 sm:col-span-2">
+        <div className="flex flex-col gap-3 sm:col-span-2">
           <label className="text-sm font-medium">Options</label>
-          <div className="flex flex-wrap gap-4">
-            <label className="flex cursor-pointer items-center gap-2 text-sm">
-              <input type="checkbox" checked={masuda} onChange={(e) => setMasuda(e.target.checked)} />
-              Masuda Method (foreign Ditto)
+          <div className="flex flex-wrap gap-6">
+            <label className="flex cursor-pointer items-start gap-2">
+              <input type="checkbox" checked={masuda} onChange={(e) => setMasuda(e.target.checked)} className="mt-0.5" />
+              <div>
+                <p className="text-sm font-medium">Masuda Method</p>
+                <p className="text-xs text-muted-foreground">
+                  Breed with a Pokémon from a different language game. Raises shiny odds to ~1/683 (6× the base rate).
+                </p>
+              </div>
             </label>
-            <label className="flex cursor-pointer items-center gap-2 text-sm">
-              <input type="checkbox" checked={shiny} onChange={(e) => setShiny(e.target.checked)} />
-              Shiny hunting
+            <label className="flex cursor-pointer items-start gap-2">
+              <input type="checkbox" checked={shiny} onChange={(e) => setShiny(e.target.checked)} className="mt-0.5" />
+              <div>
+                <p className="text-sm font-medium">Shiny hunting</p>
+                <p className="text-xs text-muted-foreground">
+                  Track cumulative shiny odds in the Stats tab and flag shiny hatches in your log.
+                </p>
+              </div>
             </label>
           </div>
         </div>
@@ -818,7 +855,7 @@ function HatchLog({
                         {!h.isSuccess && (
                           <button
                             onClick={() => onMarkSuccess(h.id)}
-                            title="Mark as success"
+                            title="Mark as the successful hatch — this was the one! Records it as the project goal achieved."
                             className="rounded p-0.5 text-muted-foreground hover:text-amber-500"
                           >
                             <Trophy className="h-3.5 w-3.5" />
@@ -1006,7 +1043,7 @@ function ProjectDetail({
   onUpdate: (updated: BreedingProject) => void;
   onBack: () => void;
 }) {
-  const [tab, setTab] = useState<DetailTab>("log");
+  const [tab, setTab] = useState<DetailTab>("plan");
   const [eggData, setEggData] = useState<Record<string, { n: string; p: string; i: number; g: string[]; l: Record<string, number> }> | null>(null);
 
   useEffect(() => {
