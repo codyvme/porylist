@@ -41,25 +41,35 @@ A fast, filterable Pokédex for browsing, sorting, and team-building across all 
 - [TanStack Virtual](https://tanstack.com/virtual) — virtualized rows for smooth scrolling through 1,000+ Pokémon
 - [Tailwind CSS](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/) — styling
 - [Cloudflare Pages](https://pages.cloudflare.com/) — hosting
-- [Cloudflare R2](https://developers.cloudflare.com/r2/) — static data and sprite hosting
+- [jsDelivr](https://www.jsdelivr.com/) — Pokémon sprite CDN (via the [PokeAPI sprites repository](https://github.com/PokeAPI/sprites))
 
 ## Data Architecture
 
-All Pokémon data is pre-fetched from [PokéAPI](https://pokeapi.co/), stripped to only the fields Porylist uses, and hosted as static JSON on Cloudflare R2 at `data.porylist.com`. The app never calls PokéAPI at runtime — all requests go to R2 and are cached locally in the browser via TanStack Query.
+Data is served from three sources:
 
-Sprites are hosted separately on R2 at `sprites.porylist.com`, mirroring the [PokeAPI sprites repository](https://github.com/PokeAPI/sprites).
+1. **Bundled static imports** — `src/data/pokemon-summary.json` (all 1,350+ Pokémon with types, stats, abilities, and move lists) and `src/data/egg-parents.json` are imported directly by Vite. They're compiled into content-hashed chunks and cached permanently by the browser after the first visit.
+
+2. **Cloudflare Pages** (`/data/...`) — smaller pre-built JSONs committed to the repo and served alongside the app: `moves.json`, `abilities.json`, `version-exclusives.json`, and per-game `route-data/{game}.json` encounter tables.
+
+3. **PokéAPI** (`https://pokeapi.co/api/v2`) — on-demand fetches for individual detail pages: species info, evolution chains, move/ability modals, and alternate form data. These are lazy and only triggered when a user opens a modal or expands an alternate form row.
+
+All fetched data is cached in `localStorage` via TanStack Query (`staleTime: Infinity`, `gcTime: 30 days`), so repeat visits are instant with no network requests.
+
+Sprites are served from jsDelivr's PokeAPI mirror (`cdn.jsdelivr.net/gh/PokeAPI/sprites@master`).
 
 ### Updating the data
 
 ```bash
-# Re-fetch data from PokéAPI into public/data/
+# Re-fetch raw Pokémon data from PokéAPI into public/data/pokemon/
 npm run fetch-data
 
-# Upload changed files to R2
-npm run upload-data
+# Rebuild derived files after a fetch
+node scripts/build-pokemon-summary.mjs
+node scripts/build-move-ability-lists.mjs
+node scripts/compute-route-data.mjs
 ```
 
-`fetch-data` is resumable — it skips files that already exist locally. `upload-data` tracks file hashes in `.data-manifest.json` and only uploads files that have changed. Pass `--force` to either command to re-fetch or re-upload everything.
+`fetch-data` is resumable — it skips files that already exist locally. Pass `--force` to re-fetch everything. After rebuilding, commit the updated files and push — Cloudflare Pages deploys them automatically.
 
 ## Local Development
 
@@ -89,7 +99,7 @@ npm run upload-data
    npm run dev
    ```
 
-   Open [http://localhost:5173](http://localhost:5173). Data is fetched from `data.porylist.com` and cached locally, so no additional setup is needed.
+   Open [http://localhost:5173](http://localhost:5173). Static data files are served locally by Vite and PokéAPI is called for on-demand details, so no additional setup is needed.
 
 ### Build
 
