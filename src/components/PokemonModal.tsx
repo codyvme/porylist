@@ -13,7 +13,7 @@ function PokeballIcon({ caught, size = 14 }: { caught: boolean; size?: number })
 import { Badge } from "@/components/ui/badge";
 import { TYPE_COLORS, typeStyle } from "@/lib/types";
 import { computeTypeEffectiveness } from "@/lib/type-chart";
-import { GAME_VERSION_GROUPS, GAME_VERSIONS, GAMES, spriteUrl, type GameOption } from "@/lib/games";
+import { GAME_VERSION_GROUPS, GAME_VERSIONS, GAMES, SPRITES_ROOT, spriteUrl, type GameOption } from "@/lib/games";
 import {
   typesForGeneration,
   useSinglePokemon,
@@ -568,7 +568,7 @@ function MoveTable({ moves, moveDetailsMap, showLevel, machineNumberMap, eggPare
                                           title={p.name}
                                         >
                                           <img
-                                            src={`https://sprites.porylist.com/sprites/pokemon/${p.id}.png`}
+                                            src={`${SPRITES_ROOT}/${p.id}.png`}
                                             alt={p.name}
                                             className="h-10 w-10 object-contain"
                                           />
@@ -989,13 +989,13 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
 
   const homeSprite = pokemon
     ? showShiny
-      ? `https://sprites.porylist.com/sprites/pokemon/other/home/shiny/${pokemon.id}.png`
-      : `https://sprites.porylist.com/sprites/pokemon/other/home/${pokemon.id}.png`
+      ? `${SPRITES_ROOT}/other/home/shiny/${pokemon.id}.png`
+      : `${SPRITES_ROOT}/other/home/${pokemon.id}.png`
     : null;
   const gameSprite =
     game?.spriteVersion && pokemon
       ? showShiny
-        ? `https://sprites.porylist.com/sprites/pokemon/versions/${game.spriteVersion}/shiny/${pokemon.id}.png`
+        ? `${SPRITES_ROOT}/versions/${game.spriteVersion}/shiny/${pokemon.id}.png`
         : spriteUrl(pokemon.id, game.spriteVersion)
       : null;
   const showGameSprite = gameSprite && gameSprite !== homeSprite;
@@ -1086,7 +1086,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                   <ChevronLeft className="h-4 w-4 shrink-0" />
                   {prevPokemon && (
                     <>
-                      <img src={`https://sprites.porylist.com/sprites/pokemon/${prevPokemon.id}.png`} alt={prevPokemon.name} className="h-6 w-6 object-contain" />
+                      <img src={`${SPRITES_ROOT}/${prevPokemon.id}.png`} alt={prevPokemon.name} className="h-6 w-6 object-contain" />
                       <span className="max-w-[80px] truncate text-xs">{formatPokemonName(prevPokemon.name)}</span>
                     </>
                   )}
@@ -1101,7 +1101,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                   {nextPokemon && (
                     <>
                       <span className="max-w-[80px] truncate text-xs">{formatPokemonName(nextPokemon.name)}</span>
-                      <img src={`https://sprites.porylist.com/sprites/pokemon/${nextPokemon.id}.png`} alt={nextPokemon.name} className="h-6 w-6 object-contain" />
+                      <img src={`${SPRITES_ROOT}/${nextPokemon.id}.png`} alt={nextPokemon.name} className="h-6 w-6 object-contain" />
                     </>
                   )}
                   <ChevronRight className="h-4 w-4 shrink-0" />
@@ -1150,7 +1150,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                       onError={(e) => {
                         const img = e.target as HTMLImageElement;
                         if (pokemon) {
-                          img.src = `https://sprites.porylist.com/sprites/pokemon/${pokemon.id}.png`;
+                          img.src = `${SPRITES_ROOT}/${pokemon.id}.png`;
                         }
                       }}
                     />
@@ -1355,11 +1355,11 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                         onClick={() => onNavigate(evo.speciesName)}
                       >
                         <img
-                          src={`https://sprites.porylist.com/sprites/pokemon/other/home/${evo.speciesId}.png`}
+                          src={`${SPRITES_ROOT}/other/home/${evo.speciesId}.png`}
                           alt={evo.speciesName}
                           className="h-16 w-16 object-contain"
                           onError={(e) => {
-                            (e.target as HTMLImageElement).src = `https://sprites.porylist.com/sprites/pokemon/${evo.speciesId}.png`;
+                            (e.target as HTMLImageElement).src = `${SPRITES_ROOT}/${evo.speciesId}.png`;
                           }}
                         />
                         <div>

@@ -34,6 +34,7 @@ import {
   GAMES,
   GAMES_BY_VALUE,
   regionalNumber,
+  SPRITES_ROOT,
   spriteUrl,
 } from "@/lib/games";
 import { typeStyle } from "@/lib/types";
@@ -1254,7 +1255,7 @@ export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderO
                           onError={(e) => {
                             const img = e.currentTarget;
                             img.onerror = null;
-                            img.src = `https://sprites.porylist.com/sprites/pokemon/${detail!.id}.png`;
+                            img.src = `${SPRITES_ROOT}/${detail!.id}.png`;
                           }}
                         />
                       ) : (
