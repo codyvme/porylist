@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Search, X } from "lucide-react";
 import { Select } from "@/components/ui/select";
 import { GAMES, GAMES_BY_VALUE } from "@/lib/games";
@@ -372,7 +372,10 @@ export function RouteBrowser({ caught, onToggleCaught }: {
   const [missingMode, setMissingMode] = useState<"routes" | "dex" | null>(null);
   const [filterUncaught, setFilterUncaught] = useState(false);
   const [listMode, setListMode] = useState<"locations" | "pokemon">("locations");
-  const [pokemonSearch, setPokemonSearch] = useState("");
+  const [pokemonInput, setPokemonInput] = useState("");   // text in the input
+  const [pokemonQuery, setPokemonQuery] = useState("");   // confirmed selection driving results
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const pokemonSearchRef = useRef<HTMLDivElement>(null);
 
   // Keep URL in sync so refresh/share preserves the current view
   useEffect(() => {
@@ -419,18 +422,52 @@ export function RouteBrowser({ caught, onToggleCaught }: {
     [routeData, locationKey],
   );
 
-  // Pokémon search: find all locations containing a matching Pokémon
+  // Unique sorted Pokémon list for the current game — drives autocomplete
+  const gamePokemonList = useMemo(() => {
+    if (!routeData) return [];
+    const seen = new Set<string>();
+    const list: { name: string; id: number }[] = [];
+    for (const loc of routeData.locations) {
+      for (const enc of loc.encounters) {
+        if (!seen.has(enc.name)) {
+          seen.add(enc.name);
+          list.push({ name: enc.name, id: enc.id });
+        }
+      }
+    }
+    return list.sort((a, b) => formatPokemonName(a.name).localeCompare(formatPokemonName(b.name)));
+  }, [routeData]);
+
+  // Autocomplete suggestions filtered by current input
+  const suggestions = useMemo(() => {
+    if (!pokemonInput.trim()) return [];
+    const q = pokemonInput.trim().toLowerCase();
+    return gamePokemonList
+      .filter((p) => p.name.includes(q) || formatPokemonName(p.name).toLowerCase().includes(q))
+      .slice(0, 10);
+  }, [gamePokemonList, pokemonInput]);
+
+  // Close suggestions when clicking outside the search container
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (pokemonSearchRef.current && !pokemonSearchRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Pokémon search: find all locations containing the confirmed Pokémon query
   const pokemonSearchResults = useMemo(() => {
-    if (!routeData || !pokemonSearch.trim()) return [];
-    const q = pokemonSearch.trim().toLowerCase();
+    if (!routeData || !pokemonQuery) return [];
+    const q = pokemonQuery.toLowerCase();
     const results: { location: RouteLocation; encounters: RouteEncounter[] }[] = [];
     for (const loc of routeData.locations) {
       const encounters = selectedVersion
         ? loc.encounters.filter((e) => e.version === selectedVersion)
         : aggregateEncounters(loc.encounters);
-      const matching = encounters.filter(
-        (e) => e.name.toLowerCase().includes(q) || formatPokemonName(e.name).toLowerCase().includes(q),
-      );
+      const matching = encounters.filter((e) => e.name.toLowerCase() === q);
       if (matching.length === 0) continue;
       // Deduplicate by method+timeOfDay, keeping best chance
       const deduped = new Map<string, RouteEncounter>();
@@ -441,7 +478,7 @@ export function RouteBrowser({ caught, onToggleCaught }: {
       results.push({ location: loc, encounters: [...deduped.values()].sort((a, b) => methodOrder(a.method) - methodOrder(b.method)) });
     }
     return results;
-  }, [routeData, pokemonSearch, selectedVersion]);
+  }, [routeData, pokemonQuery, selectedVersion]);
 
   const handleGameChange = (newGame: string) => {
     setGame(newGame);
@@ -449,7 +486,9 @@ export function RouteBrowser({ caught, onToggleCaught }: {
     setLocationSearch("");
     setSelectedVersion("");
     setListMode("locations");
-    setPokemonSearch("");
+    setPokemonInput("");
+    setPokemonQuery("");
+    setShowSuggestions(false);
   };
 
   // When a specific version is selected (e.g. "gold"), track catches under that
@@ -623,7 +662,7 @@ export function RouteBrowser({ caught, onToggleCaught }: {
               </div>
               <div className="p-2">
                 <div className="relative">
-                  <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                  {listMode === "locations" && <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />}
                   {listMode === "locations" ? (
                     <input
                       type="text"
@@ -633,14 +672,46 @@ export function RouteBrowser({ caught, onToggleCaught }: {
                       className="w-full rounded-md border bg-background py-1.5 pl-8 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
                     />
                   ) : (
-                    <input
-                      type="text"
-                      value={pokemonSearch}
-                      onChange={(e) => setPokemonSearch(e.target.value)}
-                      placeholder="e.g. Ralts, Pikachu…"
-                      className="w-full rounded-md border bg-background py-1.5 pl-8 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-                      autoFocus
-                    />
+                    <div ref={pokemonSearchRef} className="relative">
+                      <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                      <input
+                        type="text"
+                        value={pokemonInput}
+                        onChange={(e) => {
+                          setPokemonInput(e.target.value);
+                          setPokemonQuery("");
+                          setShowSuggestions(true);
+                        }}
+                        onFocus={() => setShowSuggestions(true)}
+                        placeholder="e.g. Ralts, Pikachu…"
+                        className="w-full rounded-md border bg-background py-1.5 pl-8 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                        autoFocus
+                        autoComplete="off"
+                      />
+                      {showSuggestions && suggestions.length > 0 && (
+                        <div className="absolute left-0 right-0 top-full z-20 mt-1 overflow-hidden rounded-md border bg-background shadow-lg">
+                          {suggestions.map((p) => (
+                            <button
+                              key={p.name}
+                              className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-muted"
+                              onMouseDown={(e) => {
+                                e.preventDefault(); // keep input focused
+                                setPokemonInput(formatPokemonName(p.name));
+                                setPokemonQuery(p.name);
+                                setShowSuggestions(false);
+                              }}
+                            >
+                              <img
+                                src={spriteUrl(p.id, spriteVersion)}
+                                alt={p.name}
+                                className="h-6 w-6 flex-shrink-0 object-contain"
+                              />
+                              {formatPokemonName(p.name)}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
@@ -679,12 +750,12 @@ export function RouteBrowser({ caught, onToggleCaught }: {
               {/* Find Pokémon mode */}
               {listMode === "pokemon" && (
                 <>
-                  {!pokemonSearch.trim() && (
+                  {!pokemonQuery && (
                     <p className="p-4 text-center text-sm text-muted-foreground">
-                      Type a Pokémon name to find where it appears.
+                      {pokemonInput.trim() ? "Select a Pokémon from the list." : "Type a Pokémon name to find where it appears."}
                     </p>
                   )}
-                  {pokemonSearch.trim() && pokemonSearchResults.length === 0 && (
+                  {pokemonQuery && pokemonSearchResults.length === 0 && (
                     <p className="p-4 text-center text-sm text-muted-foreground">
                       Not found in any location for this game.
                     </p>
