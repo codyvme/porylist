@@ -7,6 +7,7 @@ import { MovesTable } from "@/components/MovesTable";
 import { AbilitiesTable } from "@/components/AbilitiesTable";
 import { TeamBuilder } from "@/components/TeamBuilder";
 import { CircleHelp, ClipboardList, List, LogOut, Menu, Moon, Sparkles, Sun, Swords, X } from "lucide-react";
+import { SPRITES_ROOT } from "@/lib/games";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
@@ -402,7 +403,7 @@ export function App() {
             {/* Logo */}
             <div className="flex shrink-0 items-center py-3">
               <img
-                src="https://sprites.porylist.com/sprites/pokemon/versions/generation-iv/diamond-pearl/137.png"
+                src={`${SPRITES_ROOT}/versions/generation-iv/diamond-pearl/137.png`}
                 alt="Porygon"
                 className="h-10 w-10 object-contain"
               />
