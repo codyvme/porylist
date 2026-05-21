@@ -1,0 +1,585 @@
+{
+  "red-blue-yellow": {
+    "versions": [
+      {
+        "key": "red",
+        "label": "Red",
+        "exclusiveIds": [
+          23,
+          24,
+          43,
+          44,
+          56,
+          58,
+          123,
+          125
+        ]
+      },
+      {
+        "key": "blue",
+        "label": "Blue",
+        "exclusiveIds": [
+          27,
+          28,
+          37,
+          52,
+          69,
+          70,
+          126,
+          127
+        ]
+      }
+    ]
+  },
+  "gold-silver-crystal": {
+    "versions": [
+      {
+        "key": "gold",
+        "label": "Gold",
+        "exclusiveIds": [
+          10,
+          11,
+          12,
+          28,
+          56,
+          57,
+          58,
+          167,
+          168,
+          207,
+          216,
+          217,
+          226
+        ]
+      },
+      {
+        "key": "silver",
+        "label": "Silver",
+        "exclusiveIds": [
+          13,
+          14,
+          15,
+          24,
+          37,
+          52,
+          53,
+          165,
+          166,
+          225,
+          227,
+          231,
+          232
+        ]
+      }
+    ]
+  },
+  "ruby-sapphire-emerald": {
+    "versions": [
+      {
+        "key": "ruby",
+        "label": "Ruby",
+        "exclusiveIds": [
+          273,
+          274,
+          303,
+          335,
+          338,
+          356,
+          383
+        ]
+      },
+      {
+        "key": "sapphire",
+        "label": "Sapphire",
+        "exclusiveIds": [
+          270,
+          271,
+          302,
+          336,
+          337,
+          354,
+          382
+        ]
+      }
+    ]
+  },
+  "firered-leafgreen": {
+    "versions": [
+      {
+        "key": "firered",
+        "label": "FireRed",
+        "exclusiveIds": [
+          23,
+          24,
+          43,
+          44,
+          54,
+          55,
+          58,
+          90,
+          110,
+          117,
+          123,
+          125,
+          194,
+          198,
+          211,
+          225,
+          227
+        ]
+      },
+      {
+        "key": "leafgreen",
+        "label": "LeafGreen",
+        "exclusiveIds": [
+          27,
+          28,
+          37,
+          69,
+          70,
+          79,
+          80,
+          89,
+          99,
+          120,
+          126,
+          127,
+          183,
+          200,
+          215,
+          223,
+          226
+        ]
+      }
+    ]
+  },
+  "diamond-pearl-platinum": {
+    "versions": [
+      {
+        "key": "diamond",
+        "label": "Diamond",
+        "exclusiveIds": [
+          86,
+          87,
+          122,
+          123,
+          198,
+          246,
+          262,
+          266,
+          304,
+          352,
+          434,
+          435,
+          439,
+          483
+        ]
+      },
+      {
+        "key": "pearl",
+        "label": "Pearl",
+        "exclusiveIds": [
+          79,
+          127,
+          185,
+          200,
+          229,
+          234,
+          268,
+          269,
+          363,
+          364,
+          371,
+          431,
+          432,
+          438,
+          484
+        ]
+      }
+    ]
+  },
+  "heartgold-soulsilver": {
+    "versions": [
+      {
+        "key": "heartgold",
+        "label": "HeartGold",
+        "exclusiveIds": [
+          10,
+          11,
+          12,
+          56,
+          57,
+          58,
+          167,
+          168,
+          207,
+          226,
+          231,
+          232,
+          302,
+          343,
+          380,
+          382,
+          482,
+          483,
+          487
+        ]
+      },
+      {
+        "key": "soulsilver",
+        "label": "SoulSilver",
+        "exclusiveIds": [
+          13,
+          14,
+          15,
+          37,
+          52,
+          53,
+          165,
+          166,
+          216,
+          217,
+          225,
+          227,
+          303,
+          316,
+          381,
+          383
+        ]
+      }
+    ]
+  },
+  "black-white": {
+    "versions": [
+      {
+        "key": "black",
+        "label": "Black",
+        "exclusiveIds": [
+          14,
+          15,
+          198,
+          367,
+          430,
+          546,
+          547,
+          574,
+          575,
+          576,
+          629,
+          630,
+          641,
+          643
+        ]
+      },
+      {
+        "key": "white",
+        "label": "White",
+        "exclusiveIds": [
+          11,
+          12,
+          200,
+          368,
+          429,
+          548,
+          549,
+          577,
+          578,
+          579,
+          627,
+          628,
+          642,
+          644
+        ]
+      }
+    ]
+  },
+  "black2-white2": {
+    "versions": [
+      {
+        "key": "black-2",
+        "label": "Black 2",
+        "exclusiveIds": [
+          15,
+          240,
+          325,
+          326,
+          367,
+          381,
+          427,
+          428,
+          443,
+          546,
+          547,
+          574,
+          575,
+          576,
+          629,
+          630,
+          644
+        ]
+      },
+      {
+        "key": "white-2",
+        "label": "White 2",
+        "exclusiveIds": [
+          12,
+          239,
+          300,
+          301,
+          322,
+          323,
+          368,
+          380,
+          548,
+          549,
+          577,
+          578,
+          579,
+          627,
+          628,
+          643
+        ]
+      }
+    ]
+  },
+  "x-y": {
+    "versions": [
+      {
+        "key": "x",
+        "label": "X",
+        "exclusiveIds": [
+          120,
+          121,
+          228,
+          304,
+          305,
+          367,
+          692,
+          693
+        ]
+      },
+      {
+        "key": "y",
+        "label": "Y",
+        "exclusiveIds": [
+          11,
+          90,
+          246,
+          309,
+          368,
+          690,
+          691
+        ]
+      }
+    ]
+  },
+  "omega-ruby-alpha-sapphire": {
+    "versions": [
+      {
+        "key": "omega-ruby",
+        "label": "Omega Ruby",
+        "exclusiveIds": [
+          109,
+          250,
+          273,
+          303,
+          383,
+          484,
+          641,
+          643
+        ]
+      },
+      {
+        "key": "alpha-sapphire",
+        "label": "Alpha Sapphire",
+        "exclusiveIds": [
+          88,
+          249,
+          270,
+          302,
+          382,
+          483,
+          642,
+          644
+        ]
+      }
+    ]
+  },
+  "sun-moon": {
+    "versions": [
+      {
+        "key": "sun",
+        "label": "Sun",
+        "exclusiveIds": [
+          100,
+          101,
+          546,
+          627,
+          628,
+          766,
+          776,
+          791,
+          794,
+          798
+        ]
+      },
+      {
+        "key": "moon",
+        "label": "Moon",
+        "exclusiveIds": [
+          548,
+          629,
+          630,
+          765,
+          780,
+          792,
+          795,
+          797
+        ]
+      }
+    ]
+  },
+  "ultra-sun-ultra-moon": {
+    "versions": [
+      {
+        "key": "ultra-sun",
+        "label": "Ultra Sun",
+        "exclusiveIds": [
+          105,
+          228,
+          229,
+          243,
+          250,
+          381,
+          383,
+          483,
+          485,
+          546,
+          622,
+          627,
+          628,
+          641,
+          643,
+          693,
+          716,
+          754,
+          766,
+          776,
+          791,
+          794,
+          798,
+          806
+        ]
+      },
+      {
+        "key": "ultra-moon",
+        "label": "Ultra Moon",
+        "exclusiveIds": [
+          20,
+          244,
+          249,
+          309,
+          310,
+          343,
+          380,
+          382,
+          484,
+          486,
+          548,
+          629,
+          630,
+          642,
+          644,
+          691,
+          717,
+          765,
+          780,
+          792,
+          795,
+          797,
+          805
+        ]
+      }
+    ]
+  },
+  "lets-go": {
+    "versions": [
+      {
+        "key": "lets-go-pikachu",
+        "label": "Let's Go, Pikachu!",
+        "exclusiveIds": [
+          12,
+          27,
+          43,
+          44,
+          45,
+          53,
+          56,
+          58,
+          88,
+          89,
+          123
+        ]
+      },
+      {
+        "key": "lets-go-eevee",
+        "label": "Let's Go, Eevee!",
+        "exclusiveIds": [
+          15,
+          23,
+          37,
+          38,
+          52,
+          69,
+          70,
+          71,
+          109,
+          110,
+          127
+        ]
+      }
+    ]
+  },
+  "sword-shield": {
+    "versions": [
+      {
+        "key": "sword",
+        "label": "Sword",
+        "exclusiveIds": []
+      },
+      {
+        "key": "shield",
+        "label": "Shield",
+        "exclusiveIds": []
+      }
+    ]
+  },
+  "brilliant-diamond-shining-pearl": {
+    "versions": [
+      {
+        "key": "brilliant-diamond",
+        "label": "Brilliant Diamond",
+        "exclusiveIds": []
+      },
+      {
+        "key": "shining-pearl",
+        "label": "Shining Pearl",
+        "exclusiveIds": []
+      }
+    ]
+  },
+  "scarlet-violet": {
+    "versions": [
+      {
+        "key": "scarlet",
+        "label": "Scarlet",
+        "exclusiveIds": []
+      },
+      {
+        "key": "violet",
+        "label": "Violet",
+        "exclusiveIds": []
+      }
+    ]
+  }
+}

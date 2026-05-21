@@ -573,7 +573,7 @@ export interface AbilityListEntry {
 export function useMoveList() {
   return useQuery({
     queryKey: ["move-list"],
-    queryFn: () => fetchJson<MoveListEntry[]>(`${BASE}/moves`),
+    queryFn: () => fetchJson<MoveListEntry[]>(`/data/moves.json`),
     staleTime: Infinity,
     gcTime: 1000 * 60 * 60 * 24 * 30,
   });
@@ -582,7 +582,7 @@ export function useMoveList() {
 export function useAbilityList() {
   return useQuery({
     queryKey: ["ability-list"],
-    queryFn: () => fetchJson<AbilityListEntry[]>(`${BASE}/abilities`),
+    queryFn: () => fetchJson<AbilityListEntry[]>(`/data/abilities.json`),
     staleTime: Infinity,
     gcTime: 1000 * 60 * 60 * 24 * 30,
   });
@@ -611,7 +611,7 @@ export function useSingleAbilityDetail(name: string | null) {
 export function useVersionExclusives() {
   return useQuery({
     queryKey: ["version-exclusives"],
-    queryFn: () => fetchJson<VersionExclusivesData>(`${BASE}/version-exclusives`),
+    queryFn: () => fetchJson<VersionExclusivesData>(`/data/version-exclusives.json`),
     staleTime: Infinity,
     gcTime: 1000 * 60 * 60 * 24 * 30,
   });

@@ -7,6 +7,9 @@ dist-ssr
 *.log
 *.tsbuildinfo
 public/poke-sprites
-public/data
+public/data/**
+!public/data/moves.json
+!public/data/abilities.json
+!public/data/version-exclusives.json
 .data-manifest.json
 .claude/
