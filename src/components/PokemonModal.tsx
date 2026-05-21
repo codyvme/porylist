@@ -56,6 +56,17 @@ const METHOD_LABELS: Record<string, string> = {
   "roaming-water": "Roaming",
   "overworld-special": "Overworld",
   "special": "Special",
+  "island-scan": "Island Scan",
+  "sos-encounter": "SOS Battle",
+  "grass-spots": "Tall Grass",
+  "dark-grass-spots": "Dark Grass",
+  "cave-spots": "Cave",
+  "bridge-spots": "Bridge Shadow",
+  "surf-spots": "Surfing",
+  "super-rod-spots": "Super Rod",
+  "honey-tree": "Honey Tree",
+  "headbutt-normal": "Headbutt",
+  "headbutt-special": "Headbutt",
 };
 
 const CONDITION_LABELS: Record<string, string> = {
@@ -69,6 +80,8 @@ const CONDITION_LABELS: Record<string, string> = {
   "slot2-emerald": "Emerald in GBA slot",
   "slot2-firered": "FireRed in GBA slot",
   "slot2-leafgreen": "LeafGreen in GBA slot",
+  "sos-magnet-pull": "Magnet Pull SOS",
+  "sos-static": "Static SOS",
 };
 
 const SKIP_CONDITIONS = new Set([
@@ -77,7 +90,19 @@ const SKIP_CONDITIONS = new Set([
   "using-old-rod",
   "using-good-rod",
   "using-super-rod",
+  // Story-progress gates aren't useful to display verbatim
+  "story-progress-beat-red",
+  "story-progress-beat-champion",
+  "story-progress-post-game",
 ]);
+
+function formatConditionLabel(condition: string): string {
+  if (CONDITION_LABELS[condition]) return CONDITION_LABELS[condition];
+  // story-progress-* → drop silently (handled by SKIP_CONDITIONS, but fallback just in case)
+  if (condition.startsWith("story-progress-")) return "";
+  // Generic: title-case the hyphenated key
+  return condition.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
 function formatLocationName(apiName: string): string {
   let name = apiName
@@ -1451,8 +1476,8 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                         </thead>
                         <tbody className="divide-y divide-border/50">
                           {rows.map((row, i) => {
-                            const methodLabel = METHOD_LABELS[row.method] ?? row.method.replace(/-/g, " ");
-                            const condLabel = row.conditions.map((c) => CONDITION_LABELS[c] ?? c).join(", ");
+                            const methodLabel = METHOD_LABELS[row.method] ?? row.method.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+                            const condLabel = row.conditions.map(formatConditionLabel).filter(Boolean).join(", ");
                             return (
                               <tr key={i} className="hover:bg-muted/30">
                                 <td className={cn("py-1.5 pr-4 font-medium whitespace-nowrap", row.isSelected && "text-primary")}>
