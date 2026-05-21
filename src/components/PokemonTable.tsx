@@ -1173,7 +1173,7 @@ export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderO
                 return (
                   <div
                     key={row.id}
-                    className="absolute left-0 top-0 grid w-full border-b bg-white transition-colors hover:bg-muted/50"
+                    className="absolute left-0 top-0 grid w-full border-b bg-background transition-colors hover:bg-muted/50"
                     style={{
                       gridTemplateColumns: gridTemplate,
                       transform: `translateY(${vRow.start}px)`,
@@ -1234,7 +1234,7 @@ export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderO
               return (
                 <div
                   key={`variant-${formName}`}
-                  className="absolute left-0 top-0 grid w-full border-b bg-white"
+                  className="absolute left-0 top-0 grid w-full border-b bg-background"
                   style={{
                     gridTemplateColumns: gridTemplate,
                     transform: `translateY(${vRow.start}px)`,

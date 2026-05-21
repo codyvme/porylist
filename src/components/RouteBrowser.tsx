@@ -312,7 +312,7 @@ function MissingModal({ title, missing, spriteVersion, onOpen, onToggleCaught, c
               {filtered.map((p) => {
                 const isCaught = (caught[caughtKey] ?? []).includes(p.name);
                 return (
-                  <div key={p.id} className="flex flex-col items-center gap-0.5 rounded-lg border bg-white px-2 py-2 text-center">
+                  <div key={p.id} className="flex flex-col items-center gap-0.5 rounded-lg border bg-background px-2 py-2 text-center">
                     <img
                       src={spriteUrl(p.id, spriteVersion)}
                       alt={p.name}
@@ -788,7 +788,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget }: {
 
           {/* Encounter detail — full screen on mobile when location selected, panel on sm+ */}
           <div className={cn(
-            "overflow-y-auto bg-white",
+            "overflow-y-auto bg-background",
             selectedLocation ? "flex flex-col" : "hidden sm:flex sm:items-center sm:justify-center",
           )}>
             {/* Back button — mobile only */}
