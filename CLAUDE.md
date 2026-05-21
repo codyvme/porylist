@@ -11,7 +11,6 @@ npm run typecheck    # Run tsc --noEmit (no test suite exists)
 npm run preview      # Preview the production build locally
 
 npm run fetch-data   # Pull Pokémon data from PokéAPI → public/data/ (resumable; add --force to re-fetch)
-npm run upload-data  # Upload changed files in public/data/ to Cloudflare R2 (uses .data-manifest.json for diff)
 ```
 
 There is no test suite. `npm run typecheck` is the primary code-correctness check.
@@ -20,7 +19,13 @@ There is no test suite. `npm run typecheck` is the primary code-correctness chec
 
 ### Runtime data flow
 
-The app **never calls PokéAPI at runtime**. All JSON data is pre-fetched by the `scripts/` pipeline and hosted as static files on Cloudflare R2 at `https://data.porylist.com`. Sprites are at `https://sprites.porylist.com`. Requests are made via TanStack Query hooks defined in `src/lib/pokeapi.ts`, which append `.json` to paths and handle retries.
+Data comes from three sources:
+
+1. **Bundled static imports** — `src/data/pokemon-summary.json` and `src/data/egg-parents.json` are imported directly by Vite. They become content-hashed chunks cached permanently by the browser — zero network cost on repeat visits.
+2. **Cloudflare Pages** (`/data/...`) — small pre-built JSONs committed to the repo and served by Pages: `moves.json`, `abilities.json`, `version-exclusives.json`, and `route-data/{gameValue}.json`.
+3. **PokéAPI** (`https://pokeapi.co/api/v2`) — on-demand fetches for per-Pokémon detail pages (species, evolution chains, move/ability modals, form data). These are lazy and only triggered when a user opens a modal or expands a form row.
+
+Sprites are served from jsDelivr's PokeAPI mirror: `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon`. The `SPRITES_ROOT` constant in `src/lib/games.ts` is the single source of truth for the base URL.
 
 TanStack Query is configured with `staleTime: Infinity` and `gcTime: 30 days` globally (`src/lib/query-client.ts`). The entire cache is persisted to `localStorage` under the key `porylist-cache-v7` via `@tanstack/query-sync-storage-persister`. **Bump this key whenever the data shape changes** to force clients to re-fetch.
 
@@ -47,19 +52,21 @@ Modal components (`PokemonModal`, `MoveModal`, `AbilityModal`) are rendered insi
 | File | Purpose |
 |------|---------|
 | `src/lib/games.ts` | Source of truth for all supported games. `GAMES` array defines `nativeRanges`, `genMax`, `generation`, and `spriteVersion` per game. Also exports `bestFlavorText`, `spriteUrl`, and the version/version-group mapping tables used throughout the app. |
-| `src/lib/pokeapi.ts` | All TanStack Query hooks and TypeScript interfaces for PokéAPI data shapes. `typesForGeneration` resolves historical types using `past_types`. |
+| `src/lib/pokeapi.ts` | All TanStack Query hooks and TypeScript interfaces for PokéAPI data shapes. `usePokemonSummaryList` returns the bundled `src/data/pokemon-summary.json` synchronously (no fetch). `typesForGeneration` resolves historical types using `past_types`. |
 | `src/lib/type-chart.ts` | Gen 6+ type chart. `computeTypeEffectiveness` (defensive) and `offensiveCoverage` (STAB). Does not account for pre-Gen-6 chart differences. |
 | `src/lib/types.ts` | `TYPE_COLORS` map and `typeStyle` helper for inline badge styling. |
 | `src/lib/utils.ts` | `cn` (clsx + tailwind-merge) and `formatPokemonName` (handles Nidoran♀/♂ special cases). |
 
 ### Data pipeline scripts
 
-Scripts in `scripts/` run with Node and populate `public/data/` which is then uploaded to R2:
-- `fetch-data.mjs` — downloads and strips PokéAPI data; resumable and supports per-type `--force=<type>` flag
-- `compute-route-data.mjs` — inverts per-Pokémon encounter data into per-game route files at `route-data/{gameValue}.json`
-- `build-move-ability-lists.mjs` — builds the flat `moves` and `abilities` list files
-- `build-egg-data.mjs` — outputs `src/data/egg-parents.json` (bundled in the app, not served from R2)
-- `upload-data.mjs` — diffs against `.data-manifest.json` and uploads only changed files to R2 via `@aws-sdk/client-s3`
+Scripts in `scripts/` run with Node and populate static data files committed to the repo:
+- `fetch-data.mjs` — downloads and strips PokéAPI data into `public/data/pokemon/`; resumable, supports per-type `--force=<type>` flag
+- `compute-route-data.mjs` — inverts per-Pokémon encounter data into per-game route files at `public/data/route-data/{gameValue}.json`
+- `build-move-ability-lists.mjs` — builds `public/data/moves.json` and `public/data/abilities.json`
+- `build-pokemon-summary.mjs` — compiles all per-Pokémon JSON into `src/data/pokemon-summary.json` (bundled by Vite)
+- `build-egg-data.mjs` — outputs `src/data/egg-parents.json` (bundled by Vite)
+
+After running scripts, commit the updated files — Cloudflare Pages serves them directly. There is no upload step (R2 has been removed).
 
 ### Conventions
 
