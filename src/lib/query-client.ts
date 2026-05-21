@@ -14,6 +14,6 @@ export const queryClient = new QueryClient({
 
 export const persister = createSyncStoragePersister({
   storage: typeof window !== "undefined" ? window.localStorage : undefined,
-  key: "porylist-cache-v6",
+  key: "porylist-cache-v7",
   throttleTime: 1000,
 });

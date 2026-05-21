@@ -159,7 +159,7 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
                 >
                   {formatPokemonName(enc.name)}
                 </button>
-                {enc.heldItems.length > 0 && (
+                {enc.heldItems?.length > 0 && (
                   <p className="truncate text-xs text-muted-foreground">
                     🎒 {enc.heldItems.map((h) => `${formatItemName(h.item)} (${h.rarity}%)`).join(", ")}
                   </p>

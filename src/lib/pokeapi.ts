@@ -542,7 +542,7 @@ export function useRouteData(gameValue: string | null) {
   return useQuery({
     queryKey: ["route-data", gameValue],
     enabled: gameValue != null,
-    queryFn: () => fetchJson<RouteData>(`${BASE}/route-data/${gameValue}?v=6`),
+    queryFn: () => fetchJson<RouteData>(`${BASE}/route-data/${gameValue}?v=7`),
     staleTime: Infinity,
     gcTime: 1000 * 60 * 60 * 24 * 30,
   });
