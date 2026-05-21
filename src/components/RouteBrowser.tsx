@@ -182,9 +182,8 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
   );
 }
 
-function LocationDetail({ location, versions, selectedVersion, spriteVersion, game, caughtKey, caught, onToggleCaught, onOpen, filterUncaught }: {
+function LocationDetail({ location, selectedVersion, spriteVersion, game, caughtKey, caught, onToggleCaught, onOpen, filterUncaught }: {
   location: RouteLocation;
-  versions: string[];
   selectedVersion: string;
   spriteVersion: string | undefined;
   game: string;
@@ -224,11 +223,6 @@ function LocationDetail({ location, versions, selectedVersion, spriteVersion, ga
 
   return (
     <div>
-      {versions.length > 1 && selectedVersion && (
-        <div className="mb-3 flex items-center gap-1.5 text-xs text-muted-foreground">
-          <span>Showing {VERSION_LABELS[selectedVersion] ?? selectedVersion} encounters</span>
-        </div>
-      )}
       {allCaught ? (
         <p className="py-8 text-center text-sm text-muted-foreground">
           You've caught everything here! 🎉
@@ -818,24 +812,30 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget }: {
               <>
                 <div className="mb-4 flex items-center justify-between gap-2">
                   <h2 className="text-lg font-semibold">{selectedLocation.label}</h2>
-                  {game && (
-                    <button
-                      onClick={() => setFilterUncaught((v) => !v)}
-                      className={cn(
-                        "flex flex-shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
-                        filterUncaught
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-border text-muted-foreground hover:border-foreground hover:text-foreground",
-                      )}
-                    >
-                      <PokeballIcon caught={filterUncaught} size={11} />
-                      Uncaught only
-                    </button>
-                  )}
+                  <div className="flex flex-shrink-0 items-center gap-2">
+                    {locationProgress && (
+                      <span className="text-xs text-muted-foreground">
+                        {locationProgress.count} / {locationProgress.total} caught
+                      </span>
+                    )}
+                    {game && (
+                      <button
+                        onClick={() => setFilterUncaught((v) => !v)}
+                        className={cn(
+                          "flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+                          filterUncaught
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-border text-muted-foreground hover:border-foreground hover:text-foreground",
+                        )}
+                      >
+                        <PokeballIcon caught={filterUncaught} size={11} />
+                        Uncaught only
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <LocationDetail
                   location={selectedLocation}
-                  versions={actualVersions}
                   selectedVersion={selectedVersion}
                   spriteVersion={spriteVersion}
                   game={game}
@@ -853,38 +853,28 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget }: {
       )}
 
       {/* Catch progress footer */}
-      {game && GAMES_WITH_ROUTES.has(game) && (gameProgress || locationProgress) && (
+      {game && GAMES_WITH_ROUTES.has(game) && gameProgress && (
         <div className="flex flex-col gap-1 text-sm text-muted-foreground sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-2 sm:gap-y-0">
-          {gameProgress && (
-            <>
-              <span className="flex items-center gap-1.5">
-                <PokeballIcon caught={gameProgress.count > 0} size={13} />
-                <span className="font-medium text-foreground">
-                  {selectedVersion ? (VERSION_LABELS[selectedVersion] ?? selectedVersion) : selectedGame!.label}
-                </span>
-              </span>
-              <span className="hidden sm:inline text-muted-foreground/40">·</span>
-              <button
-                onClick={() => setMissingMode("routes")}
-                className="hover:text-foreground hover:underline transition-colors text-left"
-              >
-                {gameProgress.count} / {gameProgress.routeTotal} routes
-              </button>
-              <span className="hidden sm:inline text-muted-foreground/40">·</span>
-              <button
-                onClick={() => setMissingMode("dex")}
-                className="hover:text-foreground hover:underline transition-colors text-left"
-              >
-                {gameProgress.count} / {gameProgress.dexTotal} dex
-              </button>
-              {locationProgress && <span className="hidden sm:inline text-muted-foreground/40">·</span>}
-            </>
-          )}
-          {locationProgress && (
-            <span>
-              {locationProgress.count} / {locationProgress.total} here
+          <span className="flex items-center gap-1.5">
+            <PokeballIcon caught={gameProgress.count > 0} size={13} />
+            <span className="font-medium text-foreground">
+              {selectedVersion ? (VERSION_LABELS[selectedVersion] ?? selectedVersion) : selectedGame!.label}
             </span>
-          )}
+          </span>
+          <span className="hidden sm:inline text-muted-foreground/40">·</span>
+          <button
+            onClick={() => setMissingMode("routes")}
+            className="hover:text-foreground hover:underline transition-colors text-left"
+          >
+            {gameProgress.count} / {gameProgress.routeTotal} routes
+          </button>
+          <span className="hidden sm:inline text-muted-foreground/40">·</span>
+          <button
+            onClick={() => setMissingMode("dex")}
+            className="hover:text-foreground hover:underline transition-colors text-left"
+          >
+            {gameProgress.count} / {gameProgress.dexTotal} dex
+          </button>
         </div>
       )}
 
