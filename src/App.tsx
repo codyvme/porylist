@@ -234,6 +234,107 @@ const NAV_ITEMS = [
   { to: "/breeding",   label: "Breeding Tracker", Icon: Dna           },
 ] as const;
 
+// ─── Icon Rail (desktop) ──────────────────────────────────────────────────────
+
+function IconRail() {
+  return (
+    <aside className="hidden sm:flex flex-col w-14 shrink-0 border-r border-border bg-background dark:border-slate-700/60 dark:bg-gradient-to-b dark:from-slate-900 dark:to-slate-800 py-2">
+      {NAV_ITEMS.map(({ to, label, Icon }) => (
+        <div key={to} className="group relative flex justify-center">
+          <NavLink
+            to={to}
+            className={({ isActive }) => cn(
+              "relative flex h-12 w-full items-center justify-center border-l-2 transition-colors",
+              isActive
+                ? "border-[hsl(var(--porygon-red))] bg-primary/10 text-primary dark:bg-white/10 dark:text-white"
+                : "border-transparent text-muted-foreground hover:bg-muted hover:text-foreground dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-slate-200",
+            )}
+            aria-label={label}
+          >
+            <Icon className="h-5 w-5 shrink-0" />
+          </NavLink>
+          {/* Tooltip */}
+          <div className="pointer-events-none absolute left-full top-1/2 z-50 ml-3 -translate-y-1/2 whitespace-nowrap rounded-md bg-slate-800 px-2.5 py-1.5 text-xs font-medium text-white opacity-0 shadow-lg ring-1 ring-slate-700 transition-opacity group-hover:opacity-100">
+            {label}
+          </div>
+        </div>
+      ))}
+    </aside>
+  );
+}
+
+// ─── Mobile Drawer ────────────────────────────────────────────────────────────
+
+function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+  // Close on Escape
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [open, onClose]);
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className={cn(
+          "fixed inset-0 z-40 bg-black/60 transition-opacity sm:hidden",
+          open ? "opacity-100" : "pointer-events-none opacity-0",
+        )}
+        onClick={onClose}
+      />
+      {/* Drawer */}
+      <div
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-slate-900 shadow-2xl transition-transform duration-200 sm:hidden",
+          open ? "translate-x-0" : "-translate-x-full",
+        )}
+      >
+        {/* Drawer header */}
+        <div className="flex items-center justify-between border-b border-slate-700/60 px-4 py-3">
+          <NavLink to="/pokedex" onClick={onClose} className="flex items-center gap-1">
+            <img
+              src={`${SPRITES_ROOT}/versions/generation-iv/diamond-pearl/137.png`}
+              alt="Porygon"
+              className="h-8 w-8 object-contain"
+            />
+            <span className="text-lg font-bold text-white">Porylist</span>
+          </NavLink>
+          <button
+            onClick={onClose}
+            className="rounded-md p-1.5 text-slate-400 hover:bg-white/10 hover:text-white"
+            aria-label="Close menu"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        {/* Nav items */}
+        <nav className="flex flex-col py-2">
+          {NAV_ITEMS.map(({ to, label, Icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              onClick={onClose}
+              className={({ isActive }) => cn(
+                "flex items-center gap-3 border-l-2 px-5 py-3 text-sm transition-colors",
+                isActive
+                  ? "border-[hsl(var(--porygon-red))] bg-white/10 font-semibold text-white"
+                  : "border-transparent font-medium text-slate-400 hover:bg-white/5 hover:text-slate-200",
+              )}
+            >
+              <Icon className="h-4 w-4 shrink-0" />
+              {label}
+            </NavLink>
+          ))}
+        </nav>
+      </div>
+    </>
+  );
+}
+
+// ─── App ──────────────────────────────────────────────────────────────────────
+
 export function App() {
   const { isDark, toggle } = useTheme();
   const [showAbout, setShowAbout] = useState(false);
@@ -242,6 +343,7 @@ export function App() {
   const navigate = useNavigate();
   const location = useLocation();
   const [teamBuilderOpen, setTeamBuilderOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const [caught, setCaught] = useState<Record<string, string[]>>(() => {
     try { return JSON.parse(localStorage.getItem("porylist-caught") ?? "{}"); }
@@ -285,7 +387,6 @@ export function App() {
       const current = prev[gameKey] ?? [];
       const isCaught = current.includes(name);
       const next = isCaught ? current.filter((n) => n !== name) : [...current, name];
-      // Sync to Supabase in background
       supabase.auth.getUser().then(({ data }) => {
         const uid = data.user?.id;
         if (!uid) return;
@@ -300,17 +401,6 @@ export function App() {
     await signOut();
     didSyncRef.current = null;
   }, []);
-
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const mobileNavRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!mobileNavOpen) return;
-    const handler = (e: MouseEvent) => {
-      if (!mobileNavRef.current?.contains(e.target as Node)) setMobileNavOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [mobileNavOpen]);
 
   const [catchTrackerTarget, setCatchTrackerTarget] = useState<{ gameValue: string; locationKey: string } | null>(null);
 
@@ -345,67 +435,28 @@ export function App() {
       persistOptions={{ persister, maxAge: 1000 * 60 * 60 * 24 * 30 }}
     >
       <div className="h-screen flex flex-col overflow-hidden bg-background">
+
+        {/* ── Header ── */}
         <header className="flex-shrink-0 border-b border-slate-700/60 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900">
-          <div className="container flex items-center gap-4">
-            {/* Tab nav — mobile hamburger */}
-            <div className="relative sm:hidden" ref={mobileNavRef}>
-              <button
-                onClick={() => setMobileNavOpen((o) => !o)}
-                className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
-                aria-label="Open navigation menu"
-              >
-                <Menu className="h-5 w-5" />
-              </button>
-              {mobileNavOpen && (
-                <div className="absolute left-0 top-full z-50 mt-1 w-48 rounded-xl border border-slate-700 bg-slate-900 py-1 shadow-xl">
-                  {NAV_ITEMS.map(({ to, label, Icon }) => (
-                    <NavLink
-                      key={to}
-                      to={to}
-                      onClick={() => setMobileNavOpen(false)}
-                      className={({ isActive }) => cn(
-                        "flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors",
-                        isActive
-                          ? "font-semibold text-white bg-white/10"
-                          : "font-medium text-slate-400 hover:bg-white/5 hover:text-slate-200",
-                      )}
-                    >
-                      <Icon className="h-4 w-4 shrink-0" />
-                      {label}
-                    </NavLink>
-                  ))}
-                </div>
-              )}
-            </div>
+          <div className="flex items-center gap-3 px-4">
+            {/* Hamburger — mobile only */}
+            <button
+              onClick={() => setDrawerOpen(true)}
+              className="sm:hidden rounded-md p-2 text-slate-400 hover:bg-white/10 hover:text-white transition-colors"
+              aria-label="Open navigation menu"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
 
             {/* Logo */}
-            <div className="flex shrink-0 items-center py-3">
+            <NavLink to="/pokedex" className="flex shrink-0 items-center py-3">
               <img
                 src={`${SPRITES_ROOT}/versions/generation-iv/diamond-pearl/137.png`}
                 alt="Porygon"
                 className="h-10 w-10 object-contain"
               />
               <h1 className="text-2xl font-bold tracking-tight text-white">Porylist</h1>
-            </div>
-
-            {/* Tab nav — desktop */}
-            <nav className="hidden items-center gap-1 sm:flex">
-              {NAV_ITEMS.map(({ to, label, Icon }) => (
-                <NavLink
-                  key={to}
-                  to={to}
-                  className={({ isActive }) => cn(
-                    "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors whitespace-nowrap",
-                    isActive
-                      ? "bg-white/15 font-semibold text-white"
-                      : "font-medium text-slate-400 hover:bg-white/10 hover:text-slate-200",
-                  )}
-                >
-                  <Icon className="h-4 w-4" />
-                  {label}
-                </NavLink>
-              ))}
-            </nav>
+            </NavLink>
 
             {/* Right-side actions */}
             <div className="ml-auto flex items-center gap-1">
@@ -436,23 +487,34 @@ export function App() {
             </div>
           </div>
         </header>
-        <main className={cn("flex-1 min-h-0 container py-6 flex flex-col", location.pathname === "/pokedex" && "pb-16")}>
-          <Routes>
-            <Route path="/" element={<Navigate to="/pokedex" replace />} />
-            <Route path="/pokedex" element={
-              <PokemonTable team={team} onAddToTeam={addToTeam} onRemoveFromTeam={removeFromTeam} teamBuilderOpen={teamBuilderOpen} caught={caught} onToggleCaught={toggleCaught} onOpenInCatchTracker={handleOpenInCatchTracker} />
-            } />
-            <Route path="/moves" element={<MovesTable />} />
-            <Route path="/abilities" element={<AbilitiesTable />} />
-            <Route path="/routes" element={
-              <RouteBrowser caught={caught} onToggleCaught={toggleCaught} navigationTarget={catchTrackerTarget} />
-            } />
-            <Route path="/breeding" element={<BreedingTracker />} />
-          </Routes>
-        </main>
+
+        {/* ── Body (rail + content) ── */}
+        <div className="flex flex-1 min-h-0">
+          <IconRail />
+
+          <main className={cn("flex-1 min-h-0 overflow-auto container py-6 flex flex-col", location.pathname === "/pokedex" && "pb-16")}>
+            <Routes>
+              <Route path="/" element={<Navigate to="/pokedex" replace />} />
+              <Route path="/pokedex" element={
+                <PokemonTable team={team} onAddToTeam={addToTeam} onRemoveFromTeam={removeFromTeam} teamBuilderOpen={teamBuilderOpen} caught={caught} onToggleCaught={toggleCaught} onOpenInCatchTracker={handleOpenInCatchTracker} />
+              } />
+              <Route path="/moves" element={<MovesTable />} />
+              <Route path="/abilities" element={<AbilitiesTable />} />
+              <Route path="/routes" element={
+                <RouteBrowser caught={caught} onToggleCaught={toggleCaught} navigationTarget={catchTrackerTarget} />
+              } />
+              <Route path="/breeding" element={<BreedingTracker />} />
+            </Routes>
+          </main>
+        </div>
+
+        {/* ── Overlays ── */}
+        <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
         {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
         {showSignIn && <SignInModal onClose={() => setShowSignIn(false)} />}
-        {location.pathname === "/pokedex" && <TeamBuilder team={team} onRemove={removeFromTeam} onClear={clearTeam} expanded={teamBuilderOpen} onExpandedChange={setTeamBuilderOpen} />}
+        {location.pathname === "/pokedex" && (
+          <TeamBuilder team={team} onRemove={removeFromTeam} onClear={clearTeam} expanded={teamBuilderOpen} onExpandedChange={setTeamBuilderOpen} />
+        )}
       </div>
     </PersistQueryClientProvider>
   );

@@ -513,8 +513,8 @@ function NewProjectForm({
 
 const STEP_TYPE_COLORS: Record<string, string> = {
   prerequisite: "bg-amber-500/15 text-amber-700 dark:text-amber-400",
-  parent: "bg-blue-500/15 text-blue-700 dark:text-blue-400",
-  breed: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
+  parent: "bg-[hsl(187_40%_51%/0.15)] text-[hsl(187_50%_30%)] dark:text-[hsl(187_45%_62%)]",
+  breed: "bg-[hsl(355_69%_62%/0.15)] text-[hsl(355_69%_38%)] dark:text-[hsl(355_69%_70%)]",
   note: "bg-slate-500/15 text-slate-600 dark:text-slate-400",
 };
 
@@ -1223,7 +1223,9 @@ export function BreedingTracker() {
   const showDetail = (selected || isCreating);
 
   return (
-    <div className="flex h-full gap-0 overflow-hidden">
+    <div className="flex h-full flex-col overflow-hidden gap-3">
+      <h1 className="shrink-0 text-xl font-semibold">Breeding Tracker</h1>
+      <div className="flex flex-1 min-h-0 gap-0 overflow-hidden">
       {/* Left panel: project list */}
       <div
         className={cn(
@@ -1321,6 +1323,7 @@ export function BreedingTracker() {
             </button>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

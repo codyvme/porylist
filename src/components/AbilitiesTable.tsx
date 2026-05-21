@@ -71,6 +71,7 @@ export function AbilitiesTable() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3">
+      <h1 className="shrink-0 text-xl font-semibold">Abilities</h1>
       {/* Filters */}
       <div className="flex flex-wrap gap-2">
         <Select

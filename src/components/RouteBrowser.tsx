@@ -372,6 +372,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget }: {
   const [pokemonInput, setPokemonInput] = useState("");   // text in the input
   const [pokemonQuery, setPokemonQuery] = useState("");   // confirmed selection driving results
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestionIndex, setSuggestionIndex] = useState(-1);
   const pokemonSearchRef = useRef<HTMLDivElement>(null);
 
   // Keep URL in sync so refresh/share preserves the current view
@@ -452,6 +453,9 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget }: {
       .filter((p) => p.name.includes(q) || formatPokemonName(p.name).toLowerCase().includes(q))
       .slice(0, 10);
   }, [gamePokemonList, pokemonInput]);
+
+  // Reset keyboard highlight whenever suggestions change
+  useEffect(() => { setSuggestionIndex(-1); }, [suggestions]);
 
   // Close suggestions when clicking outside the search container
   useEffect(() => {
@@ -590,6 +594,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget }: {
 
   return (
     <div className="flex h-full flex-col gap-4">
+      <h1 className="shrink-0 text-xl font-semibold">Catch Tracker</h1>
       {/* Controls row */}
       <div className="flex flex-wrap items-center gap-4">
         <Select value={game} onChange={(e) => handleGameChange(e.target.value)} className="min-w-[200px]">
@@ -686,6 +691,26 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget }: {
                           setShowSuggestions(true);
                         }}
                         onFocus={() => setShowSuggestions(true)}
+                        onKeyDown={(e) => {
+                          if (!showSuggestions || suggestions.length === 0) return;
+                          if (e.key === "ArrowDown") {
+                            e.preventDefault();
+                            setSuggestionIndex((i) => (i + 1) % suggestions.length);
+                          } else if (e.key === "ArrowUp") {
+                            e.preventDefault();
+                            setSuggestionIndex((i) => (i <= 0 ? suggestions.length - 1 : i - 1));
+                          } else if (e.key === "Enter") {
+                            e.preventDefault();
+                            const pick = suggestions[suggestionIndex] ?? suggestions[0];
+                            if (pick) {
+                              setPokemonInput(formatPokemonName(pick.name));
+                              setPokemonQuery(pick.name);
+                              setShowSuggestions(false);
+                            }
+                          } else if (e.key === "Escape") {
+                            setShowSuggestions(false);
+                          }
+                        }}
                         placeholder="e.g. Ralts, Pikachu…"
                         className="w-full rounded-md border bg-background py-1.5 pl-8 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                         autoFocus
@@ -693,16 +718,20 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget }: {
                       />
                       {showSuggestions && suggestions.length > 0 && (
                         <div className="absolute left-0 right-0 top-full z-20 mt-1 overflow-hidden rounded-md border bg-background shadow-lg">
-                          {suggestions.map((p) => (
+                          {suggestions.map((p, i) => (
                             <button
                               key={p.name}
-                              className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-muted"
+                              className={cn(
+                                "flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm",
+                                i === suggestionIndex ? "bg-muted" : "hover:bg-muted",
+                              )}
                               onMouseDown={(e) => {
                                 e.preventDefault(); // keep input focused
                                 setPokemonInput(formatPokemonName(p.name));
                                 setPokemonQuery(p.name);
                                 setShowSuggestions(false);
                               }}
+                              onMouseEnter={() => setSuggestionIndex(i)}
                             >
                               <img
                                 src={spriteUrl(p.id, spriteVersion)}

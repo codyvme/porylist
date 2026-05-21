@@ -123,6 +123,7 @@ export function MovesTable() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3">
+      <h1 className="shrink-0 text-xl font-semibold">Moves</h1>
       {/* Filters */}
       <div className="flex flex-wrap gap-2">
         {/* Game selector */}
