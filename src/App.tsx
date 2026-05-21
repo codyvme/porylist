@@ -364,40 +364,6 @@ export function App() {
       <div className="h-screen flex flex-col overflow-hidden bg-background">
         <header className="flex-shrink-0 border-b border-slate-700/60 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900">
           <div className="container flex items-center gap-4">
-            {/* Logo */}
-            <div className="flex shrink-0 items-center py-3">
-              <img
-                src="https://sprites.porylist.com/sprites/pokemon/versions/generation-iv/diamond-pearl/137.png"
-                alt="Porygon"
-                className="h-10 w-10 object-contain"
-              />
-              <h1 className="text-2xl font-bold tracking-tight text-white">Porylist</h1>
-            </div>
-
-            {/* Tab nav — desktop */}
-            <nav className="hidden items-center gap-1 sm:flex">
-              {([
-                { id: "pokedex",   label: "Pokédex",      Icon: List          },
-                { id: "moves",     label: "Moves",         Icon: Swords        },
-                { id: "abilities", label: "Abilities",     Icon: Sparkles      },
-                { id: "routes",    label: "Catch Tracker", Icon: ClipboardList },
-              ] as { id: Tab; label: string; Icon: React.ComponentType<{ className?: string }> }[]).map(({ id, label, Icon }) => (
-                <button
-                  key={id}
-                  onClick={() => handleTabChange(id)}
-                  className={cn(
-                    "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors whitespace-nowrap",
-                    activeTab === id
-                      ? "bg-white/15 font-semibold text-white"
-                      : "font-medium text-slate-400 hover:bg-white/10 hover:text-slate-200",
-                  )}
-                >
-                  <Icon className="h-4 w-4" />
-                  {label}
-                </button>
-              ))}
-            </nav>
-
             {/* Tab nav — mobile hamburger */}
             <div className="relative sm:hidden" ref={mobileNavRef}>
               <button
@@ -432,6 +398,40 @@ export function App() {
                 </div>
               )}
             </div>
+
+            {/* Logo */}
+            <div className="flex shrink-0 items-center py-3">
+              <img
+                src="https://sprites.porylist.com/sprites/pokemon/versions/generation-iv/diamond-pearl/137.png"
+                alt="Porygon"
+                className="h-10 w-10 object-contain"
+              />
+              <h1 className="text-2xl font-bold tracking-tight text-white">Porylist</h1>
+            </div>
+
+            {/* Tab nav — desktop */}
+            <nav className="hidden items-center gap-1 sm:flex">
+              {([
+                { id: "pokedex",   label: "Pokédex",      Icon: List          },
+                { id: "moves",     label: "Moves",         Icon: Swords        },
+                { id: "abilities", label: "Abilities",     Icon: Sparkles      },
+                { id: "routes",    label: "Catch Tracker", Icon: ClipboardList },
+              ] as { id: Tab; label: string; Icon: React.ComponentType<{ className?: string }> }[]).map(({ id, label, Icon }) => (
+                <button
+                  key={id}
+                  onClick={() => handleTabChange(id)}
+                  className={cn(
+                    "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors whitespace-nowrap",
+                    activeTab === id
+                      ? "bg-white/15 font-semibold text-white"
+                      : "font-medium text-slate-400 hover:bg-white/10 hover:text-slate-200",
+                  )}
+                >
+                  <Icon className="h-4 w-4" />
+                  {label}
+                </button>
+              ))}
+            </nav>
 
             {/* Right-side actions */}
             <div className="ml-auto flex items-center gap-1">
