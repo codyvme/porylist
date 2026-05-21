@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import { Routes, Route, Navigate, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { persister, queryClient } from "@/lib/query-client";
 import { PokemonTable } from "@/components/PokemonTable";
@@ -224,26 +225,20 @@ function UserMenu({ user, onSignOut }: { user: User; onSignOut: () => void }) {
   );
 }
 
-type Tab = "pokedex" | "moves" | "abilities" | "routes";
+const NAV_ITEMS = [
+  { to: "/pokedex",    label: "Pokédex",      Icon: List          },
+  { to: "/moves",      label: "Moves",         Icon: Swords        },
+  { to: "/abilities",  label: "Abilities",     Icon: Sparkles      },
+  { to: "/routes",     label: "Catch Tracker", Icon: ClipboardList },
+] as const;
 
 export function App() {
   const { isDark, toggle } = useTheme();
   const [showAbout, setShowAbout] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
   const [user, setUser] = useState<User | null>(null);
-  const [activeTab, setActiveTab] = useState<Tab>(() => {
-    const p = new URLSearchParams(window.location.search).get("tab");
-    return p === "routes" ? "routes" : "pokedex";
-  });
-
-  const handleTabChange = useCallback((tab: Tab) => {
-    setActiveTab(tab);
-    const params = new URLSearchParams(window.location.search);
-    if (tab === "pokedex") params.delete("tab");
-    else params.set("tab", tab);
-    const qs = params.toString();
-    history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname);
-  }, []);
+  const navigate = useNavigate();
+  const location = useLocation();
   const [teamBuilderOpen, setTeamBuilderOpen] = useState(false);
 
   const [caught, setCaught] = useState<Record<string, string[]>>(() => {
@@ -319,8 +314,8 @@ export function App() {
 
   const handleOpenInCatchTracker = useCallback((gameValue: string, locationKey: string) => {
     setCatchTrackerTarget({ gameValue, locationKey });
-    handleTabChange("routes");
-  }, [handleTabChange]);
+    navigate(`/routes?routeGame=${gameValue}&route=${locationKey}`);
+  }, [navigate]);
 
   const [team, setTeam] = useState<string[]>(() => {
     const urlTeam = new URLSearchParams(window.location.search).get('team');
@@ -333,15 +328,6 @@ export function App() {
   });
   useEffect(() => {
     localStorage.setItem("porylist-team", JSON.stringify(team));
-  }, [team]);
-  useEffect(() => {
-    const url = new URL(window.location.href);
-    if (team.length > 0) {
-      url.searchParams.set('team', team.join(','));
-    } else {
-      url.searchParams.delete('team');
-    }
-    history.replaceState(null, '', url.toString());
   }, [team]);
   const addToTeam = useCallback((name: string) => {
     setTeam(prev => prev.includes(name) || prev.length >= 6 ? prev : [...prev, name]);
@@ -370,25 +356,21 @@ export function App() {
               </button>
               {mobileNavOpen && (
                 <div className="absolute left-0 top-full z-50 mt-1 w-48 rounded-xl border border-slate-700 bg-slate-900 py-1 shadow-xl">
-                  {([
-                    { id: "pokedex",   label: "Pokédex",      Icon: List          },
-                    { id: "moves",     label: "Moves",         Icon: Swords        },
-                    { id: "abilities", label: "Abilities",     Icon: Sparkles      },
-                    { id: "routes",    label: "Catch Tracker", Icon: ClipboardList },
-                  ] as { id: Tab; label: string; Icon: React.ComponentType<{ className?: string }> }[]).map(({ id, label, Icon }) => (
-                    <button
-                      key={id}
-                      onClick={() => { handleTabChange(id); setMobileNavOpen(false); }}
-                      className={cn(
+                  {NAV_ITEMS.map(({ to, label, Icon }) => (
+                    <NavLink
+                      key={to}
+                      to={to}
+                      onClick={() => setMobileNavOpen(false)}
+                      className={({ isActive }) => cn(
                         "flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors",
-                        activeTab === id
+                        isActive
                           ? "font-semibold text-white bg-white/10"
                           : "font-medium text-slate-400 hover:bg-white/5 hover:text-slate-200",
                       )}
                     >
                       <Icon className="h-4 w-4 shrink-0" />
                       {label}
-                    </button>
+                    </NavLink>
                   ))}
                 </div>
               )}
@@ -406,25 +388,20 @@ export function App() {
 
             {/* Tab nav — desktop */}
             <nav className="hidden items-center gap-1 sm:flex">
-              {([
-                { id: "pokedex",   label: "Pokédex",      Icon: List          },
-                { id: "moves",     label: "Moves",         Icon: Swords        },
-                { id: "abilities", label: "Abilities",     Icon: Sparkles      },
-                { id: "routes",    label: "Catch Tracker", Icon: ClipboardList },
-              ] as { id: Tab; label: string; Icon: React.ComponentType<{ className?: string }> }[]).map(({ id, label, Icon }) => (
-                <button
-                  key={id}
-                  onClick={() => handleTabChange(id)}
-                  className={cn(
+              {NAV_ITEMS.map(({ to, label, Icon }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  className={({ isActive }) => cn(
                     "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors whitespace-nowrap",
-                    activeTab === id
+                    isActive
                       ? "bg-white/15 font-semibold text-white"
                       : "font-medium text-slate-400 hover:bg-white/10 hover:text-slate-200",
                   )}
                 >
                   <Icon className="h-4 w-4" />
                   {label}
-                </button>
+                </NavLink>
               ))}
             </nav>
 
@@ -457,19 +434,22 @@ export function App() {
             </div>
           </div>
         </header>
-        <main className={cn("flex-1 min-h-0 container py-6 flex flex-col", activeTab === "pokedex" && "pb-16")}>
-          {activeTab === "pokedex" && (
-            <PokemonTable team={team} onAddToTeam={addToTeam} onRemoveFromTeam={removeFromTeam} teamBuilderOpen={teamBuilderOpen} caught={caught} onToggleCaught={toggleCaught} onOpenInCatchTracker={handleOpenInCatchTracker} />
-          )}
-          {activeTab === "moves" && <MovesTable />}
-          {activeTab === "abilities" && <AbilitiesTable />}
-          {activeTab === "routes" && (
-            <RouteBrowser caught={caught} onToggleCaught={toggleCaught} navigationTarget={catchTrackerTarget} />
-          )}
+        <main className={cn("flex-1 min-h-0 container py-6 flex flex-col", location.pathname === "/pokedex" && "pb-16")}>
+          <Routes>
+            <Route path="/" element={<Navigate to="/pokedex" replace />} />
+            <Route path="/pokedex" element={
+              <PokemonTable team={team} onAddToTeam={addToTeam} onRemoveFromTeam={removeFromTeam} teamBuilderOpen={teamBuilderOpen} caught={caught} onToggleCaught={toggleCaught} onOpenInCatchTracker={handleOpenInCatchTracker} />
+            } />
+            <Route path="/moves" element={<MovesTable />} />
+            <Route path="/abilities" element={<AbilitiesTable />} />
+            <Route path="/routes" element={
+              <RouteBrowser caught={caught} onToggleCaught={toggleCaught} navigationTarget={catchTrackerTarget} />
+            } />
+          </Routes>
         </main>
         {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
         {showSignIn && <SignInModal onClose={() => setShowSignIn(false)} />}
-        {activeTab === "pokedex" && <TeamBuilder team={team} onRemove={removeFromTeam} onClear={clearTeam} expanded={teamBuilderOpen} onExpandedChange={setTeamBuilderOpen} />}
+        {location.pathname === "/pokedex" && <TeamBuilder team={team} onRemove={removeFromTeam} onClear={clearTeam} expanded={teamBuilderOpen} onExpandedChange={setTeamBuilderOpen} />}
       </div>
     </PersistQueryClientProvider>
   );

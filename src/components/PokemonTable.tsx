@@ -1,4 +1,5 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { PokemonModal } from "@/components/PokemonModal";
 import {
   createColumnHelper,
@@ -261,32 +262,29 @@ export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderO
     });
   }, []);
 
-  const [selectedPokemon, setSelectedPokemon] = useState<string | null>(() => {
-    return new URLSearchParams(window.location.search).get("pokemon");
-  });
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Derive modal state directly from URL — keeps back-button in sync
+  const selectedPokemon = searchParams.get("pokemon");
 
   const openModal = useCallback((name: string) => {
-    const params = new URLSearchParams(window.location.search);
-    params.set("pokemon", name);
-    history.pushState({}, "", `?${params}`);
-    setSelectedPokemon(name);
-  }, []);
+    setSearchParams((prev) => { const next = new URLSearchParams(prev); next.set("pokemon", name); return next; });
+  }, [setSearchParams]);
 
   const closeModal = useCallback(() => {
-    const params = new URLSearchParams(window.location.search);
-    params.delete("pokemon");
-    const search = params.toString();
-    history.pushState({}, "", search ? `?${search}` : window.location.pathname);
-    setSelectedPokemon(null);
-  }, []);
+    setSearchParams((prev) => { const next = new URLSearchParams(prev); next.delete("pokemon"); return next; });
+  }, [setSearchParams]);
 
+  // Sync ?team= param (only runs while on /pokedex)
   useEffect(() => {
-    const handler = () => {
-      setSelectedPokemon(new URLSearchParams(window.location.search).get("pokemon"));
-    };
-    window.addEventListener("popstate", handler);
-    return () => window.removeEventListener("popstate", handler);
-  }, []);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (team.length > 0) next.set("team", team.join(","));
+      else next.delete("team");
+      return next;
+    }, { replace: true });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [team]);
 
   const openModalRef = useRef(openModal);
   openModalRef.current = openModal;

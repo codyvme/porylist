@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { ArrowLeft, Search, X } from "lucide-react";
 import { Select } from "@/components/ui/select";
 import { GAMES, GAMES_BY_VALUE } from "@/lib/games";
@@ -359,10 +360,11 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget }: {
   onToggleCaught: (name: string, gameKey: string) => void;
   navigationTarget?: { gameValue: string; locationKey: string } | null;
 }) {
-  const [game, setGame] = useState(() => new URLSearchParams(window.location.search).get("routeGame") ?? "");
-  const [locationKey, setLocationKey] = useState<string | null>(() => new URLSearchParams(window.location.search).get("route"));
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [game, setGame] = useState(() => searchParams.get("routeGame") ?? "");
+  const [locationKey, setLocationKey] = useState<string | null>(() => searchParams.get("route"));
   const [locationSearch, setLocationSearch] = useState("");
-  const [selectedVersion, setSelectedVersion] = useState(() => new URLSearchParams(window.location.search).get("routeVersion") ?? "");
+  const [selectedVersion, setSelectedVersion] = useState(() => searchParams.get("routeVersion") ?? "");
   const [selectedPokemon, setSelectedPokemon] = useState<string | null>(null);
   const [missingMode, setMissingMode] = useState<"routes" | "dex" | null>(null);
   const [filterUncaught, setFilterUncaught] = useState(false);
@@ -374,13 +376,12 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget }: {
 
   // Keep URL in sync so refresh/share preserves the current view
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (game) params.set("routeGame", game); else params.delete("routeGame");
-    if (locationKey) params.set("route", locationKey); else params.delete("route");
-    if (selectedVersion) params.set("routeVersion", selectedVersion); else params.delete("routeVersion");
-    const qs = params.toString();
-    history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname);
-  }, [game, locationKey, selectedVersion]);
+    const next: Record<string, string> = {};
+    if (game) next.routeGame = game;
+    if (locationKey) next.route = locationKey;
+    if (selectedVersion) next.routeVersion = selectedVersion;
+    setSearchParams(next, { replace: true });
+  }, [game, locationKey, selectedVersion, setSearchParams]);
 
   // Navigate to a specific game + location when triggered from outside (e.g. "Where to find" deep link)
   useEffect(() => {
