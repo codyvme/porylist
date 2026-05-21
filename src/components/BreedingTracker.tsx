@@ -575,19 +575,6 @@ function PlanAccordion({ steps }: { steps: BreedingStep[] }) {
                     ))}
                   </ul>
                 )}
-                {step.type === "parent" && (
-                  <div className="mt-3 flex flex-wrap gap-2 rounded-md bg-muted/40 p-3">
-                    {(step.type === "parent") && step.details.some(d => d.includes("holds:")) && (
-                      <div className="text-xs text-muted-foreground">
-                        <strong>Items needed:</strong>{" "}
-                        {["Destiny Knot", "Power Weight", "Power Bracer", "Power Belt",
-                          "Power Lens", "Power Band", "Power Anklet", "Everstone"].filter(
-                          (item) => step.details.some((d) => d.includes(item)),
-                        ).join(", ")}
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
             )}
           </div>
