@@ -117,6 +117,21 @@ export interface Pokemon {
   species: { name: string; url: string };
 }
 
+/** Compact summary used for the Pokédex table — single file, no per-Pokémon fetches. */
+export interface PokemonSummary {
+  id: number;
+  name: string;
+  height: number;
+  weight: number;
+  types: PokemonType[];
+  past_types: PokemonPastType[];
+  stats: Array<{ base_stat: number; stat: { name: string } }>;
+  abilities: Array<{ ability: { name: string }; is_hidden: boolean; slot: number }>;
+  species: { name: string };
+  /** moveName → sorted array of generation numbers the move is available in */
+  moves: Record<string, number[]>;
+}
+
 export interface PokemonSpecies {
   capture_rate: number;
   base_happiness: number;
@@ -214,7 +229,7 @@ const GEN_NAME_TO_NUM: Record<string, number> = {
  * current/latest typing.
  */
 export function typesForGeneration(
-  pokemon: Pokemon,
+  pokemon: { types: PokemonType[]; past_types: PokemonPastType[] },
   generation: number | undefined,
 ): string[] {
   if (generation == null || pokemon.past_types.length === 0) {
@@ -259,6 +274,15 @@ export function usePokemonDetails(names: string[]) {
       queryFn: () => fetchJson<Pokemon>(`${BASE}/pokemon/${name}`),
       staleTime: Infinity,
     })),
+  });
+}
+
+export function usePokemonSummaryList() {
+  return useQuery({
+    queryKey: ["pokemon-summary"],
+    queryFn: () => fetchJson<PokemonSummary[]>(`/data/pokemon-summary.json`),
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 60 * 24 * 30,
   });
 }
 

@@ -18,17 +18,14 @@ import { Select } from "@/components/ui/select";
 import {
   extractIdFromUrl,
   typesForGeneration,
-  useAllPokemonDetails,
   useAllPokemonEntries,
   useAllPokemonSpecies,
   useFormDetails,
   usePokemonFormData,
-  usePokemonList,
+  usePokemonSummaryList,
   useVersionExclusives,
-  VERSION_GROUP_TO_GEN,
-  type Pokemon,
   type PokemonFormDataMap,
-  type PokemonListEntry,
+  type PokemonSummary,
 } from "@/lib/pokeapi";
 import {
   GAMES,
@@ -46,7 +43,7 @@ interface Row {
   name: string;
   sprite: string | null;
   types: string[];
-  isLoading: boolean;
+  isLoading: false;
   hp: number;
   attack: number;
   defense: number;
@@ -62,6 +59,8 @@ interface Row {
   isBaby: boolean | null;
   isMono: boolean;
   isNoEvolution: boolean | null;
+  /** Compact move filter data: moveName → generation numbers */
+  moveGens: Record<string, number[]>;
 }
 
 type DisplayRow =
@@ -172,15 +171,12 @@ const typesColumn = columnHelper.accessor("types", {
   },
 });
 
-function statByName(detail: Pokemon | undefined, name: string): number {
-  if (!detail) return 0;
+function statByName(detail: { stats: Array<{ base_stat: number; stat: { name: string } }> }, name: string): number {
   return detail.stats.find((s) => s.stat.name === name)?.base_stat ?? 0;
 }
 
 function buildRow(
-  entry: PokemonListEntry,
-  detail: Pokemon | undefined,
-  isLoading: boolean,
+  summary: PokemonSummary,
   spriteVersion: string | undefined,
   generation: number | undefined,
   captureRate: number | null,
@@ -190,28 +186,29 @@ function buildRow(
   isBaby: boolean | null,
   isNoEvolution: boolean | null,
 ): Row {
-  const id = detail?.id ?? extractIdFromUrl(entry.url);
+  const types = typesForGeneration(summary, generation);
   return {
-    id,
-    name: detail?.name ?? entry.name,
-    sprite: spriteUrl(id, spriteVersion),
-    types: detail ? typesForGeneration(detail, generation) : [],
-    isLoading,
-    hp: statByName(detail, "hp"),
-    attack: statByName(detail, "attack"),
-    defense: statByName(detail, "defense"),
-    specialAttack: statByName(detail, "special-attack"),
-    specialDefense: statByName(detail, "special-defense"),
-    speed: statByName(detail, "speed"),
-    height: detail?.height ?? 0,
-    weight: detail?.weight ?? 0,
+    id: summary.id,
+    name: summary.name,
+    sprite: spriteUrl(summary.id, spriteVersion),
+    types,
+    isLoading: false,
+    hp: statByName(summary, "hp"),
+    attack: statByName(summary, "attack"),
+    defense: statByName(summary, "defense"),
+    specialAttack: statByName(summary, "special-attack"),
+    specialDefense: statByName(summary, "special-defense"),
+    speed: statByName(summary, "speed"),
+    height: summary.height,
+    weight: summary.weight,
     captureRate,
     eggGroups,
     isLegendary,
     isMythical,
     isBaby,
-    isMono: !isLoading && detail != null ? typesForGeneration(detail, generation).length === 1 : false,
+    isMono: types.length === 1,
     isNoEvolution,
+    moveGens: summary.moves,
   };
 }
 
@@ -234,11 +231,8 @@ export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderO
   onToggleCaught: (name: string, gameKey: string) => void;
   onOpenInCatchTracker?: (gameValue: string, locationKey: string) => void;
 }) {
-  const list = usePokemonList();
-  const entries = list.data?.results ?? [];
-
-  const detailsQuery = useAllPokemonDetails(entries.map((e) => e.name));
-  const detailsMap = detailsQuery.data;
+  const summaryQuery = usePokemonSummaryList();
+  const summaryList = summaryQuery.data;
 
   const allEntriesQuery = useAllPokemonEntries();
 
@@ -298,17 +292,16 @@ export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderO
 
   // Build a map from base pokemon name → alternate form names
   const formsMap = useMemo(() => {
-    if (!allEntriesQuery.data || !entries.length) return {} as Record<string, string[]>;
-    const baseNames = entries.map((e) => e.name);
+    if (!allEntriesQuery.data || !summaryList?.length) return {} as Record<string, string[]>;
+    const baseNames = summaryList.map((s) => s.name);
 
     // Some base Pokémon have a default-form suffix (e.g. deoxys-normal, giratina-altered).
     // Build a species-name → base-pokemon-name lookup so forms like "deoxys-attack" can
     // still be matched to "deoxys-normal" via the shared species name "deoxys".
     const speciesToBase: Record<string, string> = {};
-    for (const baseName of baseNames) {
-      const speciesName = detailsMap?.[baseName]?.species.name;
-      if (speciesName && speciesName !== baseName && !speciesToBase[speciesName]) {
-        speciesToBase[speciesName] = baseName;
+    for (const s of summaryList) {
+      if (s.species.name !== s.name && !speciesToBase[s.species.name]) {
+        speciesToBase[s.species.name] = s.name;
       }
     }
 
@@ -418,11 +411,10 @@ export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderO
   const captureRateVisible = columnVisibility["captureRate"] !== false;
   const eggGroupVisible = columnVisibility["eggGroups"] !== false;
 
-  // Derive unique species names from detail data — entry names like "deoxys-normal"
-  // don't map to valid species endpoints, but detail.species.name ("deoxys") does.
+  // Derive unique species names from summary data.
   const speciesNames = useMemo(
-    () => detailsMap ? [...new Set(Object.values(detailsMap).map((d) => d.species.name))] : [],
-    [detailsMap],
+    () => summaryList ? [...new Set(summaryList.map((s) => s.species.name))] : [],
+    [summaryList],
   );
 
   // Always prefetch species once main details are loaded — cached forever, so
@@ -440,19 +432,18 @@ export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderO
   }, [speciesMap]);
 
   const allMoveNames = useMemo(() => {
-    if (!detailsMap) return [] as string[];
+    if (!summaryList) return [] as string[];
     const names = new Set<string>();
-    for (const pkmn of Object.values(detailsMap)) {
-      for (const m of pkmn.moves) names.add(m.move.name);
+    for (const pkmn of summaryList) {
+      for (const moveName of Object.keys(pkmn.moves)) names.add(moveName);
     }
     return [...names].sort();
-  }, [detailsMap]);
+  }, [summaryList]);
 
   const allRows = useMemo<Row[]>(
     () =>
-      entries.map((entry) => {
-        const detail = detailsMap?.[entry.name];
-        const speciesName = detail?.species.name ?? entry.name;
+      (summaryList ?? []).map((summary) => {
+        const speciesName = summary.species.name;
         const species = speciesMap?.[speciesName];
         const captureRate = captureRateVisible ? (species?.capture_rate ?? null) : null;
         const eggGroups = eggGroupVisible
@@ -464,9 +455,9 @@ export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderO
         const isNoEvolution = species != null && evolutionTargets != null
           ? species.evolves_from_species === null && !evolutionTargets.has(speciesName)
           : null;
-        return buildRow(entry, detail, !detail, spriteVersion, generation, captureRate, eggGroups, isLegendary, isMythical, isBaby, isNoEvolution);
+        return buildRow(summary, spriteVersion, generation, captureRate, eggGroups, isLegendary, isMythical, isBaby, isNoEvolution);
       }),
-    [entries, detailsMap, speciesMap, captureRateVisible, eggGroupVisible, spriteVersion, generation, evolutionTargets],
+    [summaryList, speciesMap, captureRateVisible, eggGroupVisible, spriteVersion, generation, evolutionTargets],
   );
 
   const data = useMemo<Row[]>(() => {
@@ -513,22 +504,17 @@ export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderO
         result = result.filter((r) => idSet.has(r.id));
       }
     }
-    if (deferredMoveFilter.trim() && detailsMap) {
+    if (deferredMoveFilter.trim()) {
       const moveName = deferredMoveFilter.trim().toLowerCase().replace(/\s+/g, "-");
       result = result.filter((r) => {
-        const detail = detailsMap[r.name];
-        if (!detail) return false;
-        return detail.moves.some((m) => {
-          if (m.move.name !== moveName) return false;
-          if (!selectedGame) return true;
-          return m.version_group_details.some(
-            (vgd) => VERSION_GROUP_TO_GEN[vgd.version_group.name] === selectedGame.generation,
-          );
-        });
+        const gens = r.moveGens[moveName];
+        if (!gens) return false;
+        if (!selectedGame) return true;
+        return gens.includes(selectedGame.generation);
       });
     }
     return result;
-  }, [allRows, selectedGame, deferredSearch, selectedTypes, showLegendary, showMythical, showBaby, showMono, showNoEvolution, speciesMap, evolutionTargets, catchFilter, game, caught, deferredMoveFilter, detailsMap, deferredExclusiveVersion, versionExclusivesData]);
+  }, [allRows, selectedGame, deferredSearch, selectedTypes, showLegendary, showMythical, showBaby, showMono, showNoEvolution, speciesMap, evolutionTargets, catchFilter, game, caught, deferredMoveFilter, deferredExclusiveVersion, versionExclusivesData]);
 
 
   const showRegional = false;
@@ -878,7 +864,7 @@ export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderO
     overscan: 8,
   });
 
-  if (list.isLoading) {
+  if (summaryQuery.isLoading) {
     return (
       <div className="flex items-center justify-center py-24 text-muted-foreground">
         Loading Pokémon…
@@ -886,7 +872,7 @@ export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderO
     );
   }
 
-  if (list.error) {
+  if (summaryQuery.error) {
     return (
       <div className="flex items-center justify-center py-24 text-destructive">
         Failed to load Pokémon list.
