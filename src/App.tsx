@@ -6,7 +6,7 @@ import { RouteBrowser } from "@/components/RouteBrowser";
 import { MovesTable } from "@/components/MovesTable";
 import { AbilitiesTable } from "@/components/AbilitiesTable";
 import { TeamBuilder } from "@/components/TeamBuilder";
-import { CircleHelp, ClipboardList, List, LogOut, Moon, Sparkles, Sun, Swords, X } from "lucide-react";
+import { CircleHelp, ClipboardList, List, LogOut, Menu, Moon, Sparkles, Sun, Swords, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
@@ -309,6 +309,17 @@ export function App() {
     didSyncRef.current = null;
   }, []);
 
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const mobileNavRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!mobileNavOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (!mobileNavRef.current?.contains(e.target as Node)) setMobileNavOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [mobileNavOpen]);
+
   const [catchTrackerTarget, setCatchTrackerTarget] = useState<{ gameValue: string; locationKey: string } | null>(null);
 
   const handleOpenInCatchTracker = useCallback((gameValue: string, locationKey: string) => {
@@ -363,8 +374,8 @@ export function App() {
               <h1 className="text-2xl font-bold tracking-tight text-white">Porylist</h1>
             </div>
 
-            {/* Tab nav */}
-            <nav className="flex items-center gap-1">
+            {/* Tab nav — desktop */}
+            <nav className="hidden items-center gap-1 sm:flex">
               {([
                 { id: "pokedex",   label: "Pokédex",      Icon: List          },
                 { id: "moves",     label: "Moves",         Icon: Swords        },
@@ -386,6 +397,41 @@ export function App() {
                 </button>
               ))}
             </nav>
+
+            {/* Tab nav — mobile hamburger */}
+            <div className="relative sm:hidden" ref={mobileNavRef}>
+              <button
+                onClick={() => setMobileNavOpen((o) => !o)}
+                className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
+                aria-label="Open navigation menu"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
+              {mobileNavOpen && (
+                <div className="absolute left-0 top-full z-50 mt-1 w-48 rounded-xl border border-slate-700 bg-slate-900 py-1 shadow-xl">
+                  {([
+                    { id: "pokedex",   label: "Pokédex",      Icon: List          },
+                    { id: "moves",     label: "Moves",         Icon: Swords        },
+                    { id: "abilities", label: "Abilities",     Icon: Sparkles      },
+                    { id: "routes",    label: "Catch Tracker", Icon: ClipboardList },
+                  ] as { id: Tab; label: string; Icon: React.ComponentType<{ className?: string }> }[]).map(({ id, label, Icon }) => (
+                    <button
+                      key={id}
+                      onClick={() => { handleTabChange(id); setMobileNavOpen(false); }}
+                      className={cn(
+                        "flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors",
+                        activeTab === id
+                          ? "font-semibold text-white bg-white/10"
+                          : "font-medium text-slate-400 hover:bg-white/5 hover:text-slate-200",
+                      )}
+                    >
+                      <Icon className="h-4 w-4 shrink-0" />
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Right-side actions */}
             <div className="ml-auto flex items-center gap-1">
