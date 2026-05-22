@@ -1319,7 +1319,7 @@ export function BreedingTracker({ user }: { user: User | null }) {
       {/* Left panel: project list */}
       <div
         className={cn(
-          "flex w-72 shrink-0 flex-col gap-3 overflow-y-auto border-r pr-4",
+          "flex w-72 shrink-0 flex-col gap-3 overflow-y-auto sm:border-r sm:pr-4",
           showDetail && "hidden sm:flex",
         )}
       >

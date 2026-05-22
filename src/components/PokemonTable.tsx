@@ -964,7 +964,7 @@ export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderO
             )}
           >
             <ListFilter className="h-3.5 w-3.5" />
-            Filter
+            <span className="hidden sm:inline">Filter</span>
             {activeFilterCount > 0 && (
               <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
                 {activeFilterCount}
@@ -1080,7 +1080,7 @@ export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderO
             )}
           >
             <SlidersHorizontal className="h-3.5 w-3.5" />
-            Columns
+            <span className="hidden sm:inline">Columns</span>
           </button>
           {colsOpen && (
             <div className="absolute right-0 top-full z-20 mt-1 w-40 rounded-lg border bg-background p-2 shadow-lg">

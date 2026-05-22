@@ -344,23 +344,16 @@ function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void })
       {/* Drawer */}
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-slate-900 shadow-2xl transition-transform duration-200 sm:hidden",
+          "fixed inset-y-0 left-0 z-50 flex w-64 flex-col shadow-2xl transition-transform duration-200 sm:hidden",
+          "bg-background dark:bg-gradient-to-b dark:from-slate-900 dark:to-slate-800 border-r border-border dark:border-slate-700/60",
           open ? "translate-x-0" : "-translate-x-full",
         )}
       >
-        {/* Drawer header */}
-        <div className="flex items-center justify-between border-b border-slate-700/60 px-4 py-3">
-          <NavLink to="/pokedex" onClick={onClose} className="flex items-center gap-1">
-            <img
-              src={`${SPRITES_ROOT}/versions/generation-iv/diamond-pearl/137.png`}
-              alt="Porygon"
-              className="h-8 w-8 object-contain"
-            />
-            <span className="text-lg font-bold text-white">Porylist</span>
-          </NavLink>
+        {/* Drawer header — close button only */}
+        <div className="flex items-center justify-end border-b border-border dark:border-slate-700/60 px-4 py-3">
           <button
             onClick={onClose}
-            className="rounded-md p-1.5 text-slate-400 hover:bg-white/10 hover:text-white"
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:bg-white/10"
             aria-label="Close menu"
           >
             <X className="h-5 w-5" />
@@ -374,10 +367,10 @@ function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void })
               to={to}
               onClick={onClose}
               className={({ isActive }) => cn(
-                "flex items-center gap-3 border-l-2 px-5 py-3 text-sm transition-colors",
+                "flex items-center gap-3 border-l-2 px-5 py-3 text-sm transition-colors whitespace-nowrap",
                 isActive
-                  ? "border-[hsl(var(--porygon-red))] bg-white/10 font-semibold text-white"
-                  : "border-transparent font-medium text-slate-400 hover:bg-white/5 hover:text-slate-200",
+                  ? "border-[hsl(var(--porygon-red))] bg-primary/10 font-semibold text-primary dark:bg-white/10 dark:text-white"
+                  : "border-transparent font-medium text-muted-foreground hover:bg-muted hover:text-foreground dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-slate-200",
               )}
             >
               <Icon className="h-4 w-4 shrink-0" />
