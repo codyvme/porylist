@@ -759,7 +759,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
 
   const typeEffectiveness = useMemo(() => {
     if (types.length === 0) return null;
-    const chart = computeTypeEffectiveness(types);
+    const chart = computeTypeEffectiveness(types, generation ?? 9);
     const immune: string[] = [];
     const quarter: string[] = [];
     const half: string[] = [];
