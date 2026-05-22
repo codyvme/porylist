@@ -886,10 +886,12 @@ export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderO
     <div className="flex h-full flex-col gap-3 px-6">
       <div className="shrink-0 flex items-center gap-3 border-b border-border py-3 -mx-6 px-6">
         <h1 className="flex-1 text-xl font-semibold">Pokédex</h1>
-        <Select value={game} onChange={(e) => setGame(e.target.value)} className="sm:hidden max-w-[160px]">
-          <option value="">All Games</option>
-          {GAMES.map((g) => <option key={g.value} value={g.value}>{g.label}</option>)}
-        </Select>
+        <div className="sm:hidden">
+          <Select value={game} onChange={(e) => setGame(e.target.value)} className="max-w-[160px]">
+            <option value="">All Games</option>
+            {GAMES.map((g) => <option key={g.value} value={g.value}>{g.label}</option>)}
+          </Select>
+        </div>
       </div>
       <div className="flex flex-wrap items-center gap-2">
         {/* Game selector */}
