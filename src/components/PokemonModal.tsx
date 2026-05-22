@@ -987,17 +987,19 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
     return map;
   }, [eggData, speciesEggGroups, generation, filteredMoves.egg, pokemon]);
 
-  const homeSprite = pokemon
-    ? showShiny
-      ? `${SPRITES_ROOT}/other/home/shiny/${pokemon.id}.png`
-      : `${SPRITES_ROOT}/other/home/${pokemon.id}.png`
-    : null;
-  const gameSprite =
+  // Both normal and shiny URLs always defined so the browser fetches both
+  // as soon as the modal opens — no delay when toggling the Shiny button.
+  const homeSpriteNormal = pokemon ? `${SPRITES_ROOT}/other/home/${pokemon.id}.png` : null;
+  const homeSpriteShiny  = pokemon ? `${SPRITES_ROOT}/other/home/shiny/${pokemon.id}.png` : null;
+  const homeSprite = showShiny ? homeSpriteShiny : homeSpriteNormal;
+
+  const gameSpriteNormal =
+    game?.spriteVersion && pokemon ? spriteUrl(pokemon.id, game.spriteVersion) : null;
+  const gameSpriteShiny =
     game?.spriteVersion && pokemon
-      ? showShiny
-        ? `${SPRITES_ROOT}/versions/${game.spriteVersion}/shiny/${pokemon.id}.png`
-        : spriteUrl(pokemon.id, game.spriteVersion)
+      ? `${SPRITES_ROOT}/versions/${game.spriteVersion}/shiny/${pokemon.id}.png`
       : null;
+  const gameSprite = showShiny ? gameSpriteShiny : gameSpriteNormal;
   const showGameSprite = gameSprite && gameSprite !== homeSprite;
 
   const formEnglishName = formDataMap?.[pokemonName]?.names.find((n) => n.language.name === "en")?.name;
@@ -1142,18 +1144,35 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
               <div className="flex flex-col gap-6 p-6 sm:flex-row">
                 {/* Left: sprite */}
                 <div className="flex flex-shrink-0 flex-col items-center gap-3">
-                  {homeSprite && (
-                    <img
-                      src={homeSprite}
-                      alt={displayName}
-                      className="h-36 w-36 object-contain sm:h-48 sm:w-48"
-                      onError={(e) => {
-                        const img = e.target as HTMLImageElement;
-                        if (pokemon) {
-                          img.src = `${SPRITES_ROOT}/${pokemon.id}.png`;
-                        }
-                      }}
-                    />
+                  {/* Crossfading sprite pair — both load immediately so the
+                      shiny image is already cached when the button is clicked */}
+                  {homeSpriteNormal && homeSpriteShiny && (
+                    <div className="relative h-36 w-36 sm:h-48 sm:w-48">
+                      <img
+                        src={homeSpriteNormal}
+                        alt={displayName}
+                        className={cn(
+                          "absolute inset-0 h-full w-full object-contain transition-opacity duration-200",
+                          showShiny ? "opacity-0" : "opacity-100",
+                        )}
+                        onError={(e) => {
+                          const img = e.target as HTMLImageElement;
+                          if (pokemon) img.src = `${SPRITES_ROOT}/${pokemon.id}.png`;
+                        }}
+                      />
+                      <img
+                        src={homeSpriteShiny}
+                        alt={`${displayName} shiny`}
+                        className={cn(
+                          "absolute inset-0 h-full w-full object-contain transition-opacity duration-200",
+                          showShiny ? "opacity-100" : "opacity-0",
+                        )}
+                        onError={(e) => {
+                          const img = e.target as HTMLImageElement;
+                          if (pokemon) img.src = `${SPRITES_ROOT}/${pokemon.id}.png`;
+                        }}
+                      />
+                    </div>
                   )}
                   <button
                     onClick={() => setShowShiny((s) => !s)}
@@ -1170,6 +1189,10 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                   </button>
                   {showGameSprite && (
                     <GameSpriteThumb key={gameSprite} src={gameSprite} alt={`${displayName} in-game`} />
+                  )}
+                  {/* Hidden preload for the shiny game sprite */}
+                  {gameSpriteShiny && gameSpriteShiny !== gameSpriteNormal && (
+                    <img src={gameSpriteShiny} alt="" className="hidden" aria-hidden="true" />
                   )}
                 </div>
 

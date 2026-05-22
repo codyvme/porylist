@@ -246,7 +246,7 @@ function IconRail() {
           key={to}
           to={to}
           className={({ isActive }) => cn(
-            "flex h-11 w-full items-center gap-3 border-l-2 px-4 text-sm transition-colors",
+            "flex h-11 w-full items-center gap-3 border-l-2 px-4 text-sm transition-colors whitespace-nowrap",
             isActive
               ? "border-[hsl(var(--porygon-red))] bg-primary/10 font-semibold text-primary dark:bg-white/10 dark:text-white"
               : "border-transparent font-medium text-muted-foreground hover:bg-muted hover:text-foreground dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-slate-200",
