@@ -489,10 +489,13 @@ export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderO
       result = result.filter((r) => r.isNoEvolution === true);
     }
     if (catchFilter !== "all" && game) {
-      const caughtList = caught[game] ?? [];
-      result = result.filter((r) =>
-        catchFilter === "caught" ? caughtList.includes(r.name) : !caughtList.includes(r.name),
-      );
+      const caughtList = new Set(caught[game] ?? []);
+      result = result.filter((r) => {
+        // A row counts as "caught" if the base form or any of its alternate forms is caught
+        const formNames = availableFormsMap[r.name] ?? [];
+        const anyCaught = caughtList.has(r.name) || formNames.some((f) => caughtList.has(f));
+        return catchFilter === "caught" ? anyCaught : !anyCaught;
+      });
     }
     if (deferredExclusiveVersion && game && versionExclusivesData?.[game]) {
       const versionEntry = versionExclusivesData[game].versions.find(
@@ -513,7 +516,7 @@ export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderO
       });
     }
     return result;
-  }, [allRows, selectedGame, deferredSearch, selectedTypes, showLegendary, showMythical, showBaby, showMono, showNoEvolution, speciesMap, evolutionTargets, catchFilter, game, caught, deferredMoveFilter, deferredExclusiveVersion, versionExclusivesData]);
+  }, [allRows, selectedGame, deferredSearch, selectedTypes, showLegendary, showMythical, showBaby, showMono, showNoEvolution, speciesMap, evolutionTargets, catchFilter, game, caught, availableFormsMap, deferredMoveFilter, deferredExclusiveVersion, versionExclusivesData]);
 
 
   const showRegional = false;
@@ -1249,8 +1252,27 @@ export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderO
                       )}
                     </div>
                   </div>
-                  {/* caught: empty for variant rows */}
-                  {game && <div className="flex items-center px-3 py-3" />}
+                  {/* caught: toggle for variant rows */}
+                  {game && (() => {
+                    const isFormCaught = (caught[game] ?? []).includes(formName);
+                    return (
+                      <div className="flex items-center px-3 py-3">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onToggleCaught(formName, game); }}
+                          className={cn(
+                            "flex h-7 w-7 items-center justify-center rounded-full transition-colors",
+                            isFormCaught
+                              ? "text-primary hover:text-muted-foreground"
+                              : "text-muted-foreground/30 hover:text-primary",
+                          )}
+                          aria-label={isFormCaught ? `Mark ${name} as not caught` : `Mark ${name} as caught`}
+                          title={isFormCaught ? "Mark as not caught" : "Mark as caught"}
+                        >
+                          <PokeballIcon caught={isFormCaught} size={15} />
+                        </button>
+                      </div>
+                    );
+                  })()}
                   {/* id: empty */}
                   <div className="flex items-center px-3 py-3" />
                   {/* name */}
