@@ -527,8 +527,8 @@ function NewProjectForm({
 
 const STEP_TYPE_COLORS: Record<string, string> = {
   prerequisite: "bg-amber-500/15 text-amber-700 dark:text-amber-400",
-  parent: "bg-[hsl(187_40%_51%/0.15)] text-[hsl(187_50%_30%)] dark:text-[hsl(187_45%_62%)]",
-  breed: "bg-[hsl(355_69%_62%/0.15)] text-[hsl(355_69%_38%)] dark:text-[hsl(355_69%_70%)]",
+  parent: "bg-[hsl(193_91%_34%/0.15)] text-[hsl(193_91%_25%)] dark:text-[hsl(193_75%_55%)]",
+  breed: "bg-[hsl(0_100%_69%/0.15)] text-[hsl(0_70%_45%)] dark:text-[hsl(0_100%_72%)]",
   note: "bg-slate-500/15 text-slate-600 dark:text-slate-400",
 };
 

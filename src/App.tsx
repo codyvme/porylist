@@ -299,7 +299,7 @@ const NAV_ITEMS = [
 
 function IconRail() {
   return (
-    <aside className="hidden sm:flex flex-col w-44 shrink-0 border-r border-border bg-background dark:border-slate-700/60 dark:bg-gradient-to-b dark:from-slate-900 dark:to-slate-800 py-2">
+    <aside className="hidden sm:flex flex-col w-44 shrink-0 border-r border-border bg-background dark:border-[hsl(193_60%_18%/0.6)] dark:bg-[hsl(193_90%_9%)] py-2">
       {NAV_ITEMS.map(({ to, label, Icon }) => (
         <NavLink
           key={to}
@@ -345,12 +345,12 @@ function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void })
       <div
         className={cn(
           "fixed inset-y-0 left-0 z-50 flex w-64 flex-col shadow-2xl transition-transform duration-200 sm:hidden",
-          "bg-background dark:bg-gradient-to-b dark:from-slate-900 dark:to-slate-800 border-r border-border dark:border-slate-700/60",
+          "bg-background dark:bg-[hsl(193_90%_9%)] border-r border-border dark:border-[hsl(193_60%_18%/0.6)]",
           open ? "translate-x-0" : "-translate-x-full",
         )}
       >
         {/* Drawer header — close button only */}
-        <div className="flex items-center justify-end border-b border-border dark:border-slate-700/60 px-4 py-3">
+        <div className="flex items-center justify-end border-b border-border dark:border-[hsl(193_60%_18%/0.6)] px-4 py-3">
           <button
             onClick={onClose}
             className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:bg-white/10"
@@ -487,7 +487,7 @@ export function App() {
       <div className="h-screen flex flex-col overflow-hidden bg-background">
 
         {/* ── Header ── */}
-        <header className="flex-shrink-0 border-b border-slate-700/60 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900">
+        <header className="flex-shrink-0 border-b border-[hsl(193_60%_18%/0.6)] bg-[hsl(193_90%_9%)]">
           <div className="flex items-center gap-3 px-4">
             {/* Hamburger — mobile only */}
             <button
