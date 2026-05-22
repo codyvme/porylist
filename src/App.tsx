@@ -8,7 +8,8 @@ import { MovesTable } from "@/components/MovesTable";
 import { AbilitiesTable } from "@/components/AbilitiesTable";
 import { TeamBuilder } from "@/components/TeamBuilder";
 import { BreedingTracker } from "@/components/BreedingTracker";
-import { CircleHelp, ClipboardList, Dna, List, LogOut, Menu, Moon, Sparkles, Sun, Swords, X } from "lucide-react";
+import { ItemsTable } from "@/components/ItemsTable";
+import { CircleHelp, ClipboardList, Dna, List, LogOut, Menu, Moon, Backpack, Sparkles, Sun, Swords, X } from "lucide-react";
 import { SPRITES_ROOT } from "@/lib/games";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -230,6 +231,7 @@ const NAV_ITEMS = [
   { to: "/pokedex",    label: "Pokédex",         Icon: List          },
   { to: "/moves",      label: "Moves",            Icon: Swords        },
   { to: "/abilities",  label: "Abilities",        Icon: Sparkles      },
+  { to: "/items",      label: "Items",            Icon: Backpack      },
   { to: "/routes",     label: "Catch Tracker",    Icon: ClipboardList },
   { to: "/breeding",   label: "Breeding Tracker", Icon: Dna           },
 ] as const;
@@ -500,6 +502,7 @@ export function App() {
               } />
               <Route path="/moves" element={<MovesTable />} />
               <Route path="/abilities" element={<AbilitiesTable />} />
+              <Route path="/items" element={<ItemsTable />} />
               <Route path="/routes" element={
                 <RouteBrowser caught={caught} onToggleCaught={toggleCaught} navigationTarget={catchTrackerTarget} />
               } />
