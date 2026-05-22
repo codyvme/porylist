@@ -25,6 +25,13 @@ import {
   eggsForOdds,
 } from "@/lib/breeding";
 
+import {
+  fetchBreedingProjectsFromDB,
+  upsertBreedingProject,
+  deleteBreedingProject,
+} from "@/lib/supabase";
+import type { User } from "@/lib/supabase";
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function newId(): string {
@@ -1189,27 +1196,56 @@ function ProjectDetail({
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export function BreedingTracker() {
+export function BreedingTracker({ user }: { user: User | null }) {
   const [projects, setProjects] = useState<BreedingProject[]>(loadProjects);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
+  const didSyncRef = useRef<string | null>(null);
 
-  const persist = useCallback((next: BreedingProject[]) => {
+  // On sign-in: pull projects from DB and merge with local (DB wins on conflict)
+  useEffect(() => {
+    if (!user || didSyncRef.current === user.id) return;
+    didSyncRef.current = user.id;
+    fetchBreedingProjectsFromDB(user.id).then((remote) => {
+      if (remote.length === 0) return;
+      setProjects((local) => {
+        const merged = [...local];
+        for (const rp of remote) {
+          const idx = merged.findIndex((lp) => lp.id === rp.id);
+          if (idx === -1) merged.push(rp);
+          else if (rp.updatedAt > merged[idx].updatedAt) merged[idx] = rp;
+        }
+        saveProjects(merged);
+        return merged;
+      });
+    });
+  }, [user]);
+
+  // Reset sync ref on sign-out so next sign-in re-syncs
+  useEffect(() => {
+    if (!user) didSyncRef.current = null;
+  }, [user]);
+
+  const persist = useCallback((next: BreedingProject[], changed?: BreedingProject, deletedId?: string) => {
     setProjects(next);
     saveProjects(next);
-  }, []);
+    if (user) {
+      if (deletedId) deleteBreedingProject(deletedId);
+      if (changed) upsertBreedingProject(user.id, changed);
+    }
+  }, [user]);
 
   const handleUpdate = useCallback(
     (updated: BreedingProject) => {
-      persist(projects.map((p) => (p.id === updated.id ? updated : p)));
+      persist(projects.map((p) => (p.id === updated.id ? updated : p)), updated);
     },
     [projects, persist],
   );
 
   const handleSaveNew = useCallback(
     (project: BreedingProject) => {
-      persist([project, ...projects]);
+      persist([project, ...projects], project);
       setSelectedId(project.id);
       setIsCreating(false);
     },

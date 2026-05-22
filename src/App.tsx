@@ -561,7 +561,7 @@ export function App() {
               <Route path="/routes" element={
                 <RouteBrowser caught={caught} onToggleCaught={toggleCaught} navigationTarget={catchTrackerTarget} />
               } />
-              <Route path="/breeding" element={<BreedingTracker />} />
+              <Route path="/breeding" element={<BreedingTracker user={user} />} />
             </Routes>
           </main>
         </div>

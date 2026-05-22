@@ -50,6 +50,32 @@ export async function deleteCaught(userId: string, gameKey: string, pokemonName:
     .eq("pokemon_name", pokemonName);
 }
 
+// ── Breeding projects ──────────────────────────────────────────────────────
+
+export async function fetchBreedingProjectsFromDB(userId: string): Promise<import("./breeding").BreedingProject[]> {
+  const { data, error } = await supabase
+    .from("breeding_projects")
+    .select("data")
+    .eq("user_id", userId);
+  if (error || !data) return [];
+  return data.map((row) => row.data as import("./breeding").BreedingProject);
+}
+
+export async function upsertBreedingProject(userId: string, project: import("./breeding").BreedingProject) {
+  return supabase.from("breeding_projects").upsert({
+    id: project.id,
+    user_id: userId,
+    data: project,
+    updated_at: new Date().toISOString(),
+  });
+}
+
+export async function deleteBreedingProject(projectId: string) {
+  return supabase.from("breeding_projects").delete().eq("id", projectId);
+}
+
+// ── Account deletion ───────────────────────────────────────────────────────
+
 export async function deleteAccount() {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) throw new Error("Not signed in");
