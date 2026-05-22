@@ -240,26 +240,22 @@ const NAV_ITEMS = [
 
 function IconRail() {
   return (
-    <aside className="hidden sm:flex flex-col w-14 shrink-0 border-r border-border bg-background dark:border-slate-700/60 dark:bg-gradient-to-b dark:from-slate-900 dark:to-slate-800 py-2">
+    <aside className="hidden sm:flex flex-col w-44 shrink-0 border-r border-border bg-background dark:border-slate-700/60 dark:bg-gradient-to-b dark:from-slate-900 dark:to-slate-800 py-2">
       {NAV_ITEMS.map(({ to, label, Icon }) => (
-        <div key={to} className="group relative flex justify-center">
-          <NavLink
-            to={to}
-            className={({ isActive }) => cn(
-              "relative flex h-12 w-full items-center justify-center border-l-2 transition-colors",
-              isActive
-                ? "border-[hsl(var(--porygon-red))] bg-primary/10 text-primary dark:bg-white/10 dark:text-white"
-                : "border-transparent text-muted-foreground hover:bg-muted hover:text-foreground dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-slate-200",
-            )}
-            aria-label={label}
-          >
-            <Icon className="h-5 w-5 shrink-0" />
-          </NavLink>
-          {/* Tooltip */}
-          <div className="pointer-events-none absolute left-full top-1/2 z-50 ml-3 -translate-y-1/2 whitespace-nowrap rounded-md bg-slate-800 px-2.5 py-1.5 text-xs font-medium text-white opacity-0 shadow-lg ring-1 ring-slate-700 transition-opacity group-hover:opacity-100">
-            {label}
-          </div>
-        </div>
+        <NavLink
+          key={to}
+          to={to}
+          className={({ isActive }) => cn(
+            "flex h-11 w-full items-center gap-3 border-l-2 px-4 text-sm transition-colors",
+            isActive
+              ? "border-[hsl(var(--porygon-red))] bg-primary/10 font-semibold text-primary dark:bg-white/10 dark:text-white"
+              : "border-transparent font-medium text-muted-foreground hover:bg-muted hover:text-foreground dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-slate-200",
+          )}
+          aria-label={label}
+        >
+          <Icon className="h-4 w-4 shrink-0" />
+          {label}
+        </NavLink>
       ))}
     </aside>
   );
