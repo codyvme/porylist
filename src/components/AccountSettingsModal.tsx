@@ -298,7 +298,7 @@ export function AccountSettingsModal({
                   placeholder="Search Pokémon…"
                   className="mb-3 h-8 w-full rounded-md border border-input bg-background px-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                 />
-                <div className="grid grid-cols-6 gap-1.5 max-h-44 overflow-y-auto">
+                <div className="grid grid-cols-6 gap-1.5 max-h-44 overflow-y-auto p-0.5">
                   {/* Clear selection */}
                   <button
                     onClick={() => setAvatarPokemon(null)}

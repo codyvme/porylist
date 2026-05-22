@@ -71,7 +71,13 @@ export function AbilitiesTable() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3 px-6">
-      <h1 className="shrink-0 text-xl font-semibold border-b border-border py-3 -mx-6 px-6">Abilities</h1>
+      <div className="shrink-0 flex items-center gap-3 border-b border-border py-3 -mx-6 px-6">
+        <h1 className="flex-1 text-xl font-semibold">Abilities</h1>
+        <Select value={selectedGame?.value ?? ""} onChange={(e) => setSelectedGame(GAMES.find((g) => g.value === e.target.value) ?? null)} className="sm:hidden max-w-[160px]">
+          <option value="">All Games</option>
+          {GAMES.map((g) => <option key={g.value} value={g.value}>{g.label}</option>)}
+        </Select>
+      </div>
       {/* Filters */}
       <div className="flex flex-wrap gap-2">
         <Select
@@ -80,7 +86,7 @@ export function AbilitiesTable() {
             const g = GAMES.find((g) => g.value === e.target.value) ?? null;
             setSelectedGame(g);
           }}
-          className="w-full sm:w-auto"
+          className="hidden sm:block w-auto"
         >
           <option value="">All Games</option>
           {GAMES.map((g) => (
