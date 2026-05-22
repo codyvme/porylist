@@ -15,4 +15,6 @@ public/data/**
 !public/data/route-data/
 !public/data/route-data/*.json
 .data-manifest.json
+.sprites-manifest.json
 .claude/
+.wrangler/
