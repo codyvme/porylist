@@ -49,3 +49,27 @@ export async function deleteCaught(userId: string, gameKey: string, pokemonName:
     .eq("game_key", gameKey)
     .eq("pokemon_name", pokemonName);
 }
+
+export async function deleteAccount() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error("Not signed in");
+
+  const res = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-account`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        "Content-Type": "application/json",
+      },
+    },
+  );
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error((body as { error?: string }).error ?? "Failed to delete account");
+  }
+
+  // Sign out locally after successful deletion
+  await supabase.auth.signOut();
+}
