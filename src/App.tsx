@@ -67,17 +67,7 @@ function AboutModal({ onClose }: { onClose: () => void }) {
         <h2 className="mb-3 text-lg font-semibold">About Porylist</h2>
         <div className="space-y-4 text-sm text-muted-foreground">
           <p>
-            Porylist is a Pokédex and catch-tracking tool built for players who
-            want more than a plain list. Browse and filter Pokémon by game,
-            generation, type, and stats — then dive into individual detail pages
-            for abilities, evolutions, move lists, and type matchups tailored to
-            your selected game.
-          </p>
-          <p>
-            The Catch Tracker tab lets you explore per-route encounter tables,
-            track which Pokémon you've caught version-by-version, and measure
-            your progress across a game's regional or national Pokédex. Sign in
-            to sync your data across devices.
+            Porylist is a Pokédex and catch-tracking tool built for players who want more than a plain list. Browse and filter Pokémon by game, generation, type, and stats — dive into detail pages for abilities, evolutions, move lists, and type matchups — then head to the Catch Tracker to explore per-route encounter tables and measure your progress across any game's Pokédex. Sign in to sync your data across devices.
           </p>
 
           <a
