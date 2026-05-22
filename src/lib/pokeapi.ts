@@ -573,6 +573,16 @@ export interface AbilityListEntry {
   generationId: number; // 1–9
 }
 
+export interface ItemListEntry {
+  id: number;
+  name: string;
+  displayName: string;
+  category: string;       // slug, e.g. "held-items"
+  categoryDisplay: string; // e.g. "Held Items"
+  shortEffect: string;
+  cost: number;           // buy price in PokéDollars; 0 = not sold
+}
+
 export function useMoveList() {
   return useQuery({
     queryKey: ["move-list"],
@@ -586,6 +596,15 @@ export function useAbilityList() {
   return useQuery({
     queryKey: ["ability-list"],
     queryFn: () => fetchJson<AbilityListEntry[]>(`/data/abilities.json`),
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 60 * 24 * 30,
+  });
+}
+
+export function useItemList() {
+  return useQuery({
+    queryKey: ["item-list"],
+    queryFn: () => fetchJson<ItemListEntry[]>(`/data/items.json`),
     staleTime: Infinity,
     gcTime: 1000 * 60 * 60 * 24 * 30,
   });

@@ -8,7 +8,7 @@
  * Run: node scripts/build-move-ability-lists.mjs
  */
 
-import { readFileSync, writeFileSync, readdirSync } from "fs";
+import { readFileSync, writeFileSync, readdirSync, existsSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -146,3 +146,65 @@ console.log(`✅ abilities.json — ${abilities.length} abilities`);
 
 const aByGen = Array.from({ length: 9 }, (_, i) => abilities.filter((a) => a.generationId === i + 1).length);
 console.log("   per gen:", aByGen.map((n, i) => `G${i + 1}:${n}`).join(" "));
+
+// ── Items ──────────────────────────────────────────────────────────────────────
+const ITEM_CATEGORY_LABELS = {
+  "standard-balls":  "Poké Balls",
+  "special-balls":   "Special Balls",
+  "apricorn-balls":  "Apricorn Balls",
+  "medicine":        "Medicine",
+  "healing":         "Healing",
+  "revival":         "Revival",
+  "pp-recovery":     "PP Recovery",
+  "status-cures":    "Status Cures",
+  "vitamins":        "Vitamins & Feathers",
+  "effort-drop":     "Effort Berries",
+  "held-items":      "Held Items",
+  "choice":          "Choice Items",
+  "type-enhancement":"Type Enhancement",
+  "type-protection": "Type-Protection Berries",
+  "bad-held-items":  "Bad Held Items",
+  "species-specific":"Species-Specific",
+  "plates":          "Plates",
+  "memories":        "Memories",
+  "mega-stones":     "Mega Stones",
+  "z-crystals":      "Z-Crystals",
+  "nature-mints":    "Nature Mints",
+  "stat-boosts":     "Stat Boosters",
+  "in-a-pinch":      "In-a-Pinch Berries",
+  "picky-healing":   "Picky-Healing Berries",
+  "evolution":       "Evolution Items",
+  "effort-training": "Effort Training",
+  "training":        "Training",
+  "jewels":          "Jewels",
+  "scarves":         "Contest Scarves",
+  "flutes":          "Flutes",
+  "other":           "Other",
+};
+
+const itemDir = join(DATA_DIR, "item");
+const items = [];
+
+if (existsSync(itemDir)) {
+  for (const file of readdirSync(itemDir)) {
+    if (!file.endsWith(".json")) continue;
+    const data = JSON.parse(readFileSync(join(itemDir, file), "utf8"));
+    const enName = data.names?.find((n) => n.language.name === "en")?.name ?? formatName(data.name);
+    const shortEffect = data.effect_entries?.find((e) => e.language.name === "en")?.short_effect ?? "";
+    const catSlug = data.category?.name ?? "other";
+    items.push({
+      id: data.id,
+      name: data.name,
+      displayName: enName,
+      category: catSlug,
+      categoryDisplay: ITEM_CATEGORY_LABELS[catSlug] ?? formatName(catSlug),
+      shortEffect,
+      cost: data.cost ?? 0,
+    });
+  }
+  items.sort((a, b) => a.id - b.id);
+  writeFileSync(join(DATA_DIR, "items.json"), JSON.stringify(items));
+  console.log(`✅ items.json — ${items.length} items`);
+} else {
+  console.log("⚠️  public/data/item/ not found — run fetch-items.mjs first");
+}
