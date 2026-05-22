@@ -91,10 +91,14 @@ function IVDots({
 function ProjectCard({
   project,
   selected,
+  focused,
+  cardRef,
   onClick,
 }: {
   project: BreedingProject;
   selected: boolean;
+  focused: boolean;
+  cardRef?: (el: HTMLButtonElement | null) => void;
   onClick: () => void;
 }) {
   const totalEggs = project.hatches.length;
@@ -107,12 +111,15 @@ function ProjectCard({
 
   return (
     <button
+      ref={cardRef}
       onClick={onClick}
       className={cn(
         "w-full rounded-lg border p-3 text-left transition-colors",
         selected
           ? "border-primary bg-primary/5"
-          : "border-border hover:border-primary/40 hover:bg-muted/50",
+          : focused
+            ? "border-primary/60 bg-muted/50"
+            : "border-border hover:border-primary/40 hover:bg-muted/50",
       )}
     >
       <div className="flex items-center gap-3">
@@ -1201,7 +1208,9 @@ export function BreedingTracker({ user }: { user: User | null }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
+  const [focusedIdx, setFocusedIdx] = useState(-1);
   const didSyncRef = useRef<string | null>(null);
+  const cardRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
 
   // On sign-in: pull projects from DB and merge with local (DB wins on conflict)
   useEffect(() => {
@@ -1255,6 +1264,51 @@ export function BreedingTracker({ user }: { user: User | null }) {
   const selected = projects.find((p) => p.id === selectedId) ?? null;
   const active = projects.filter((p) => p.status === "active");
   const archived = projects.filter((p) => p.status !== "active");
+  const visibleProjects = useMemo(
+    () => (showArchived ? [...active, ...archived] : active),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [active.length, archived.length, showArchived],
+  );
+
+  // Reset focus when the list changes size
+  useEffect(() => { setFocusedIdx(-1); }, [visibleProjects.length]);
+
+  // Keyboard navigation for the project list
+  const keyHandlerRef = useRef<(e: KeyboardEvent) => void>();
+  keyHandlerRef.current = (e: KeyboardEvent) => {
+    const tag = (e.target as HTMLElement).tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+    if (isCreating) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setFocusedIdx((i) => {
+        const next = i < visibleProjects.length - 1 ? i + 1 : 0;
+        visibleProjects[next] && cardRefs.current.get(visibleProjects[next].id)?.scrollIntoView({ block: "nearest" });
+        return next;
+      });
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setFocusedIdx((i) => {
+        const next = i > 0 ? i - 1 : visibleProjects.length - 1;
+        visibleProjects[next] && cardRefs.current.get(visibleProjects[next].id)?.scrollIntoView({ block: "nearest" });
+        return next;
+      });
+    } else if (e.key === "Enter" && focusedIdx >= 0) {
+      const p = visibleProjects[focusedIdx];
+      if (p) { setSelectedId(p.id); setIsCreating(false); }
+    } else if (e.key === "Escape") {
+      setSelectedId(null);
+      setIsCreating(false);
+      setFocusedIdx(-1);
+    }
+  };
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => keyHandlerRef.current?.(e);
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
 
   const showDetail = (selected || isCreating);
 
@@ -1290,14 +1344,19 @@ export function BreedingTracker({ user }: { user: User | null }) {
           </div>
         )}
 
-        {active.map((p) => (
-          <ProjectCard
-            key={p.id}
-            project={p}
-            selected={p.id === selectedId}
-            onClick={() => { setSelectedId(p.id); setIsCreating(false); }}
-          />
-        ))}
+        {active.map((p) => {
+          const idx = visibleProjects.indexOf(p);
+          return (
+            <ProjectCard
+              key={p.id}
+              project={p}
+              selected={p.id === selectedId}
+              focused={idx === focusedIdx}
+              cardRef={(el) => { if (el) cardRefs.current.set(p.id, el); else cardRefs.current.delete(p.id); }}
+              onClick={() => { setSelectedId(p.id); setIsCreating(false); setFocusedIdx(idx); }}
+            />
+          );
+        })}
 
         {archived.length > 0 && (
           <div>
@@ -1310,14 +1369,19 @@ export function BreedingTracker({ user }: { user: User | null }) {
             </button>
             {showArchived && (
               <div className="mt-2 flex flex-col gap-2">
-                {archived.map((p) => (
-                  <ProjectCard
-                    key={p.id}
-                    project={p}
-                    selected={p.id === selectedId}
-                    onClick={() => { setSelectedId(p.id); setIsCreating(false); }}
-                  />
-                ))}
+                {archived.map((p) => {
+                  const idx = visibleProjects.indexOf(p);
+                  return (
+                    <ProjectCard
+                      key={p.id}
+                      project={p}
+                      selected={p.id === selectedId}
+                      focused={idx === focusedIdx}
+                      cardRef={(el) => { if (el) cardRefs.current.set(p.id, el); else cardRefs.current.delete(p.id); }}
+                      onClick={() => { setSelectedId(p.id); setIsCreating(false); setFocusedIdx(idx); }}
+                    />
+                  );
+                })}
               </div>
             )}
           </div>
