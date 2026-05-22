@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, ChevronsUpDown, Search, X } from "lucide-react";
-
 import { useItemList, type ItemListEntry } from "@/lib/pokeapi";
+import { GAMES, type GameOption } from "@/lib/games";
 import { Select } from "@/components/ui/select";
 import { ItemModal } from "@/components/ItemModal";
 import { cn } from "@/lib/utils";
@@ -35,6 +35,7 @@ function formatCost(cost: number): string {
 export function ItemsTable() {
   const { data: items, isLoading } = useItemList();
 
+  const [selectedGame, setSelectedGame] = useState<GameOption | null>(null);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("id");
@@ -46,7 +47,12 @@ export function ItemsTable() {
     else { setSortKey(key); setSortDir("asc"); }
   }
 
-  // Build sorted unique category list
+  // PokéAPI only tracks items from Gen III onward.
+  // Gen 1/2 items are bucketed into Gen 3 in our data, so we
+  // treat any game earlier than Gen 3 as Gen 3 for filtering purposes.
+  const effectiveGeneration = selectedGame ? Math.max(selectedGame.generation, 3) : null;
+
+  // Build sorted unique category list from the full unfiltered set
   const categories = useMemo(() => {
     if (!items) return [];
     const seen = new Map<string, string>();
@@ -60,11 +66,12 @@ export function ItemsTable() {
     if (!items) return [];
     const q = search.trim().toLowerCase();
     return items.filter((item) => {
+      if (effectiveGeneration !== null && item.generationId > effectiveGeneration) return false;
       if (categoryFilter && item.category !== categoryFilter) return false;
       if (q && !item.displayName.toLowerCase().includes(q) && !item.shortEffect.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [items, categoryFilter, search]);
+  }, [items, effectiveGeneration, categoryFilter, search]);
 
   const sorted = useMemo(() => {
     const dir = sortDir === "asc" ? 1 : -1;
@@ -108,6 +115,19 @@ export function ItemsTable() {
       {/* Filters */}
       <div className="flex flex-wrap gap-2">
         <Select
+          value={selectedGame?.value ?? ""}
+          onChange={(e) => {
+            const g = GAMES.find((g) => g.value === e.target.value) ?? null;
+            setSelectedGame(g);
+          }}
+        >
+          <option value="">All Games</option>
+          {GAMES.map((g) => (
+            <option key={g.value} value={g.value}>{g.label}</option>
+          ))}
+        </Select>
+
+        <Select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
         >
@@ -137,9 +157,17 @@ export function ItemsTable() {
         </div>
       </div>
 
+      {/* Early-game caveat */}
+      {selectedGame && selectedGame.generation < 3 && (
+        <p className="text-xs text-muted-foreground">
+          Item data is only tracked from Generation III onward — showing all items available by that generation.
+        </p>
+      )}
+
       <p className="text-sm text-muted-foreground">
         {sorted.length.toLocaleString()} item{sorted.length !== 1 ? "s" : ""}
-        {categoryFilter ? ` in ${categories.find(([s]) => s === categoryFilter)?.[1] ?? categoryFilter}` : ""}
+        {selectedGame ? ` in ${selectedGame.label}` : ""}
+        {categoryFilter ? ` · ${categories.find(([s]) => s === categoryFilter)?.[1] ?? categoryFilter}` : ""}
       </p>
 
       <div className="flex-1 overflow-auto">

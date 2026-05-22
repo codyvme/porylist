@@ -577,10 +577,11 @@ export interface ItemListEntry {
   id: number;
   name: string;
   displayName: string;
-  category: string;       // slug, e.g. "held-items"
+  category: string;        // slug, e.g. "held-items"
   categoryDisplay: string; // e.g. "Held Items"
   shortEffect: string;
-  cost: number;           // buy price in PokéDollars; 0 = not sold
+  cost: number;            // buy price in PokéDollars; 0 = not sold
+  generationId: number;    // 3–9 (PokéAPI doesn't track items before Gen III)
 }
 
 export function useMoveList() {

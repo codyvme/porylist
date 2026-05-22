@@ -148,6 +148,29 @@ const aByGen = Array.from({ length: 9 }, (_, i) => abilities.filter((a) => a.gen
 console.log("   per gen:", aByGen.map((n, i) => `G${i + 1}:${n}`).join(" "));
 
 // ── Items ──────────────────────────────────────────────────────────────────────
+const ITEM_VG_TO_GEN = {
+  "gold-silver": 2, "crystal": 2,
+  "ruby-sapphire": 3, "emerald": 3, "firered-leafgreen": 3, "colosseum": 3, "xd": 3,
+  "diamond-pearl": 4, "platinum": 4, "heartgold-soulsilver": 4,
+  "black-white": 5, "black-2-white-2": 5,
+  "x-y": 6, "omega-ruby-alpha-sapphire": 6,
+  "sun-moon": 7, "ultra-sun-ultra-moon": 7, "lets-go-pikachu-lets-go-eevee": 7,
+  "sword-shield": 8, "brilliant-diamond-and-shining-pearl": 8, "legends-arceus": 8,
+  "scarlet-violet": 9,
+};
+
+function getItemGenerationId(data) {
+  const en = (data.flavor_text_entries ?? []).filter((e) => e.language.name === "en");
+  if (en.length === 0) {
+    // No flavor text — newer items; use ID range
+    if (data.id >= 2000) return 9;
+    if (data.id >= 1600) return 8;
+    return 3; // safe fallback
+  }
+  const firstVG = en[0].version_group.name;
+  return ITEM_VG_TO_GEN[firstVG] ?? 3;
+}
+
 const ITEM_CATEGORY_LABELS = {
   "standard-balls":  "Poké Balls",
   "special-balls":   "Special Balls",
@@ -200,6 +223,7 @@ if (existsSync(itemDir)) {
       categoryDisplay: ITEM_CATEGORY_LABELS[catSlug] ?? formatName(catSlug),
       shortEffect,
       cost: data.cost ?? 0,
+      generationId: getItemGenerationId(data),
     });
   }
   items.sort((a, b) => a.id - b.id);
