@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronDown, ChevronLeft, ChevronRight, Sparkles, X } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Sparkles, Volume2, X } from "lucide-react";
 
 function PokeballIcon({ caught, size = 14 }: { caught: boolean; size?: number }) {
   return (
@@ -13,7 +13,7 @@ function PokeballIcon({ caught, size = 14 }: { caught: boolean; size?: number })
 import { Badge } from "@/components/ui/badge";
 import { TYPE_COLORS, typeStyle } from "@/lib/types";
 import { computeTypeEffectiveness } from "@/lib/type-chart";
-import { GAME_VERSION_GROUPS, GAME_VERSIONS, GAMES, SPRITES_ROOT, spriteUrl, type GameOption } from "@/lib/games";
+import { GAME_VERSION_GROUPS, GAME_VERSIONS, GAMES, SPRITES_ROOT, spriteUrl, playCry, type GameOption } from "@/lib/games";
 import {
   typesForGeneration,
   useSinglePokemon,
@@ -1040,6 +1040,16 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                   </span>
                 )}
                 <h2 className="text-xl font-bold">{displayName}</h2>
+                {pokemon && (
+                  <button
+                    onClick={() => playCry(pokemon.id, game?.generation)}
+                    className="shrink-0 rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                    aria-label="Play cry"
+                    title={game ? `Play ${game.label} cry` : "Play cry"}
+                  >
+                    <Volume2 className="h-4 w-4" />
+                  </button>
+                )}
                 <div className="flex shrink-0 items-center gap-1.5">
                   {types.map((t) => (
                     <Badge key={t} variant="default" className="capitalize !rounded !px-1.5" style={typeStyle(t)}>{t}</Badge>

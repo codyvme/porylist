@@ -13,7 +13,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { ArrowDown, ArrowUp, Check, ChevronDown, ChevronRight, ChevronsUpDown, ListFilter, Plus, Search, SlidersHorizontal, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Check, ChevronDown, ChevronRight, ChevronsUpDown, ListFilter, Plus, Search, SlidersHorizontal, Volume2, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Select } from "@/components/ui/select";
 import {
@@ -35,6 +35,7 @@ import {
   regionalNumber,
   SPRITES_ROOT,
   spriteUrl,
+  playCry,
 } from "@/lib/games";
 import { typeStyle } from "@/lib/types";
 import { ALL_TYPES } from "@/lib/type-chart";
@@ -579,6 +580,16 @@ export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderO
             >
               {formatPokemonName(getValue())}
             </button>
+            {!row.original.isLoading && (
+              <button
+                onClick={(e) => { e.stopPropagation(); playCry(row.original.id, selectedGame?.generation); }}
+                className="opacity-0 group-hover:opacity-100 flex items-center justify-center rounded-full p-1 text-muted-foreground/60 hover:bg-muted hover:text-foreground transition-all"
+                aria-label={`Play ${name} cry`}
+                title="Play cry"
+              >
+                <Volume2 className="h-3.5 w-3.5" />
+              </button>
+            )}
             {showBtn && (
               <button
                 onClick={(e) => {
@@ -1173,7 +1184,7 @@ export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderO
                 return (
                   <div
                     key={row.id}
-                    className="absolute left-0 top-0 grid w-full border-b bg-background transition-colors hover:bg-muted/50"
+                    className="group absolute left-0 top-0 grid w-full border-b bg-background transition-colors hover:bg-muted/50"
                     style={{
                       gridTemplateColumns: gridTemplate,
                       transform: `translateY(${vRow.start}px)`,

@@ -267,3 +267,18 @@ export function spriteUrl(id: number, spriteVersion?: string): string {
   }
   return `${SPRITES_ROOT}/other/home/${id}.png`;
 }
+
+export const CRIES_ROOT = "https://cdn.jsdelivr.net/gh/PokeAPI/cries@main/cries/pokemon";
+
+/** Returns the URL for a Pokémon's cry. Uses legacy (Gen 1–5 style) cries when generation ≤ 5. */
+export function cryUrl(id: number, generation?: number): string {
+  const variant = generation && generation <= 5 ? "legacy" : "latest";
+  return `${CRIES_ROOT}/${variant}/${id}.ogg`;
+}
+
+/** Plays a Pokémon's cry. Respects the current game's generation for legacy vs modern audio. */
+export function playCry(id: number, generation?: number): void {
+  const audio = new Audio(cryUrl(id, generation));
+  audio.volume = 0.5;
+  audio.play().catch(() => {});
+}
