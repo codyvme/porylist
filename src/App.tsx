@@ -67,8 +67,9 @@ function AboutModal({ onClose }: { onClose: () => void }) {
         <h2 className="mb-3 text-lg font-semibold">About Porylist</h2>
         <div className="space-y-4 text-sm text-muted-foreground">
           <p>
-            Porylist is a Pokédex and catch-tracking tool built for players who want more than a plain list. Browse and filter Pokémon by game, generation, type, and stats — dive into detail pages for abilities, evolutions, move lists, and type matchups — then head to the Catch Tracker to explore per-route encounter tables and measure your progress across any game's Pokédex. Sign in to sync your data across devices.
+            Porylist is an all-in-one Pokémon companion for players who want more than a plain Pokédex. Look up stats, moves, and type matchups; build and analyze teams; track your catches game-by-game; and plan out breeding chains — all in one place.
           </p>
+          <p>Sign in to sync your progress across devices.</p>
 
           <a
             href="https://github.com/codyvme/porylist"
@@ -136,7 +137,7 @@ function SignInModal({ onClose }: { onClose: () => void }) {
         </button>
         <h2 className="mb-1 text-lg font-semibold">Sign in to Porylist</h2>
         <p className="mb-5 text-sm text-muted-foreground">
-          Sync your caught Pokémon across devices.
+          Sign in to sync your progress across devices. Your email is only used for authentication and is never shared.
         </p>
         {sent ? (
           <div className="rounded-lg bg-muted px-4 py-3 text-sm text-foreground">
