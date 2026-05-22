@@ -593,8 +593,8 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget }: {
   }, [pokemonListQuery.data, selectedGame, caughtKey, caught]);
 
   return (
-    <div className="flex h-full flex-col gap-4">
-      <h1 className="shrink-0 text-xl font-semibold">Catch Tracker</h1>
+    <div className="flex h-full flex-col gap-4 px-8">
+      <h1 className="shrink-0 text-xl font-semibold border-b border-border py-3 -mx-8 px-8">Catch Tracker</h1>
       {/* Controls row */}
       <div className="flex flex-wrap items-center gap-4">
         <Select value={game} onChange={(e) => handleGameChange(e.target.value)} className="min-w-[200px]">

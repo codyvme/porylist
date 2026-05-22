@@ -883,8 +883,8 @@ export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderO
   }
 
   return (
-    <div className="flex h-full flex-col gap-3">
-      <h1 className="shrink-0 text-xl font-semibold">Pokédex</h1>
+    <div className="flex h-full flex-col gap-3 px-8">
+      <h1 className="shrink-0 text-xl font-semibold border-b border-border py-3 -mx-8 px-8">Pokédex</h1>
       <div className="flex flex-wrap items-center gap-2">
         {/* Game selector */}
         <Select

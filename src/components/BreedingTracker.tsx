@@ -397,7 +397,12 @@ function NewProjectForm({
         {/* Ability */}
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium">Ability</label>
-          <Select value={ability} onChange={(e) => setAbility(e.target.value as AbilitySlot)} className="w-full">
+          <Select
+            value={ability}
+            onChange={(e) => setAbility(e.target.value as AbilitySlot)}
+            className="w-full"
+            disabled={!speciesSlug}
+          >
             <option value="any">Any ability</option>
             {speciesAbilities ? (
               <>
@@ -406,7 +411,7 @@ function NewProjectForm({
                   .sort((a, b) => a.slot - b.slot)
                   .map((a) => (
                     <option key={a.slot} value={`slot${a.slot}` as AbilitySlot}>
-                      {capitalize(a.ability.name.replace(/-/g, " "))} (Slot {a.slot})
+                      {capitalize(a.ability.name.replace(/-/g, " "))}
                     </option>
                   ))}
                 {speciesAbilities.filter((a) => a.is_hidden).map((a) => (
@@ -1337,13 +1342,13 @@ export function BreedingTracker({ user }: { user: User | null }) {
   const showDetail = (selected || isCreating);
 
   return (
-    <div className="flex h-full flex-col overflow-hidden gap-3">
-      <h1 className="shrink-0 text-xl font-semibold">Breeding Tracker</h1>
+    <div className="flex h-full flex-col px-8">
+      <h1 className="shrink-0 text-xl font-semibold border-b border-border py-3 -mx-8 px-8">Breeding Tracker</h1>
       <div className="flex flex-1 min-h-0 gap-0 overflow-hidden">
       {/* Left panel: project list */}
       <div
         className={cn(
-          "flex w-72 shrink-0 flex-col gap-3 overflow-y-auto sm:border-r sm:pr-4",
+          "flex w-72 shrink-0 flex-col gap-3 overflow-y-auto pt-3 sm:pr-8",
           showDetail && "hidden sm:flex",
         )}
       >
@@ -1412,10 +1417,13 @@ export function BreedingTracker({ user }: { user: User | null }) {
         )}
       </div>
 
+      {/* Divider */}
+      <div className="hidden sm:block w-px shrink-0 bg-border" />
+
       {/* Right panel: detail or create form */}
       <div
         className={cn(
-          "flex flex-1 flex-col overflow-y-auto pl-0 sm:pl-6",
+          "flex flex-1 flex-col overflow-y-auto pt-3 pl-0 sm:pl-6",
           !showDetail && "hidden sm:flex",
         )}
       >
