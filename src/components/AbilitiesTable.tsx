@@ -1,9 +1,10 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { ChevronDown, ChevronUp, ChevronsUpDown, Search, X } from "lucide-react";
 import { useAbilityList, type AbilityListEntry } from "@/lib/pokeapi";
 import { GAMES, type GameOption } from "@/lib/games";
 import { AbilityModal } from "@/components/AbilityModal";
 import { Select } from "@/components/ui/select";
+import { useSearchParams } from "react-router-dom";
 
 type SortKey = "id" | "displayName";
 type SortDir = "asc" | "desc";
@@ -20,7 +21,18 @@ export function AbilitiesTable() {
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("id");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
-  const [selected, setSelected] = useState<AbilityListEntry | null>(null);
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedAbilityName = searchParams.get("ability");
+  const selected = abilities?.find((a) => a.name === selectedAbilityName) ?? null;
+
+  const openAbility = useCallback((ability: AbilityListEntry) => {
+    setSearchParams((prev) => { const next = new URLSearchParams(prev); next.set("ability", ability.name); return next; });
+  }, [setSearchParams]);
+
+  const closeAbility = useCallback(() => {
+    setSearchParams((prev) => { const next = new URLSearchParams(prev); next.delete("ability"); return next; });
+  }, [setSearchParams]);
 
   function handleSort(key: SortKey) {
     if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -131,7 +143,7 @@ export function AbilitiesTable() {
                   <tr
                     key={ability.id}
                     className="cursor-pointer hover:bg-muted/40"
-                    onClick={() => setSelected(ability)}
+                    onClick={() => openAbility(ability)}
                   >
                     <td className="hidden sm:table-cell py-1.5 pr-4 tabular-nums text-muted-foreground">{ability.id}</td>
                     <td className="py-1.5 pr-4 font-medium text-primary whitespace-nowrap">
@@ -153,7 +165,7 @@ export function AbilitiesTable() {
           name={selected.name}
           entry={selected}
           game={selectedGame}
-          onClose={() => setSelected(null)}
+          onClose={closeAbility}
         />
       )}
     </div>

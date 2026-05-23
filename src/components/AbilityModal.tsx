@@ -1,7 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { X } from "lucide-react";
-import { useSingleAbilityDetail, type AbilityListEntry } from "@/lib/pokeapi";
-import { bestFlavorText, type GameOption } from "@/lib/games";
+import { useNavigate } from "react-router-dom";
+import { useSingleAbilityDetail, usePokemonSummaryList, type AbilityListEntry } from "@/lib/pokeapi";
+import { bestFlavorText, spriteUrl, type GameOption } from "@/lib/games";
+import { formatPokemonName } from "@/lib/utils";
 
 const VERSION_GROUP_LABELS: Record<string, string> = {
   "ruby-sapphire":                       "Ruby/Sapphire",
@@ -31,7 +33,9 @@ interface AbilityModalProps {
 }
 
 export function AbilityModal({ name, entry, game, onClose }: AbilityModalProps) {
+  const navigate = useNavigate();
   const { data: detail, isLoading } = useSingleAbilityDetail(name);
+  const { data: allPokemon } = usePokemonSummaryList();
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -49,6 +53,30 @@ export function AbilityModal({ name, entry, game, onClose }: AbilityModalProps) 
   const flavorEntry = detail
     ? bestFlavorText(detail.flavor_text_entries, game ?? null)
     : undefined;
+
+  // Find all Pokémon with this ability, filtered by game if one is selected
+  const { regular, hidden } = useMemo(() => {
+    if (!allPokemon) return { regular: [], hidden: [] };
+    const inGame = allPokemon.filter((p) => {
+      if (!game) return true;
+      // Must be within genMax (national dex ceiling for this game)
+      return p.id <= game.genMax;
+    });
+    const withAbility = inGame.filter((p) =>
+      p.abilities.some((a) => a.ability.name === name),
+    );
+    const regular = withAbility.filter((p) =>
+      p.abilities.some((a) => a.ability.name === name && !a.is_hidden),
+    );
+    const hidden = withAbility.filter((p) =>
+      p.abilities.some((a) => a.ability.name === name && a.is_hidden),
+    );
+    return { regular, hidden };
+  }, [allPokemon, name, game]);
+
+  function openPokemon(pokemonName: string) {
+    navigate(`/pokedex?pokemon=${pokemonName}`);
+  }
 
   return (
     <div
@@ -71,6 +99,7 @@ export function AbilityModal({ name, entry, game, onClose }: AbilityModalProps) 
           </button>
         </div>
 
+        <div className="max-h-[70vh] overflow-y-auto">
         <div className="space-y-5 px-5 py-4">
           {isLoading ? (
             <div className="space-y-1.5">
@@ -100,8 +129,77 @@ export function AbilityModal({ name, entry, game, onClose }: AbilityModalProps) 
               </p>
             </div>
           )}
+
+          {/* Pokémon with this ability */}
+          {(regular.length > 0 || hidden.length > 0) && (
+            <div className="space-y-4">
+              {regular.length > 0 && (
+                <div>
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Pokémon with this ability
+                    <span className="ml-1.5 font-normal normal-case text-muted-foreground/70">
+                      ({regular.length})
+                    </span>
+                  </p>
+                  <div className="flex flex-wrap gap-1">
+                    {regular.map((p) => (
+                      <button
+                        key={p.name}
+                        onClick={() => openPokemon(p.name)}
+                        className="flex flex-col items-center gap-0.5 rounded-lg px-1.5 py-1 hover:bg-muted transition-colors"
+                        title={formatPokemonName(p.name)}
+                      >
+                        <img
+                          src={spriteUrl(p.id, game?.spriteVersion)}
+                          alt={formatPokemonName(p.name)}
+                          className="h-10 w-10 object-contain"
+                          loading="lazy"
+                        />
+                        <span className="text-center text-[10px] text-muted-foreground leading-tight max-w-[52px] truncate">
+                          {formatPokemonName(p.name)}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {hidden.length > 0 && (
+                <div>
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    As hidden ability
+                    <span className="ml-1.5 font-normal normal-case text-muted-foreground/70">
+                      ({hidden.length})
+                    </span>
+                  </p>
+                  <div className="flex flex-wrap gap-1">
+                    {hidden.map((p) => (
+                      <button
+                        key={p.name}
+                        onClick={() => openPokemon(p.name)}
+                        className="flex flex-col items-center gap-0.5 rounded-lg px-1.5 py-1 hover:bg-muted transition-colors"
+                        title={formatPokemonName(p.name)}
+                      >
+                        <img
+                          src={spriteUrl(p.id, game?.spriteVersion)}
+                          alt={formatPokemonName(p.name)}
+                          className="h-10 w-10 object-contain"
+                          loading="lazy"
+                        />
+                        <span className="text-center text-[10px] text-muted-foreground leading-tight max-w-[52px] truncate">
+                          {formatPokemonName(p.name)}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
+      </div>
     </div>
+
   );
 }

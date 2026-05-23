@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronLeft, ChevronRight, Loader2, Sparkles, Volume2, X } from "lucide-react";
 
 function CryButton({ id, generation, className, title: titleProp }: { id: number; generation?: number; className?: string; title?: string }) {
@@ -708,6 +709,7 @@ function buildChainStages(chain: ChainLink, maxDexId: number | null): ChainNode[
 }
 
 export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokemon, nextPokemon, onOpenInCatchTracker }: PokemonModalProps) {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<MoveTab>("level-up");
   const [showShiny, setShowShiny] = useState(false);
   const [expandedMove, setExpandedMove] = useState<string | null>(null);
@@ -1218,9 +1220,12 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                           return (
                             <li key={a.slot} className="text-sm">
                               <div className="flex items-center gap-2">
-                                <span className="font-medium capitalize">
+                                <button
+                                  onClick={() => navigate(`/abilities?ability=${a.ability.name}`)}
+                                  className="font-medium capitalize text-primary hover:underline"
+                                >
                                   {a.ability.name.replace(/-/g, " ")}
-                                </span>
+                                </button>
                                 {a.is_hidden && (
                                   <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
                                     Hidden
