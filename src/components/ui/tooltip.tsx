@@ -4,9 +4,10 @@ import { createPortal } from "react-dom";
 interface TooltipProps {
   content: string;
   children: ReactNode;
+  className?: string;
 }
 
-export function Tooltip({ content, children }: TooltipProps) {
+export function Tooltip({ content, children, className }: TooltipProps) {
   const [visible, setVisible] = useState(false);
   const [pos, setPos] = useState({ top: 0, left: 0 });
   const triggerRef = useRef<HTMLSpanElement>(null);
@@ -24,6 +25,7 @@ export function Tooltip({ content, children }: TooltipProps) {
     <>
       <span
         ref={triggerRef}
+        className={className}
         onMouseEnter={() => setVisible(true)}
         onMouseLeave={() => setVisible(false)}
         onFocus={() => setVisible(true)}
