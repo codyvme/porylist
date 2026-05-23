@@ -8,8 +8,9 @@ import { MovesTable } from "@/components/MovesTable";
 import { AbilitiesTable } from "@/components/AbilitiesTable";
 import { TeamBuilder } from "@/components/TeamBuilder";
 import { BreedingTracker } from "@/components/BreedingTracker";
+import { CompareView } from "@/components/CompareView";
 import { ItemsTable } from "@/components/ItemsTable";
-import { CircleHelp, ClipboardList, Dna, List, LogOut, Menu, Moon, Backpack, Settings, Sparkles, Sun, Swords, X } from "lucide-react";
+import { CircleHelp, ClipboardList, Dna, List, LogOut, Menu, Moon, Backpack, Scale, Settings, Sparkles, Sun, Swords, X } from "lucide-react";
 import { SPRITES_ROOT } from "@/lib/games";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -236,6 +237,7 @@ function UserMenu({
 
 const NAV_ITEMS = [
   { to: "/pokedex",    label: "Pokédex",         Icon: List          },
+  { to: "/compare",    label: "Compare",          Icon: Scale         },
   { to: "/moves",      label: "Moves",            Icon: Swords        },
   { to: "/abilities",  label: "Abilities",        Icon: Sparkles      },
   { to: "/items",      label: "Items",            Icon: Backpack      },
@@ -507,6 +509,7 @@ export function App() {
                 <RouteBrowser caught={caught} onToggleCaught={toggleCaught} navigationTarget={catchTrackerTarget} />
               } />
               <Route path="/breeding" element={<BreedingTracker user={user} />} />
+              <Route path="/compare" element={<CompareView />} />
             </Routes>
           </main>
         </div>
