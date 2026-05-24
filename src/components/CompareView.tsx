@@ -7,8 +7,7 @@ import {
   typesForGeneration,
   type PokemonSummary,
 } from "@/lib/pokeapi";
-import { GAMES, type GameOption, spriteUrl } from "@/lib/games";
-import { Select } from "@/components/ui/select";
+import { type GameOption, spriteUrl } from "@/lib/games";
 import { computeTypeEffectiveness } from "@/lib/type-chart";
 import { TYPE_COLORS } from "@/lib/types";
 import { formatPokemonName, cn } from "@/lib/utils";
@@ -333,10 +332,9 @@ function PokemonPicker({
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export function CompareView() {
+export function CompareView({ game }: { game: GameOption | null }) {
   const { data: list } = usePokemonSummaryList();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [game, setGame] = useState<GameOption | null>(null);
 
   // Parse slot names from URL (?compare=pikachu,charizard,blastoise)
   const [slotNames, setSlotNames] = useState<[string | null, string | null, string | null]>(() => {
@@ -397,22 +395,6 @@ export function CompareView() {
       {/* ── Page header ── */}
       <div className="shrink-0 flex items-center gap-3 border-b border-border py-3 -mx-6 px-6">
         <h1 className="flex-1 text-xl font-semibold">Compare</h1>
-        <div>
-          <Select
-            value={game?.value ?? ""}
-            onChange={(e) => {
-              setGame(GAMES.find((g) => g.value === e.target.value) ?? null);
-            }}
-            className="text-sm"
-          >
-            <option value="">All Games</option>
-            {GAMES.map((g) => (
-              <option key={g.value} value={g.value}>
-                {g.label}
-              </option>
-            ))}
-          </Select>
-        </div>
       </div>
 
       {/* ── Scrollable content ── */}

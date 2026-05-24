@@ -15,7 +15,6 @@ import {
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { ArrowDown, ArrowUp, Check, ChevronDown, ChevronRight, ChevronsUpDown, ListFilter, Loader2, Plus, Search, SlidersHorizontal, Volume2, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Select } from "@/components/ui/select";
 import {
   extractIdFromUrl,
   typesForGeneration,
@@ -30,8 +29,7 @@ import {
   type PokemonSummary,
 } from "@/lib/pokeapi";
 import {
-  GAMES,
-  GAMES_BY_VALUE,
+  type GameOption,
   regionalNumber,
   SPRITES_ROOT,
   spriteUrl,
@@ -237,7 +235,8 @@ function buildRow(
   };
 }
 
-export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderOpen, onOpenInCatchTracker }: {
+export function PokemonTable({ game: gameProp, team, onAddToTeam, onRemoveFromTeam, teamBuilderOpen, onOpenInCatchTracker }: {
+  game: GameOption | null;
   team: string[];
   onAddToTeam: (name: string) => void;
   onRemoveFromTeam: (name: string) => void;
@@ -250,15 +249,14 @@ export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderO
   const allEntriesQuery = useAllPokemonEntries();
 
   const [search, setSearch] = useState("");
-  const [game, setGame] = useState<string>("");
   const [exclusiveVersion, setExclusiveVersion] = useState<string>("");
-  const deferredGame = useDeferredValue(game);
+  const deferredGame = useDeferredValue(gameProp);
   const deferredExclusiveVersion = useDeferredValue(exclusiveVersion);
 
   const versionExclusivesQuery = useVersionExclusives();
   const versionExclusivesData = versionExclusivesQuery.data;
   const deferredSearch = useDeferredValue(search);
-  const selectedGame = deferredGame ? GAMES_BY_VALUE[deferredGame] : undefined;
+  const selectedGame = deferredGame ?? undefined;
   const spriteVersion = selectedGame?.spriteVersion;
   const generation = selectedGame?.generation;
   const isGen1 = selectedGame?.value === GEN1_GAME_VALUE;
@@ -406,7 +404,7 @@ export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderO
   // Reset exclusive version when game is deselected
   useEffect(() => {
     setExclusiveVersion("");
-  }, [game]);
+  }, [gameProp]);
 
   const toggleType = useCallback((t: string) => {
     setSelectedTypes((prev) => {
@@ -498,8 +496,8 @@ export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderO
       result = result.filter((r) => r.isNoEvolution === true);
     }
 
-    if (deferredExclusiveVersion && game && versionExclusivesData?.[game]) {
-      const versionEntry = versionExclusivesData[game].versions.find(
+    if (deferredExclusiveVersion && gameProp?.value && versionExclusivesData?.[gameProp.value]) {
+      const versionEntry = versionExclusivesData[gameProp.value].versions.find(
         (v) => v.key === deferredExclusiveVersion,
       );
       if (versionEntry) {
@@ -517,7 +515,7 @@ export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderO
       });
     }
     return result;
-  }, [allRows, selectedGame, deferredSearch, selectedTypes, showLegendary, showMythical, showBaby, showMono, showNoEvolution, speciesMap, evolutionTargets, game, availableFormsMap, deferredMoveFilter, deferredExclusiveVersion, versionExclusivesData]);
+  }, [allRows, selectedGame, deferredSearch, selectedTypes, showLegendary, showMythical, showBaby, showMono, showNoEvolution, speciesMap, evolutionTargets, gameProp, availableFormsMap, deferredMoveFilter, deferredExclusiveVersion, versionExclusivesData]);
 
 
   const showRegional = false;
@@ -742,7 +740,7 @@ export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderO
       captureRateCol,
       eggGroupsCol,
     ];
-  }, [isGen1, showRegional, selectedGame, toggleExpanded, team, onAddToTeam, onRemoveFromTeam, teamBuilderOpen, game]);
+  }, [isGen1, showRegional, selectedGame, toggleExpanded, team, onAddToTeam, onRemoveFromTeam, teamBuilderOpen, gameProp]);
 
   const [sorting, setSorting] = useState<SortingState>([]);
 
@@ -817,7 +815,7 @@ export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderO
       showEggGroups ? "160px" : "",
     ].filter(Boolean).join(" ");
     return `32px 72px 80px minmax(150px, 1fr) 160px ${statPart}${extraParts}`.trim();
-  }, [isGen1, columnVisibility, game]);
+  }, [isGen1, columnVisibility, gameProp]);
 
   const table = useReactTable({
     data,
@@ -872,10 +870,6 @@ export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderO
     <div className="flex h-full flex-col gap-3 px-6">
       <div className="shrink-0 flex items-center gap-3 border-b border-border py-3 -mx-6 px-6">
         <h1 className="flex-1 text-xl font-semibold">Pokédex</h1>
-        <Select value={game} onChange={(e) => setGame(e.target.value)}>
-          <option value="">All Games</option>
-          {GAMES.map((g) => <option key={g.value} value={g.value}>{g.label}</option>)}
-        </Select>
       </div>
       <div className="flex flex-wrap items-center gap-2">
 
@@ -902,8 +896,8 @@ export function PokemonTable({ team, onAddToTeam, onRemoveFromTeam, teamBuilderO
         </div>
 
         {/* Version exclusives toggle */}
-        {game && versionExclusivesData?.[game] && (() => {
-          const pair = versionExclusivesData[game].versions;
+        {gameProp?.value && versionExclusivesData?.[gameProp.value] && (() => {
+          const pair = versionExclusivesData[gameProp.value].versions;
           return (
             <div className="flex items-center gap-1.5">
               <span className="text-xs text-muted-foreground font-medium">Exclusives:</span>
