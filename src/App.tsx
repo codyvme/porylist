@@ -12,8 +12,9 @@ import { CompareView } from "@/components/CompareView";
 import { NaturesTable } from "@/components/NaturesTable";
 import { ItemsTable } from "@/components/ItemsTable";
 import { CircleHelp, ClipboardList, Dna, Leaf, List, LogOut, Menu, Moon, Backpack, Scale, Settings, Sparkles, Sun, Swords, X } from "lucide-react";
-import { SPRITES_ROOT } from "@/lib/games";
+import { GAMES, SPRITES_ROOT, type GameOption } from "@/lib/games";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { Tooltip } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
@@ -422,11 +423,23 @@ export function App() {
     setUserProfile(null);
   }, []);
 
+  const [selectedGame, setSelectedGame] = useState<GameOption | null>(() => {
+    try {
+      const saved = localStorage.getItem("porylist-game");
+      return GAMES.find((g) => g.value === saved) ?? null;
+    } catch { return null; }
+  });
+  useEffect(() => {
+    localStorage.setItem("porylist-game", selectedGame?.value ?? "");
+  }, [selectedGame]);
+
   const [catchTrackerTarget, setCatchTrackerTarget] = useState<{ gameValue: string; locationKey: string } | null>(null);
 
   const handleOpenInCatchTracker = useCallback((gameValue: string, locationKey: string) => {
+    const game = GAMES.find((g) => g.value === gameValue) ?? null;
+    setSelectedGame(game);
     setCatchTrackerTarget({ gameValue, locationKey });
-    navigate(`/routes?routeGame=${gameValue}&route=${locationKey}`);
+    navigate(`/routes?route=${locationKey}`);
   }, [navigate]);
 
   const [team, setTeam] = useState<string[]>(() => {
@@ -478,6 +491,21 @@ export function App() {
               <h1 className="text-2xl font-bold tracking-tight text-white">Porylist</h1>
             </NavLink>
 
+            {/* Global game filter — always dark since the header is always dark */}
+            <div className="dark hidden sm:flex items-center gap-1.5 ml-6">
+              <Select
+                value={selectedGame?.value ?? ""}
+                onChange={(e) => setSelectedGame(GAMES.find((g) => g.value === e.target.value) ?? null)}
+                className="w-44 bg-white/10 border-white/20 text-white"
+              >
+                <option value="">All Games</option>
+                {GAMES.map((g) => <option key={g.value} value={g.value}>{g.label}</option>)}
+              </Select>
+              <Tooltip content="Filters the Pokédex, moves, abilities, items, and more to only show what's available in the selected game." side="bottom">
+                <CircleHelp className="h-4 w-4 text-slate-400 hover:text-slate-200 transition-colors cursor-default" />
+              </Tooltip>
+            </div>
+
             {/* Right-side actions */}
             <div className="ml-auto flex items-center gap-1">
               <button
@@ -516,17 +544,17 @@ export function App() {
             <Routes>
               <Route path="/" element={<Navigate to="/pokedex" replace />} />
               <Route path="/pokedex" element={
-                <PokemonTable team={team} onAddToTeam={addToTeam} onRemoveFromTeam={removeFromTeam} teamBuilderOpen={teamBuilderOpen} onOpenInCatchTracker={handleOpenInCatchTracker} />
+                <PokemonTable game={selectedGame} team={team} onAddToTeam={addToTeam} onRemoveFromTeam={removeFromTeam} teamBuilderOpen={teamBuilderOpen} onOpenInCatchTracker={handleOpenInCatchTracker} />
               } />
-              <Route path="/moves" element={<MovesTable />} />
-              <Route path="/abilities" element={<AbilitiesTable />} />
-              <Route path="/items" element={<ItemsTable />} />
+              <Route path="/moves" element={<MovesTable game={selectedGame} />} />
+              <Route path="/abilities" element={<AbilitiesTable game={selectedGame} />} />
+              <Route path="/items" element={<ItemsTable game={selectedGame} />} />
               <Route path="/routes" element={
-                <RouteBrowser caught={caught} onToggleCaught={toggleCaught} navigationTarget={catchTrackerTarget} />
+                <RouteBrowser game={selectedGame} caught={caught} onToggleCaught={toggleCaught} navigationTarget={catchTrackerTarget} />
               } />
               <Route path="/natures" element={<NaturesTable />} />
               <Route path="/breeding" element={<BreedingTracker user={user} />} />
-              <Route path="/compare" element={<CompareView />} />
+              <Route path="/compare" element={<CompareView game={selectedGame} />} />
             </Routes>
           </main>
         </div>

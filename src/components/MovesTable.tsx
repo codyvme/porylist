@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, ChevronsUpDown, Search, X } from "lucide-react";
 import { TYPE_COLORS } from "@/lib/types";
 import { useMoveList, type MoveListEntry } from "@/lib/pokeapi";
-import { GAMES, type GameOption } from "@/lib/games";
+import { type GameOption } from "@/lib/games";
 import { MoveModal } from "@/components/MoveModal";
 import { Select } from "@/components/ui/select";
 
@@ -52,10 +52,8 @@ function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export function MovesTable() {
+export function MovesTable({ game: selectedGame }: { game: GameOption | null }) {
   const { data: moves, isLoading } = useMoveList();
-
-  const [selectedGame, setSelectedGame] = useState<GameOption | null>(null);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
@@ -125,10 +123,6 @@ export function MovesTable() {
     <div className="flex min-h-0 flex-1 flex-col gap-3 px-6">
       <div className="shrink-0 flex items-center gap-3 border-b border-border py-3 -mx-6 px-6">
         <h1 className="flex-1 text-xl font-semibold">Moves</h1>
-        <Select value={selectedGame?.value ?? ""} onChange={(e) => setSelectedGame(GAMES.find((g) => g.value === e.target.value) ?? null)}>
-          <option value="">All Games</option>
-          {GAMES.map((g) => <option key={g.value} value={g.value}>{g.label}</option>)}
-        </Select>
       </div>
       {/* Filters */}
       <div className="flex flex-wrap gap-2">

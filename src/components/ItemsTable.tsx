@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, ChevronsUpDown, Search, X } from "lucide-react";
 import { useItemList, type ItemListEntry } from "@/lib/pokeapi";
-import { GAMES, type GameOption } from "@/lib/games";
+import { type GameOption } from "@/lib/games";
 import { Select } from "@/components/ui/select";
 import { ItemModal } from "@/components/ItemModal";
 import { cn } from "@/lib/utils";
@@ -32,10 +32,8 @@ function formatCost(cost: number): string {
   return `₽${cost.toLocaleString()}`;
 }
 
-export function ItemsTable() {
+export function ItemsTable({ game: selectedGame }: { game: GameOption | null }) {
   const { data: items, isLoading } = useItemList();
-
-  const [selectedGame, setSelectedGame] = useState<GameOption | null>(null);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("id");
@@ -112,10 +110,6 @@ export function ItemsTable() {
     <div className="flex min-h-0 flex-1 flex-col gap-3 px-6">
       <div className="shrink-0 flex items-center gap-3 border-b border-border py-3 -mx-6 px-6">
         <h1 className="flex-1 text-xl font-semibold">Items</h1>
-        <Select value={selectedGame?.value ?? ""} onChange={(e) => setSelectedGame(GAMES.find((g) => g.value === e.target.value) ?? null)}>
-          <option value="">All Games</option>
-          {GAMES.map((g) => <option key={g.value} value={g.value}>{g.label}</option>)}
-        </Select>
       </div>
 
       {/* Filters */}

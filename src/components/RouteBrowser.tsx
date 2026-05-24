@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ArrowLeft, Search, X } from "lucide-react";
-import { Select } from "@/components/ui/select";
-import { GAMES, GAMES_BY_VALUE } from "@/lib/games";
+import { GAMES_BY_VALUE, type GameOption } from "@/lib/games";
 import { useRouteData, usePokemonList, type RouteEncounter, type RouteLocation } from "@/lib/pokeapi";
 import { spriteUrl } from "@/lib/games";
 import { PokemonModal } from "@/components/PokemonModal";
@@ -355,13 +354,27 @@ const GAMES_WITH_ROUTES = new Set([
   "x-y", "omega-ruby-alpha-sapphire", "sun-moon", "ultra-sun-ultra-moon", "lets-go",
 ]);
 
-export function RouteBrowser({ caught, onToggleCaught, navigationTarget }: {
+export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: gameProp }: {
   caught: Record<string, string[]>;
   onToggleCaught: (name: string, gameKey: string) => void;
   navigationTarget?: { gameValue: string; locationKey: string } | null;
+  game: GameOption | null;
 }) {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [game, setGame] = useState(() => searchParams.get("routeGame") ?? "");
+  const [game, setGame] = useState(gameProp?.value ?? "");
+
+  // Sync when global game prop changes
+  useEffect(() => {
+    setGame(gameProp?.value ?? "");
+    setLocationKey(null);
+    setLocationSearch("");
+    setSelectedVersion("");
+    setListMode("locations");
+    setPokemonInput("");
+    setPokemonQuery("");
+    setShowSuggestions(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameProp]);
   const [locationKey, setLocationKey] = useState<string | null>(() => searchParams.get("route"));
   const [locationSearch, setLocationSearch] = useState("");
   const [selectedVersion, setSelectedVersion] = useState(() => searchParams.get("routeVersion") ?? "");
@@ -490,17 +503,6 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget }: {
     return results;
   }, [routeData, pokemonQuery, selectedVersion]);
 
-  const handleGameChange = (newGame: string) => {
-    setGame(newGame);
-    setLocationKey(null);
-    setLocationSearch("");
-    setSelectedVersion("");
-    setListMode("locations");
-    setPokemonInput("");
-    setPokemonQuery("");
-    setShowSuggestions(false);
-  };
-
   // When a specific version is selected (e.g. "gold"), track catches under that
   // key so Gold and Crystal stay separate. When "All" is selected, use the
   // group key (e.g. "gold-silver-crystal").
@@ -597,12 +599,6 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget }: {
       <h1 className="shrink-0 text-xl font-semibold border-b border-border py-3 -mx-6 px-6">Catch Tracker</h1>
       {/* Controls row */}
       <div className="flex flex-wrap items-center gap-4">
-        <Select value={game} onChange={(e) => handleGameChange(e.target.value)} className="min-w-[200px]">
-          <option value="">Select a game…</option>
-          {GAMES.filter((g) => GAMES_WITH_ROUTES.has(g.value)).map((g) => (
-            <option key={g.value} value={g.value}>{g.label}</option>
-          ))}
-        </Select>
         {actualVersions.length > 1 && (
           <div className="flex items-center gap-1.5">
             <span className="text-xs text-muted-foreground font-medium">Version:</span>

@@ -1,9 +1,8 @@
 import { useMemo, useState, useCallback } from "react";
 import { ChevronDown, ChevronUp, ChevronsUpDown, Search, X } from "lucide-react";
 import { useAbilityList, type AbilityListEntry } from "@/lib/pokeapi";
-import { GAMES, type GameOption } from "@/lib/games";
+import { type GameOption } from "@/lib/games";
 import { AbilityModal } from "@/components/AbilityModal";
-import { Select } from "@/components/ui/select";
 import { useSearchParams } from "react-router-dom";
 
 type SortKey = "id" | "displayName";
@@ -14,10 +13,9 @@ function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
   return dir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />;
 }
 
-export function AbilitiesTable() {
+export function AbilitiesTable({ game: selectedGame }: { game: GameOption | null }) {
   const { data: abilities, isLoading } = useAbilityList();
 
-  const [selectedGame, setSelectedGame] = useState<GameOption | null>(null);
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("id");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
@@ -85,10 +83,6 @@ export function AbilitiesTable() {
     <div className="flex min-h-0 flex-1 flex-col gap-3 px-6">
       <div className="shrink-0 flex items-center gap-3 border-b border-border py-3 -mx-6 px-6">
         <h1 className="flex-1 text-xl font-semibold">Abilities</h1>
-        <Select value={selectedGame?.value ?? ""} onChange={(e) => setSelectedGame(GAMES.find((g) => g.value === e.target.value) ?? null)}>
-          <option value="">All Games</option>
-          {GAMES.map((g) => <option key={g.value} value={g.value}>{g.label}</option>)}
-        </Select>
       </div>
       {/* Filters */}
       <div className="flex flex-wrap gap-2">
