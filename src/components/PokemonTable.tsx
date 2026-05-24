@@ -515,7 +515,7 @@ export function PokemonTable({ game: gameProp, team, onAddToTeam, onRemoveFromTe
       });
     }
     return result;
-  }, [allRows, selectedGame, deferredSearch, selectedTypes, showLegendary, showMythical, showBaby, showMono, showNoEvolution, speciesMap, evolutionTargets, gameProp, availableFormsMap, deferredMoveFilter, deferredExclusiveVersion, versionExclusivesData]);
+  }, [allRows, selectedGame, deferredSearch, selectedTypes, showLegendary, showMythical, showBaby, showMono, showNoEvolution, speciesMap, evolutionTargets, gameProp, deferredMoveFilter, deferredExclusiveVersion, versionExclusivesData]);
 
 
   const showRegional = false;

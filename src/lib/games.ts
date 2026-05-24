@@ -238,13 +238,6 @@ export function bestFlavorText<T extends {
   return en.filter((e) => eligibleVGs.has(e.version_group.name)).at(-1);
 }
 
-export function isInRanges(id: number, ranges: Array<[number, number]>): boolean {
-  for (const [min, max] of ranges) {
-    if (id >= min && id <= max) return true;
-  }
-  return false;
-}
-
 export function regionalNumber(
   id: number,
   ranges: Array<[number, number]>,
@@ -274,11 +267,4 @@ export const CRIES_ROOT = "https://cdn.jsdelivr.net/gh/PokeAPI/cries@main/cries/
 export function cryUrl(id: number, generation?: number): string {
   const variant = generation && generation <= 5 ? "legacy" : "latest";
   return `${CRIES_ROOT}/${variant}/${id}.ogg`;
-}
-
-/** Plays a Pokémon's cry. Respects the current game's generation for legacy vs modern audio. */
-export function playCry(id: number, generation?: number): void {
-  const audio = new Audio(cryUrl(id, generation));
-  audio.volume = 0.5;
-  audio.play().catch(() => {});
 }

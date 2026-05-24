@@ -286,30 +286,7 @@ export function usePokemonSummaryList() {
   };
 }
 
-export type PokemonDetailsMap = Record<string, Pokemon>;
-
-export function useAllPokemonDetails(names: string[]) {
-  const queryClient = useQueryClient();
-  return useQuery({
-    queryKey: ["pokemon-details-map", names.length],
-    enabled: names.length > 0,
-    staleTime: Infinity,
-    queryFn: async () => {
-      const results = await Promise.all(
-        names.map((name) =>
-          queryClient.fetchQuery<Pokemon>({
-            queryKey: ["pokemon", name],
-            queryFn: () => fetchJson<Pokemon>(`${BASE}/pokemon/${name}`),
-            staleTime: Infinity,
-          }),
-        ),
-      );
-      const map: PokemonDetailsMap = {};
-      for (const d of results) map[d.name] = d;
-      return map;
-    },
-  });
-}
+type PokemonDetailsMap = Record<string, Pokemon>;
 
 export const VERSION_GROUP_TO_GEN: Record<string, number> = {
   "red-blue": 1, "yellow": 1,
@@ -389,24 +366,6 @@ export function usePokemonFormData(names: string[]) {
       for (const d of results) map[d.name] = d;
       return map;
     },
-  });
-}
-
-export interface PokedexResponse {
-  name: string;
-  pokemon_entries: Array<{
-    entry_number: number;
-    pokemon_species: { name: string; url: string };
-  }>;
-}
-
-export function usePokedexes(names: string[]) {
-  return useQueries({
-    queries: names.map((name) => ({
-      queryKey: ["pokedex", name],
-      queryFn: () => fetchJson<PokedexResponse>(`${BASE}/pokedex/${name}`),
-      staleTime: Infinity,
-    })),
   });
 }
 

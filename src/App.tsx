@@ -404,17 +404,19 @@ export function App() {
     fetchUserProfile(user.id).then((p) => setUserProfile(p));
   }, [user]);
 
+  const userIdRef = useRef<string | null>(null);
+  userIdRef.current = user?.id ?? null;
+
   const toggleCaught = useCallback((name: string, gameKey: string) => {
     setCaught((prev) => {
       const current = prev[gameKey] ?? [];
       const isCaught = current.includes(name);
       const next = isCaught ? current.filter((n) => n !== name) : [...current, name];
-      supabase.auth.getUser().then(({ data }) => {
-        const uid = data.user?.id;
-        if (!uid) return;
+      const uid = userIdRef.current;
+      if (uid) {
         if (isCaught) deleteCaught(uid, gameKey, name);
         else insertCaught(uid, gameKey, name);
-      });
+      }
       return { ...prev, [gameKey]: next };
     });
   }, []);
@@ -498,7 +500,7 @@ export function App() {
               <Select
                 value={selectedGame?.value ?? ""}
                 onChange={(e) => setSelectedGame(GAMES.find((g) => g.value === e.target.value) ?? null)}
-                className="w-44 bg-white/10 border-white/20 text-white"
+                className="w-64 bg-white/10 border-white/20 text-white"
               >
                 <option value="">All Games</option>
                 {GAMES.map((g) => <option key={g.value} value={g.value}>{g.label}</option>)}
