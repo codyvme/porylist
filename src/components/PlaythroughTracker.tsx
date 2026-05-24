@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
-import { ArrowLeft, CheckCircle2, Circle, Dna, MapPin, Plus, Trash2, Trophy } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Circle, MapPin, Plus, Trash2, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GAMES, GAMES_BY_VALUE, GAME_VERSIONS, type GameOption } from "@/lib/games";
 import { Select } from "@/components/ui/select";
@@ -185,21 +185,12 @@ function BadgesTab({
     onUpdate({ ...playthrough, earnedBadges: next, updatedAt: Date.now() });
   };
 
-  // "Earn all up to this" on double-click: earn all badges up to and including the clicked one
-  const earnUpTo = (badge: Badge) => {
-    const idx = badges.findIndex((b) => b.id === badge.id);
-    const idsUpTo = badges.slice(0, idx + 1).map((b) => b.id);
-    const merged = [...new Set([...playthrough.earnedBadges, ...idsUpTo])];
-    onUpdate({ ...playthrough, earnedBadges: merged, updatedAt: Date.now() });
-  };
-
   const label = badges.length > 8 ? "trials" : "badges";
 
   return (
     <div className="flex flex-col gap-4">
       <p className="text-sm text-muted-foreground">
         {earned.size} / {badges.length} {label} earned
-        <span className="ml-1 text-xs opacity-60">· click to toggle · double-click to earn all up to here</span>
       </p>
 
       <div className={cn(
@@ -212,7 +203,6 @@ function BadgesTab({
             <button
               key={badge.id}
               onClick={() => toggle(badge)}
-              onDoubleClick={() => earnUpTo(badge)}
               title={badge.leader ? `${badge.name} Badge · ${badge.leader}${badge.location ? ` · ${badge.location}` : ""}` : badge.name}
               className={cn(
                 "flex flex-col items-center gap-1.5 rounded-xl border p-3 text-center transition-all",
@@ -534,7 +524,7 @@ export function PlaythroughTracker({
 
           {active.length === 0 && !isCreating && (
             <div className="rounded-lg border border-dashed p-6 text-center">
-              <Dna className="mx-auto mb-2 h-8 w-8 text-muted-foreground/40" />
+              <Trophy className="mx-auto mb-2 h-8 w-8 text-muted-foreground/40" />
               <p className="text-sm font-medium">No active playthroughs</p>
               <p className="mt-1 text-xs text-muted-foreground">
                 Start a new run to track your progress.
