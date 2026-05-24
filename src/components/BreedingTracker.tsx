@@ -190,26 +190,38 @@ function PokemonMiniSprite({ species }: { species: string }) {
 function NewProjectForm({
   onSave,
   onCancel,
+  initialProject,
 }: {
   onSave: (project: BreedingProject) => void;
   onCancel: () => void;
+  initialProject?: BreedingProject;
 }) {
   const { data: summaryList } = usePokemonSummaryList();
   const { data: moveList } = useMoveList();
 
-  const [speciesSearch, setSpeciesSearch] = useState("");
-  const [speciesSlug, setSpeciesSlug] = useState<string | null>(null);
-  const [speciesName, setSpeciesName] = useState("");
-  const [showSpeciesDrop, setShowSpeciesDrop] = useState(false);
-  const [gameValue, setGameValue] = useState(BREEDING_GAME_OPTIONS[0]?.value ?? "");
-  const [targetIVs, setTargetIVs] = useState<Set<StatName>>(
-    new Set(STATS),
+  const isEditing = !!initialProject;
+
+  const [speciesSearch, setSpeciesSearch] = useState(
+    initialProject ? formatPokemonName(initialProject.targetSpecies) : "",
   );
-  const [nature, setNature] = useState<string>("");
-  const [ability, setAbility] = useState<AbilitySlot>("any");
-  const [gender, setGender] = useState<GenderTarget>("either");
-  const [masuda, setMasuda] = useState(false);
-  const [shiny, setShiny] = useState(false);
+  const [speciesSlug, setSpeciesSlug] = useState<string | null>(
+    initialProject?.targetSpecies ?? null,
+  );
+  const [speciesName, setSpeciesName] = useState(
+    initialProject?.targetSpeciesName ?? "",
+  );
+  const [showSpeciesDrop, setShowSpeciesDrop] = useState(false);
+  const [gameValue, setGameValue] = useState(
+    initialProject?.gameValue ?? (BREEDING_GAME_OPTIONS[0]?.value ?? ""),
+  );
+  const [targetIVs, setTargetIVs] = useState<Set<StatName>>(
+    initialProject ? new Set(initialProject.targetIVs) : new Set(STATS),
+  );
+  const [nature, setNature] = useState<string>(initialProject?.targetNature ?? "");
+  const [ability, setAbility] = useState<AbilitySlot>(initialProject?.targetAbility ?? "any");
+  const [gender, setGender] = useState<GenderTarget>(initialProject?.targetGender ?? "either");
+  const [masuda, setMasuda] = useState(initialProject?.masudaMethod ?? false);
+  const [shiny, setShiny] = useState(initialProject?.shinyHunting ?? false);
   const [moveSearch, setMoveSearch] = useState("");
 
   // Abilities for the selected species
@@ -217,7 +229,7 @@ function NewProjectForm({
     if (!speciesSlug || !summaryList) return null;
     return summaryList.find((s) => s.name === speciesSlug)?.abilities ?? null;
   }, [speciesSlug, summaryList]);
-  const [eggMoves, setEggMoves] = useState<string[]>([]);
+  const [eggMoves, setEggMoves] = useState<string[]>(initialProject?.targetEggMoves ?? []);
   const [showMoveDrop, setShowMoveDrop] = useState(false);
 
   const speciesRef = useRef<HTMLDivElement>(null);
@@ -265,11 +277,15 @@ function NewProjectForm({
     if (!speciesSlug) return;
     const ivList = STATS.filter((s) => targetIVs.has(s));
     const project: BreedingProject = {
-      id: newId(),
+      // Preserve originals when editing, otherwise create fresh
+      id: initialProject?.id ?? newId(),
+      createdAt: initialProject?.createdAt ?? Date.now(),
+      status: initialProject?.status ?? "active",
+      ...(initialProject?.completedAt !== undefined ? { completedAt: initialProject.completedAt } : {}),
+      hatches: initialProject?.hatches ?? [],
+      // Updated fields
       name: speciesName || capitalize(speciesSlug.replace(/-/g, " ")),
-      createdAt: Date.now(),
       updatedAt: Date.now(),
-      status: "active",
       gameValue,
       targetSpecies: speciesSlug,
       targetSpeciesName: speciesName,
@@ -280,7 +296,6 @@ function NewProjectForm({
       targetEggMoves: eggMoves,
       masudaMethod: masuda,
       shinyHunting: shiny,
-      hatches: [],
     };
     onSave(project);
   };
@@ -291,7 +306,7 @@ function NewProjectForm({
         <button onClick={onCancel} className="rounded-md p-1.5 hover:bg-muted">
           <ArrowLeft className="h-4 w-4" />
         </button>
-        <h2 className="text-lg font-semibold">New Breeding Project</h2>
+        <h2 className="text-lg font-semibold">{isEditing ? "Edit Project" : "New Breeding Project"}</h2>
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2">
@@ -518,7 +533,7 @@ function NewProjectForm({
           disabled={!speciesSlug}
           className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
         >
-          Create Project
+          {isEditing ? "Save Changes" : "Create Project"}
         </button>
         <button onClick={onCancel} className="rounded-md px-4 py-2 text-sm font-medium hover:bg-muted">
           Cancel
@@ -1045,11 +1060,13 @@ function ProjectDetail({
   onUpdate,
   onDelete,
   onBack,
+  onEdit,
 }: {
   project: BreedingProject;
   onUpdate: (updated: BreedingProject) => void;
   onDelete: () => void;
   onBack: () => void;
+  onEdit: () => void;
 }) {
   const [tab, setTab] = useState<DetailTab>("plan");
   const [eggData, setEggData] = useState<Record<string, { n: string; p: string; i: number; g: string[]; l: Record<string, number> }> | null>(null);
@@ -1154,7 +1171,7 @@ function ProjectDetail({
           {project.targetIVs.length > 0 && (
             <div className="mt-1.5">
               <IVDots
-                perfectIVs={[]}
+                perfectIVs={project.hatches.flatMap((h) => h.perfectIVs).filter((s) => project.targetIVs.includes(s))}
                 targetIVs={project.targetIVs}
               />
             </div>
@@ -1162,6 +1179,12 @@ function ProjectDetail({
         </div>
 
         <div className="flex items-center gap-1">
+          <button
+            onClick={onEdit}
+            className="rounded-md px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted"
+          >
+            Edit
+          </button>
           <button
             onClick={handleArchive}
             className="rounded-md px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted"
@@ -1226,6 +1249,7 @@ export function BreedingTracker({ user }: { user: User | null }) {
   const [projects, setProjects] = useState<BreedingProject[]>(loadProjects);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
   const [focusedIdx, setFocusedIdx] = useState(-1);
   const didSyncRef = useRef<string | null>(null);
@@ -1280,6 +1304,14 @@ export function BreedingTracker({ user }: { user: User | null }) {
     [projects, persist],
   );
 
+  const handleSaveEdit = useCallback(
+    (project: BreedingProject) => {
+      persist(projects.map((p) => (p.id === project.id ? project : p)), project);
+      setIsEditing(false);
+    },
+    [projects, persist],
+  );
+
   const handleDelete = useCallback(
     (projectId: string) => {
       if (!window.confirm("Permanently delete this project? This cannot be undone.")) return;
@@ -1307,7 +1339,7 @@ export function BreedingTracker({ user }: { user: User | null }) {
   keyHandlerRef.current = (e: KeyboardEvent) => {
     const tag = (e.target as HTMLElement).tagName;
     if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
-    if (isCreating) return;
+    if (isCreating || isEditing) return;
 
     if (e.key === "ArrowDown") {
       e.preventDefault();
@@ -1329,6 +1361,7 @@ export function BreedingTracker({ user }: { user: User | null }) {
     } else if (e.key === "Escape") {
       setSelectedId(null);
       setIsCreating(false);
+      setIsEditing(false);
       setFocusedIdx(-1);
     }
   };
@@ -1339,7 +1372,7 @@ export function BreedingTracker({ user }: { user: User | null }) {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
-  const showDetail = (selected || isCreating);
+  const showDetail = (selected || isCreating || isEditing);
 
   return (
     <div className="flex h-full flex-col px-6">
@@ -1355,7 +1388,7 @@ export function BreedingTracker({ user }: { user: User | null }) {
         <div className="flex items-center justify-between">
           <h2 className="font-semibold">Projects</h2>
           <button
-            onClick={() => { setIsCreating(true); setSelectedId(null); }}
+            onClick={() => { setIsCreating(true); setIsEditing(false); setSelectedId(null); }}
             className="flex items-center gap-1 rounded-md bg-primary px-2.5 py-1.5 text-xs font-medium text-primary-foreground"
           >
             <Plus className="h-3.5 w-3.5" />
@@ -1430,12 +1463,20 @@ export function BreedingTracker({ user }: { user: User | null }) {
         {isCreating && (
           <NewProjectForm onSave={handleSaveNew} onCancel={() => setIsCreating(false)} />
         )}
-        {!isCreating && selected && (
+        {!isCreating && isEditing && selected && (
+          <NewProjectForm
+            initialProject={selected}
+            onSave={handleSaveEdit}
+            onCancel={() => setIsEditing(false)}
+          />
+        )}
+        {!isCreating && !isEditing && selected && (
           <ProjectDetail
             project={selected}
             onUpdate={handleUpdate}
             onDelete={() => handleDelete(selected.id)}
             onBack={() => setSelectedId(null)}
+            onEdit={() => setIsEditing(true)}
           />
         )}
         {!isCreating && !selected && (
@@ -1448,7 +1489,7 @@ export function BreedingTracker({ user }: { user: User | null }) {
               </p>
             </div>
             <button
-              onClick={() => setIsCreating(true)}
+              onClick={() => { setIsCreating(true); setIsEditing(false); }}
               className="mt-1 flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
             >
               <Plus className="h-4 w-4" />
