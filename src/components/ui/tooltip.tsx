@@ -6,9 +6,10 @@ interface TooltipProps {
   children: ReactNode;
   className?: string;
   side?: "top" | "bottom" | "right";
+  disabled?: boolean;
 }
 
-export function Tooltip({ content, children, className, side = "top" }: TooltipProps) {
+export function Tooltip({ content, children, className, side = "top", disabled = false }: TooltipProps) {
   const [visible, setVisible] = useState(false);
   const [pos, setPos] = useState({ top: 0, left: 0 });
   const triggerRef = useRef<HTMLSpanElement>(null);
@@ -37,14 +38,14 @@ export function Tooltip({ content, children, className, side = "top" }: TooltipP
       <span
         ref={triggerRef}
         className={className}
-        onMouseEnter={() => setVisible(true)}
+        onMouseEnter={() => { if (!disabled) setVisible(true); }}
         onMouseLeave={() => setVisible(false)}
-        onFocus={() => setVisible(true)}
+        onFocus={() => { if (!disabled) setVisible(true); }}
         onBlur={() => setVisible(false)}
       >
         {children}
       </span>
-      {visible &&
+      {!disabled && visible &&
         createPortal(
           <div role="tooltip" style={{ top: pos.top, left: pos.left }} className={boxCls}>
             {content}

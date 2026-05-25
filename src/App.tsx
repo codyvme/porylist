@@ -263,24 +263,35 @@ const NAV_ITEMS = [
 // ─── Icon Rail (desktop) ──────────────────────────────────────────────────────
 
 function IconRail() {
+  const [navExpanded, setNavExpanded] = useState(
+    () => window.matchMedia("(min-width: 1024px)").matches,
+  );
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const handler = (e: MediaQueryListEvent) => setNavExpanded(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
   return (
     <aside className="hidden sm:flex flex-col w-14 lg:w-44 shrink-0 border-r border-border bg-background dark:border-[hsl(193_60%_18%/0.6)] dark:bg-[hsl(193_90%_9%)] py-2">
       {NAV_ITEMS.map(({ to, label, Icon }) => (
-        <NavLink
-          key={to}
-          to={to}
-          className={({ isActive }) => cn(
-            "flex h-11 w-full items-center border-l-2 px-3 text-sm transition-colors",
-            "justify-center lg:justify-start gap-0 lg:gap-3 lg:px-4",
-            isActive
-              ? "border-[hsl(var(--porygon-red))] bg-primary/10 font-semibold text-primary dark:bg-white/10 dark:text-white"
-              : "border-transparent font-medium text-muted-foreground hover:bg-muted hover:text-foreground dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-slate-200",
-          )}
-          aria-label={label}
-        >
-          <Icon className="h-4 w-4 shrink-0" />
-          <span className="hidden lg:block whitespace-nowrap">{label}</span>
-        </NavLink>
+        <Tooltip key={to} content={label} side="right" className="block w-full" disabled={navExpanded}>
+          <NavLink
+            to={to}
+            className={({ isActive }) => cn(
+              "flex h-11 w-full items-center border-l-2 px-3 text-sm transition-colors",
+              "justify-center lg:justify-start gap-0 lg:gap-3 lg:px-4",
+              isActive
+                ? "border-[hsl(var(--porygon-red))] bg-primary/10 font-semibold text-primary dark:bg-white/10 dark:text-white"
+                : "border-transparent font-medium text-muted-foreground hover:bg-muted hover:text-foreground dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-slate-200",
+            )}
+            aria-label={label}
+          >
+            <Icon className="h-4 w-4 shrink-0" />
+            <span className="hidden lg:block whitespace-nowrap">{label}</span>
+          </NavLink>
+        </Tooltip>
       ))}
     </aside>
   );

@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
-import { ArrowLeft, CheckCircle2, Circle, MapPin, Plus, Trash2, Trophy } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Circle, MapPin, Plus, Trash2, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GAMES_BY_VALUE, type GameOption } from "@/lib/games";
 import { Select } from "@/components/ui/select";
@@ -306,7 +306,7 @@ function PokedexTab({
   );
 
   return (
-    <div className="flex flex-1 min-h-0 flex-col -mx-6 -mb-3">
+    <div className="flex flex-1 min-h-0 flex-col -mx-6">
       <RouteBrowser
         caught={caughtForBrowser}
         onToggleCaught={handleToggleCaught}
@@ -482,6 +482,7 @@ export function PlaythroughTracker({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
+  const [runsCollapsed, setRunsCollapsed] = useState(false);
 
   // Auto-select a playthrough matching the navigationTarget's game
   const didAutoSelectRef = useRef<string | null>(null);
@@ -545,6 +546,7 @@ export function PlaythroughTracker({
           className={cn(
             "flex w-72 shrink-0 flex-col gap-3 overflow-y-auto pt-3 sm:pr-6",
             showDetail && "hidden sm:flex",
+            runsCollapsed && "sm:hidden",
           )}
         >
           <div className="flex items-center justify-between">
@@ -602,13 +604,23 @@ export function PlaythroughTracker({
           )}
         </div>
 
-        {/* Divider */}
-        <div className="hidden sm:block w-px shrink-0 bg-border" />
+        {/* Divider with collapse toggle */}
+        <div className="hidden sm:block relative shrink-0 w-6">
+          <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-border" />
+          <button
+            onClick={() => setRunsCollapsed((v) => !v)}
+            className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex h-5 w-5 items-center justify-center rounded-full border bg-background text-muted-foreground shadow-sm hover:bg-muted hover:text-foreground transition-colors"
+            title={runsCollapsed ? "Show runs" : "Hide runs"}
+          >
+            {runsCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
+          </button>
+        </div>
 
         {/* Right panel */}
         <div
           className={cn(
-            "flex flex-1 flex-col overflow-y-auto pt-3 pl-0 sm:pl-6",
+            "flex flex-1 flex-col overflow-y-auto pt-3",
+            runsCollapsed ? "pl-2 sm:pl-4" : "pl-0 sm:pl-6",
             !showDetail && "hidden sm:flex",
           )}
         >

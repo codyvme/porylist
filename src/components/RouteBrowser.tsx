@@ -681,243 +681,441 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
       )}
 
       {game && GAMES_WITH_ROUTES.has(game) && (
-        <div className="flex flex-col flex-1 min-h-0 overflow-hidden rounded-md border sm:grid sm:grid-cols-[280px_1fr]">
-          {/* Location list — full screen on mobile when no location selected, sidebar on sm+ */}
-          <div className={cn(
-            "flex flex-1 min-h-0 flex-col sm:border-r",
-            selectedLocation ? "hidden sm:flex" : "flex",
-          )}>
-            {/* Mode toggle */}
-            <div className="flex-shrink-0 border-b">
-              <div className="flex text-xs font-medium">
-                <button
-                  onClick={() => setListMode("locations")}
-                  className={cn(
-                    "flex-1 py-2 transition-colors",
-                    listMode === "locations" ? "border-b-2 border-primary text-foreground" : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  Locations
-                </button>
-                <button
-                  onClick={() => setListMode("pokemon")}
-                  className={cn(
-                    "flex-1 py-2 transition-colors",
-                    listMode === "pokemon" ? "border-b-2 border-primary text-foreground" : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  Find Pokémon
-                </button>
-              </div>
-              <div className="p-2">
-                <div className="relative">
-                  {listMode === "locations" && <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />}
-                  {listMode === "locations" ? (
+        embedded ? (
+          /* Compact embedded layout — dropdown top bar + full-width encounter panel */
+          <div className="flex flex-col flex-1 min-h-0 overflow-hidden rounded-md border">
+            {/* Compact top bar: mode toggle + location select or Pokémon search */}
+            <div className="shrink-0 border-b px-2 py-2 space-y-2">
+              <div className="flex items-center gap-2">
+                {/* Mode toggle pills */}
+                <div className="flex shrink-0 overflow-hidden rounded-md border text-xs font-medium">
+                  <button
+                    onClick={() => setListMode("locations")}
+                    className={cn(
+                      "px-2.5 py-1.5 transition-colors",
+                      listMode === "locations" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted",
+                    )}
+                  >
+                    Locations
+                  </button>
+                  <button
+                    onClick={() => setListMode("pokemon")}
+                    className={cn(
+                      "border-l px-2.5 py-1.5 transition-colors",
+                      listMode === "pokemon" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted",
+                    )}
+                  >
+                    Find Pokémon
+                  </button>
+                </div>
+                {/* Location select dropdown */}
+                {listMode === "locations" && (
+                  <select
+                    value={locationKey ?? ""}
+                    onChange={(e) => setLocationKey(e.target.value || null)}
+                    className="flex-1 min-w-0 rounded-md border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                  >
+                    <option value="">Select a location…</option>
+                    {filteredLocations.map((loc) => (
+                      <option key={loc.key} value={loc.key}>{loc.label}</option>
+                    ))}
+                  </select>
+                )}
+                {/* Pokémon search input */}
+                {listMode === "pokemon" && (
+                  <div ref={pokemonSearchRef} className="relative flex-1 min-w-0">
+                    <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                     <input
                       type="text"
-                      value={locationSearch}
-                      onChange={(e) => setLocationSearch(e.target.value)}
-                      placeholder="Search locations…"
-                      className="w-full rounded-md border bg-background py-1.5 pl-8 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                    />
-                  ) : (
-                    <div ref={pokemonSearchRef} className="relative">
-                      <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-                      <input
-                        type="text"
-                        value={pokemonInput}
-                        onChange={(e) => {
-                          setPokemonInput(e.target.value);
-                          setPokemonQuery("");
-                          setShowSuggestions(true);
-                        }}
-                        onFocus={() => setShowSuggestions(true)}
-                        onKeyDown={(e) => {
-                          if (!showSuggestions || suggestions.length === 0) return;
-                          if (e.key === "ArrowDown") {
-                            e.preventDefault();
-                            setSuggestionIndex((i) => (i + 1) % suggestions.length);
-                          } else if (e.key === "ArrowUp") {
-                            e.preventDefault();
-                            setSuggestionIndex((i) => (i <= 0 ? suggestions.length - 1 : i - 1));
-                          } else if (e.key === "Enter") {
-                            e.preventDefault();
-                            const pick = suggestions[suggestionIndex] ?? suggestions[0];
-                            if (pick) {
-                              setPokemonInput(formatPokemonName(pick.name));
-                              setPokemonQuery(pick.name);
-                              setShowSuggestions(false);
-                            }
-                          } else if (e.key === "Escape") {
+                      value={pokemonInput}
+                      onChange={(e) => {
+                        setPokemonInput(e.target.value);
+                        setPokemonQuery("");
+                        setShowSuggestions(true);
+                      }}
+                      onFocus={() => setShowSuggestions(true)}
+                      onKeyDown={(e) => {
+                        if (!showSuggestions || suggestions.length === 0) return;
+                        if (e.key === "ArrowDown") {
+                          e.preventDefault();
+                          setSuggestionIndex((i) => (i + 1) % suggestions.length);
+                        } else if (e.key === "ArrowUp") {
+                          e.preventDefault();
+                          setSuggestionIndex((i) => (i <= 0 ? suggestions.length - 1 : i - 1));
+                        } else if (e.key === "Enter") {
+                          e.preventDefault();
+                          const pick = suggestions[suggestionIndex] ?? suggestions[0];
+                          if (pick) {
+                            setPokemonInput(formatPokemonName(pick.name));
+                            setPokemonQuery(pick.name);
                             setShowSuggestions(false);
                           }
-                        }}
-                        placeholder="e.g. Ralts, Pikachu…"
-                        className="w-full rounded-md border bg-background py-1.5 pl-8 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                        autoFocus
-                        autoComplete="off"
-                      />
-                      {showSuggestions && suggestions.length > 0 && (
-                        <div className="absolute left-0 right-0 top-full z-20 mt-1 overflow-hidden rounded-md border bg-background shadow-lg">
-                          {suggestions.map((p, i) => (
-                            <button
-                              key={p.name}
-                              className={cn(
-                                "flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm",
-                                i === suggestionIndex ? "bg-muted" : "hover:bg-muted",
-                              )}
-                              onMouseDown={(e) => {
-                                e.preventDefault(); // keep input focused
-                                setPokemonInput(formatPokemonName(p.name));
-                                setPokemonQuery(p.name);
-                                setShowSuggestions(false);
-                              }}
-                              onMouseEnter={() => setSuggestionIndex(i)}
-                            >
-                              <img
-                                src={spriteUrl(p.id, spriteVersion)}
-                                alt={p.name}
-                                className="h-6 w-6 flex-shrink-0 object-contain"
-                              />
-                              {formatPokemonName(p.name)}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
+                        } else if (e.key === "Escape") {
+                          setShowSuggestions(false);
+                        }
+                      }}
+                      placeholder="e.g. Ralts, Pikachu…"
+                      className="w-full rounded-md border bg-background py-1.5 pl-8 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                      autoComplete="off"
+                    />
+                    {showSuggestions && suggestions.length > 0 && (
+                      <div className="absolute left-0 right-0 top-full z-20 mt-1 overflow-hidden rounded-md border bg-background shadow-lg">
+                        {suggestions.map((p, i) => (
+                          <button
+                            key={p.name}
+                            className={cn(
+                              "flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm",
+                              i === suggestionIndex ? "bg-muted" : "hover:bg-muted",
+                            )}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              setPokemonInput(formatPokemonName(p.name));
+                              setPokemonQuery(p.name);
+                              setShowSuggestions(false);
+                            }}
+                            onMouseEnter={() => setSuggestionIndex(i)}
+                          >
+                            <img
+                              src={spriteUrl(p.id, spriteVersion)}
+                              alt={p.name}
+                              className="h-6 w-6 flex-shrink-0 object-contain"
+                            />
+                            {formatPokemonName(p.name)}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
+              {/* Find Pokémon results */}
+              {listMode === "pokemon" && pokemonQuery && (
+                pokemonSearchResults.length === 0 ? (
+                  <p className="px-1 text-xs text-muted-foreground">Not found in any location for this game.</p>
+                ) : (
+                  <div className="max-h-36 overflow-y-auto divide-y rounded-md border">
+                    {pokemonSearchResults.map(({ location, encounters }) => (
+                      <button
+                        key={location.key}
+                        onClick={() => { setLocationKey(location.key); setListMode("locations"); }}
+                        className={cn(
+                          "w-full px-3 py-1.5 text-left transition-colors hover:bg-muted",
+                          locationKey === location.key ? "bg-muted" : "",
+                        )}
+                      >
+                        <span className="block text-xs font-medium">{location.label}</span>
+                        <span className="block text-[11px] text-muted-foreground">
+                          {encounters.map((e) => {
+                            const icon = METHOD_ICONS[e.method] ?? "";
+                            const level = e.minLevel === e.maxLevel ? `Lv ${e.minLevel}` : `Lv ${e.minLevel}–${e.maxLevel}`;
+                            return `${icon} ${level}`.trim();
+                          }).join(" · ")}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )
+              )}
+              {listMode === "pokemon" && !pokemonQuery && pokemonInput.trim() && (
+                <p className="px-1 text-xs text-muted-foreground">Select a Pokémon from the suggestions above.</p>
+              )}
             </div>
 
+            {/* Encounter panel — full width */}
             <div className="flex-1 overflow-y-auto">
               {routeDataQuery.isLoading && (
-                <div className="space-y-1 p-2">
-                  {Array.from({ length: 12 }).map((_, i) => (
-                    <div key={i} className="h-8 animate-pulse rounded bg-muted" />
+                <div className="space-y-2 p-4">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="h-10 animate-pulse rounded bg-muted" />
                   ))}
                 </div>
               )}
-
-              {/* Locations mode */}
-              {listMode === "locations" && (
-                <>
-                  {filteredLocations.map((loc) => (
-                    <button
-                      key={loc.key}
-                      onClick={() => setLocationKey(loc.key)}
-                      className={cn(
-                        "w-full px-3 py-2 text-left text-sm transition-colors hover:bg-muted",
-                        locationKey === loc.key ? "bg-muted font-medium text-foreground" : "text-muted-foreground",
-                      )}
-                    >
-                      {loc.label}
-                    </button>
-                  ))}
-                  {routeData && filteredLocations.length === 0 && (
-                    <p className="p-4 text-center text-sm text-muted-foreground">No locations found.</p>
-                  )}
-                </>
+              {!routeDataQuery.isLoading && !selectedLocation && (
+                <div className="flex h-full items-center justify-center py-12">
+                  <p className="text-sm text-muted-foreground">{routeData ? "Select a location above." : null}</p>
+                </div>
               )}
-
-              {/* Find Pokémon mode */}
-              {listMode === "pokemon" && (
-                <>
-                  {!pokemonQuery && (
-                    <p className="p-4 text-center text-sm text-muted-foreground">
-                      {pokemonInput.trim() ? "Select a Pokémon from the list." : "Type a Pokémon name to find where it appears."}
-                    </p>
-                  )}
-                  {pokemonQuery && pokemonSearchResults.length === 0 && (
-                    <p className="p-4 text-center text-sm text-muted-foreground">
-                      Not found in any location for this game.
-                    </p>
-                  )}
-                  {pokemonSearchResults.map(({ location, encounters }) => (
-                    <button
-                      key={location.key}
-                      onClick={() => { setLocationKey(location.key); setListMode("locations"); }}
-                      className={cn(
-                        "w-full px-3 py-2 text-left transition-colors hover:bg-muted",
-                        locationKey === location.key ? "bg-muted" : "",
+              {selectedLocation && (
+                <div className="p-4">
+                  <div className="mb-4 flex items-center justify-between gap-2">
+                    <h2 className="text-base font-semibold">{selectedLocation.label}</h2>
+                    <div className="flex shrink-0 items-center gap-2">
+                      {locationProgress && (
+                        <span className="text-xs text-muted-foreground">
+                          {locationProgress.count} / {locationProgress.total} caught
+                        </span>
                       )}
-                    >
-                      <span className="block text-sm font-medium text-foreground">{location.label}</span>
-                      <span className="block text-xs text-muted-foreground">
-                        {encounters.map((e) => {
-                          const icon = METHOD_ICONS[e.method] ?? "";
-                          const level = e.minLevel === e.maxLevel ? `Lv ${e.minLevel}` : `Lv ${e.minLevel}–${e.maxLevel}`;
-                          return `${icon} ${level}`.trim();
-                        }).join(" · ")}
-                      </span>
-                    </button>
-                  ))}
-                </>
+                      {game && (
+                        <button
+                          onClick={() => setFilterUncaught((v) => !v)}
+                          className={cn(
+                            "flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+                            filterUncaught
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border text-muted-foreground hover:border-foreground hover:text-foreground",
+                          )}
+                        >
+                          <PokeballIcon caught={filterUncaught} size={11} />
+                          Uncaught only
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <LocationDetail
+                    location={selectedLocation}
+                    selectedVersion={selectedVersion}
+                    spriteVersion={spriteVersion}
+                    game={game}
+                    caughtKey={caughtKey}
+                    caught={caught}
+                    onToggleCaught={onToggleCaught}
+                    onOpen={setSelectedPokemon}
+                    filterUncaught={filterUncaught}
+                  />
+                </div>
               )}
             </div>
           </div>
-
-          {/* Encounter detail — full screen on mobile when location selected, panel on sm+ */}
-          <div className={cn(
-            "overflow-y-auto bg-background",
-            selectedLocation ? "flex flex-col" : "hidden sm:flex sm:items-center sm:justify-center",
-          )}>
-            {/* Back button — mobile only */}
-            {selectedLocation && (
-              <button
-                className="sm:hidden flex items-center gap-1.5 border-b px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground w-full flex-shrink-0"
-                onClick={() => setLocationKey(null)}
-              >
-                <ArrowLeft className="h-4 w-4" />
-                All locations
-              </button>
-            )}
-            <div className={cn(selectedLocation ? "p-4 flex-1 overflow-y-auto" : "text-sm text-muted-foreground")}>
-            {!selectedLocation && (
-              <span>{routeData ? "Select a location from the list." : null}</span>
-            )}
-            {selectedLocation && (
-              <>
-                <div className="mb-4 flex items-center justify-between gap-2">
-                  <h2 className="text-lg font-semibold">{selectedLocation.label}</h2>
-                  <div className="flex flex-shrink-0 items-center gap-2">
-                    {locationProgress && (
-                      <span className="text-xs text-muted-foreground">
-                        {locationProgress.count} / {locationProgress.total} caught
-                      </span>
+        ) : (
+          /* Standard two-column layout */
+          <div className="flex flex-col flex-1 min-h-0 overflow-hidden rounded-md border sm:grid sm:grid-cols-[280px_1fr]">
+            {/* Location list — full screen on mobile when no location selected, sidebar on sm+ */}
+            <div className={cn(
+              "flex flex-1 min-h-0 flex-col sm:border-r",
+              selectedLocation ? "hidden sm:flex" : "flex",
+            )}>
+              {/* Mode toggle */}
+              <div className="flex-shrink-0 border-b">
+                <div className="flex text-xs font-medium">
+                  <button
+                    onClick={() => setListMode("locations")}
+                    className={cn(
+                      "flex-1 py-2 transition-colors",
+                      listMode === "locations" ? "border-b-2 border-primary text-foreground" : "text-muted-foreground hover:text-foreground",
                     )}
-                    {game && (
-                      <button
-                        onClick={() => setFilterUncaught((v) => !v)}
-                        className={cn(
-                          "flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
-                          filterUncaught
-                            ? "border-primary bg-primary text-primary-foreground"
-                            : "border-border text-muted-foreground hover:border-foreground hover:text-foreground",
+                  >
+                    Locations
+                  </button>
+                  <button
+                    onClick={() => setListMode("pokemon")}
+                    className={cn(
+                      "flex-1 py-2 transition-colors",
+                      listMode === "pokemon" ? "border-b-2 border-primary text-foreground" : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    Find Pokémon
+                  </button>
+                </div>
+                <div className="p-2">
+                  <div className="relative">
+                    {listMode === "locations" && <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />}
+                    {listMode === "locations" ? (
+                      <input
+                        type="text"
+                        value={locationSearch}
+                        onChange={(e) => setLocationSearch(e.target.value)}
+                        placeholder="Search locations…"
+                        className="w-full rounded-md border bg-background py-1.5 pl-8 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                      />
+                    ) : (
+                      <div ref={pokemonSearchRef} className="relative">
+                        <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                        <input
+                          type="text"
+                          value={pokemonInput}
+                          onChange={(e) => {
+                            setPokemonInput(e.target.value);
+                            setPokemonQuery("");
+                            setShowSuggestions(true);
+                          }}
+                          onFocus={() => setShowSuggestions(true)}
+                          onKeyDown={(e) => {
+                            if (!showSuggestions || suggestions.length === 0) return;
+                            if (e.key === "ArrowDown") {
+                              e.preventDefault();
+                              setSuggestionIndex((i) => (i + 1) % suggestions.length);
+                            } else if (e.key === "ArrowUp") {
+                              e.preventDefault();
+                              setSuggestionIndex((i) => (i <= 0 ? suggestions.length - 1 : i - 1));
+                            } else if (e.key === "Enter") {
+                              e.preventDefault();
+                              const pick = suggestions[suggestionIndex] ?? suggestions[0];
+                              if (pick) {
+                                setPokemonInput(formatPokemonName(pick.name));
+                                setPokemonQuery(pick.name);
+                                setShowSuggestions(false);
+                              }
+                            } else if (e.key === "Escape") {
+                              setShowSuggestions(false);
+                            }
+                          }}
+                          placeholder="e.g. Ralts, Pikachu…"
+                          className="w-full rounded-md border bg-background py-1.5 pl-8 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                          autoFocus
+                          autoComplete="off"
+                        />
+                        {showSuggestions && suggestions.length > 0 && (
+                          <div className="absolute left-0 right-0 top-full z-20 mt-1 overflow-hidden rounded-md border bg-background shadow-lg">
+                            {suggestions.map((p, i) => (
+                              <button
+                                key={p.name}
+                                className={cn(
+                                  "flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm",
+                                  i === suggestionIndex ? "bg-muted" : "hover:bg-muted",
+                                )}
+                                onMouseDown={(e) => {
+                                  e.preventDefault(); // keep input focused
+                                  setPokemonInput(formatPokemonName(p.name));
+                                  setPokemonQuery(p.name);
+                                  setShowSuggestions(false);
+                                }}
+                                onMouseEnter={() => setSuggestionIndex(i)}
+                              >
+                                <img
+                                  src={spriteUrl(p.id, spriteVersion)}
+                                  alt={p.name}
+                                  className="h-6 w-6 flex-shrink-0 object-contain"
+                                />
+                                {formatPokemonName(p.name)}
+                              </button>
+                            ))}
+                          </div>
                         )}
-                      >
-                        <PokeballIcon caught={filterUncaught} size={11} />
-                        Uncaught only
-                      </button>
+                      </div>
                     )}
                   </div>
                 </div>
-                <LocationDetail
-                  location={selectedLocation}
-                  selectedVersion={selectedVersion}
-                  spriteVersion={spriteVersion}
-                  game={game}
-                  caughtKey={caughtKey}
-                  caught={caught}
-                  onToggleCaught={onToggleCaught}
-                  onOpen={setSelectedPokemon}
-                  filterUncaught={filterUncaught}
-                />
-              </>
-            )}
+              </div>
+
+              <div className="flex-1 overflow-y-auto">
+                {routeDataQuery.isLoading && (
+                  <div className="space-y-1 p-2">
+                    {Array.from({ length: 12 }).map((_, i) => (
+                      <div key={i} className="h-8 animate-pulse rounded bg-muted" />
+                    ))}
+                  </div>
+                )}
+
+                {/* Locations mode */}
+                {listMode === "locations" && (
+                  <>
+                    {filteredLocations.map((loc) => (
+                      <button
+                        key={loc.key}
+                        onClick={() => setLocationKey(loc.key)}
+                        className={cn(
+                          "w-full px-3 py-2 text-left text-sm transition-colors hover:bg-muted",
+                          locationKey === loc.key ? "bg-muted font-medium text-foreground" : "text-muted-foreground",
+                        )}
+                      >
+                        {loc.label}
+                      </button>
+                    ))}
+                    {routeData && filteredLocations.length === 0 && (
+                      <p className="p-4 text-center text-sm text-muted-foreground">No locations found.</p>
+                    )}
+                  </>
+                )}
+
+                {/* Find Pokémon mode */}
+                {listMode === "pokemon" && (
+                  <>
+                    {!pokemonQuery && (
+                      <p className="p-4 text-center text-sm text-muted-foreground">
+                        {pokemonInput.trim() ? "Select a Pokémon from the list." : "Type a Pokémon name to find where it appears."}
+                      </p>
+                    )}
+                    {pokemonQuery && pokemonSearchResults.length === 0 && (
+                      <p className="p-4 text-center text-sm text-muted-foreground">
+                        Not found in any location for this game.
+                      </p>
+                    )}
+                    {pokemonSearchResults.map(({ location, encounters }) => (
+                      <button
+                        key={location.key}
+                        onClick={() => { setLocationKey(location.key); setListMode("locations"); }}
+                        className={cn(
+                          "w-full px-3 py-2 text-left transition-colors hover:bg-muted",
+                          locationKey === location.key ? "bg-muted" : "",
+                        )}
+                      >
+                        <span className="block text-sm font-medium text-foreground">{location.label}</span>
+                        <span className="block text-xs text-muted-foreground">
+                          {encounters.map((e) => {
+                            const icon = METHOD_ICONS[e.method] ?? "";
+                            const level = e.minLevel === e.maxLevel ? `Lv ${e.minLevel}` : `Lv ${e.minLevel}–${e.maxLevel}`;
+                            return `${icon} ${level}`.trim();
+                          }).join(" · ")}
+                        </span>
+                      </button>
+                    ))}
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Encounter detail — full screen on mobile when location selected, panel on sm+ */}
+            <div className={cn(
+              "overflow-y-auto bg-background",
+              selectedLocation ? "flex flex-col" : "hidden sm:flex sm:items-center sm:justify-center",
+            )}>
+              {/* Back button — mobile only */}
+              {selectedLocation && (
+                <button
+                  className="sm:hidden flex items-center gap-1.5 border-b px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground w-full flex-shrink-0"
+                  onClick={() => setLocationKey(null)}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  All locations
+                </button>
+              )}
+              <div className={cn(selectedLocation ? "p-4 flex-1 overflow-y-auto" : "text-sm text-muted-foreground")}>
+              {!selectedLocation && (
+                <span>{routeData ? "Select a location from the list." : null}</span>
+              )}
+              {selectedLocation && (
+                <>
+                  <div className="mb-4 flex items-center justify-between gap-2">
+                    <h2 className="text-lg font-semibold">{selectedLocation.label}</h2>
+                    <div className="flex flex-shrink-0 items-center gap-2">
+                      {locationProgress && (
+                        <span className="text-xs text-muted-foreground">
+                          {locationProgress.count} / {locationProgress.total} caught
+                        </span>
+                      )}
+                      {game && (
+                        <button
+                          onClick={() => setFilterUncaught((v) => !v)}
+                          className={cn(
+                            "flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+                            filterUncaught
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border text-muted-foreground hover:border-foreground hover:text-foreground",
+                          )}
+                        >
+                          <PokeballIcon caught={filterUncaught} size={11} />
+                          Uncaught only
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <LocationDetail
+                    location={selectedLocation}
+                    selectedVersion={selectedVersion}
+                    spriteVersion={spriteVersion}
+                    game={game}
+                    caughtKey={caughtKey}
+                    caught={caught}
+                    onToggleCaught={onToggleCaught}
+                    onOpen={setSelectedPokemon}
+                    filterUncaught={filterUncaught}
+                  />
+                </>
+              )}
+              </div>
             </div>
           </div>
-        </div>
+        )
       )}
 
       {/* Catch progress footer */}
