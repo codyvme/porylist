@@ -44,6 +44,8 @@ const METHOD_ICONS: Record<string, string> = {
   "fish-super":       "🎣",
   "rock-smash":       "🪨",
   "headbutt":         "🌳",
+  "headbutt-a":       "🌳",
+  "headbutt-b":       "🌳",
   "headbutt-normal":  "🌳",
   "headbutt-special": "🌳",
   "headbutt-high":    "🌳",
@@ -70,17 +72,18 @@ const METHOD_ICONS: Record<string, string> = {
   "curry":            "🍛",
   "hoenn-sound":      "📻",
   "sinnoh-sound":     "📻",
+  "swarm":            "🌀",
 };
 
 // Method display order
 const METHOD_ORDER = [
   "walk", "brown-grass", "surf", "beach", "puddles",
   "old-rod", "good-rod", "super-rod", "fish-old", "fish-good", "fish-super",
-  "rock-smash", "headbutt", "headbutt-normal", "headbutt-special", "headbutt-high", "headbutt-low",
+  "rock-smash", "headbutt", "headbutt-a", "headbutt-b", "headbutt-normal", "headbutt-special", "headbutt-high", "headbutt-low",
   "honey-tree", "grass-spots", "dark-grass-spots", "cave", "cave-spots", "bridge-spots",
   "surf-spots", "super-rod-spots", "dirt", "sand", "flying", "building", "backlot",
   "poke-radar", "pokeradar", "pokeradar-chain", "curry", "gift", "gift-egg",
-  "hoenn-sound", "sinnoh-sound",
+  "hoenn-sound", "sinnoh-sound", "swarm",
 ];
 
 function methodOrder(method: string) {

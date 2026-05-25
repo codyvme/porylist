@@ -16,3 +16,4 @@ public/data/**
 .claude/
 .wrangler/
 .bulba-cache/
+scripts/bulbapedia-cache/
