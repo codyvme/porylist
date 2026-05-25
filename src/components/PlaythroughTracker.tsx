@@ -834,7 +834,7 @@ export function PlaythroughTracker({
         {/* Right panel */}
         <div
           className={cn(
-            "flex flex-1 flex-col overflow-y-auto overflow-x-hidden pt-3",
+            "flex flex-1 flex-col overflow-y-auto overflow-x-hidden pt-3 pb-3 sm:pb-6",
             runsCollapsed ? "pl-2 sm:pl-4" : "pl-0 sm:pl-6",
             !showDetail && "hidden sm:flex",
           )}

@@ -535,7 +535,11 @@ export function App() {
         <div className="flex flex-1 min-h-0">
           <IconRail />
 
-          <main className={cn("flex-1 min-h-0 overflow-auto container !px-0 pb-3 sm:pb-6 flex flex-col", location.pathname === "/pokedex" && "pb-16")}>
+          <main className={cn(
+            "flex-1 min-h-0 overflow-auto container !px-0 pb-3 sm:pb-6 flex flex-col",
+            location.pathname === "/pokedex" && "pb-16",
+            ["/routes", "/breeding"].includes(location.pathname) && "!pb-0",
+          )}>
             <Routes>
               <Route path="/" element={<Navigate to="/pokedex" replace />} />
               <Route path="/pokedex" element={
