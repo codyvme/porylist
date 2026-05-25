@@ -340,14 +340,7 @@ function PlaythroughDetail({
   const game = GAMES_BY_VALUE[group];
   const badges = GAME_BADGES[group] ?? [];
 
-  // Auto-switch to Pokédex tab if a navigationTarget is provided for this game group
-  const [tab, setTab] = useState<DetailTab>(() =>
-    navigationTarget?.gameValue === group ? "pokedex" : "badges"
-  );
-
-  useEffect(() => {
-    if (navigationTarget?.gameValue === group) setTab("pokedex");
-  }, [navigationTarget, group]);
+  const [tab, setTab] = useState<DetailTab>("pokedex");
 
   const handleArchive = () => {
     onUpdate({
@@ -437,19 +430,19 @@ function PlaythroughDetail({
 
       {/* Tabs */}
       <div className="flex gap-1 border-b pb-2 shrink-0">
-        <button className={tabCls("badges")} onClick={() => setTab("badges")}>
-          {total > 8 ? "Trials" : "Badges"}
-          {total > 0 && (
-            <span className="ml-1.5 rounded-full bg-muted px-1.5 text-xs">
-              {earned}/{total}
-            </span>
-          )}
-        </button>
         <button className={tabCls("pokedex")} onClick={() => setTab("pokedex")}>
           Pokédex
           {playthrough.caught.length > 0 && (
             <span className="ml-1.5 rounded-full bg-muted px-1.5 text-xs">
               {playthrough.caught.length}
+            </span>
+          )}
+        </button>
+        <button className={tabCls("badges")} onClick={() => setTab("badges")}>
+          {total > 8 ? "Trials" : "Badges"}
+          {total > 0 && (
+            <span className="ml-1.5 rounded-full bg-muted px-1.5 text-xs">
+              {earned}/{total}
             </span>
           )}
         </button>
