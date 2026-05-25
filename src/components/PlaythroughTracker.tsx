@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
-import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Circle, MapPin, Plus, Trash2, Trophy } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Circle, MapPin, Pencil, Plus, Skull, Trash2, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GAMES_BY_VALUE, type GameOption } from "@/lib/games";
 import { Select } from "@/components/ui/select";
@@ -9,11 +9,13 @@ import {
   PLAYTHROUGH_VERSIONS,
   VERSION_TO_GAME_GROUP,
   VERSION_DISPLAY_LABEL,
+  DEFAULT_NUZLOCKE,
   loadPlaythroughs,
   savePlaythroughs,
   newPlaythroughId,
   type Playthrough,
   type Badge,
+  type NuzlockeOptions,
 } from "@/lib/playthroughs";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -31,6 +33,57 @@ const COVER_JPG = new Set(["diamond", "emerald", "pearl", "soulsilver"]);
 function coverArtUrl(version: string): string {
   const ext = COVER_JPG.has(version) ? "jpg" : "png";
   return `/images/covers/${version}.${ext}`;
+}
+
+// ─── Nuzlocke Options Form (shared) ───────────────────────────────────────────
+
+const NUZLOCKE_RULES: Array<{ key: keyof NuzlockeOptions; label: string }> = [
+  { key: "firstEncounterOnly", label: "First encounter per route only" },
+  { key: "releaseOnFaint",     label: "Release / permanently box on faint" },
+  { key: "speciesClause",      label: "Species clause (no duplicate species)" },
+  { key: "nicknameClause",     label: "Nickname all Pokémon" },
+  { key: "setMode",            label: "Set mode (no switching after reveal)" },
+];
+
+function NuzlockeOptionsForm({
+  nuzlocke,
+  onChange,
+}: {
+  nuzlocke: NuzlockeOptions;
+  onChange: (n: NuzlockeOptions) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      <label className="text-sm font-medium">Nuzlocke</label>
+      <label className="flex cursor-pointer items-start gap-2.5 rounded-md border px-3 py-2.5 transition-colors hover:bg-muted/50">
+        <input
+          type="checkbox"
+          checked={nuzlocke.enabled}
+          onChange={(e) => onChange({ ...nuzlocke, enabled: e.target.checked })}
+          className="mt-0.5 h-4 w-4 accent-primary"
+        />
+        <div>
+          <p className="text-sm font-medium">Enable Nuzlocke mode</p>
+          <p className="text-xs text-muted-foreground">Track this run with Nuzlocke rules</p>
+        </div>
+      </label>
+      {nuzlocke.enabled && (
+        <div className="ml-1 flex flex-col gap-1.5 border-l-2 border-primary/30 pl-3">
+          {NUZLOCKE_RULES.map(({ key, label }) => (
+            <label key={key} className="flex cursor-pointer items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={nuzlocke[key] as boolean}
+                onChange={(e) => onChange({ ...nuzlocke, [key]: e.target.checked })}
+                className="h-4 w-4 accent-primary"
+              />
+              {label}
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 // ─── Playthrough Card ─────────────────────────────────────────────────────────
@@ -78,6 +131,9 @@ function PlaythroughCard({
             {playthrough.status === "completed" && (
               <Trophy className="h-3.5 w-3.5 shrink-0 text-amber-500" />
             )}
+            {playthrough.nuzlocke.enabled && (
+              <span title="Nuzlocke"><Skull className="h-3.5 w-3.5 shrink-0 text-red-500" /></span>
+            )}
           </div>
           <p className="mt-0.5 truncate text-xs text-muted-foreground">{versionLabel}</p>
           {total > 0 && (
@@ -115,6 +171,7 @@ function NewPlaythroughForm({
 }) {
   const [name, setName] = useState("");
   const [gameValue, setGameValue] = useState(PLAYTHROUGH_VERSIONS[0]?.value ?? "");
+  const [nuzlocke, setNuzlocke] = useState<NuzlockeOptions>({ ...DEFAULT_NUZLOCKE });
 
   const selectedVersion = PLAYTHROUGH_VERSIONS.find((v) => v.value === gameValue);
 
@@ -126,6 +183,7 @@ function NewPlaythroughForm({
       status: "active",
       earnedBadges: [],
       caught: [],
+      nuzlocke,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
@@ -181,6 +239,9 @@ function NewPlaythroughForm({
             autoFocus
           />
         </div>
+
+        {/* Nuzlocke */}
+        <NuzlockeOptionsForm nuzlocke={nuzlocke} onChange={setNuzlocke} />
       </div>
 
       <div className="flex gap-3">
@@ -189,6 +250,74 @@ function NewPlaythroughForm({
           className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
         >
           Start Playthrough
+        </button>
+        <button onClick={onCancel} className="rounded-md px-4 py-2 text-sm font-medium hover:bg-muted">
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Edit Playthrough Form ────────────────────────────────────────────────────
+
+function EditPlaythroughForm({
+  playthrough,
+  onSave,
+  onCancel,
+}: {
+  playthrough: Playthrough;
+  onSave: (p: Playthrough) => void;
+  onCancel: () => void;
+}) {
+  const versionLabel = VERSION_DISPLAY_LABEL[playthrough.gameValue] ?? playthrough.gameValue;
+  const [name, setName] = useState(playthrough.name);
+  const [nuzlocke, setNuzlocke] = useState<NuzlockeOptions>(playthrough.nuzlocke);
+
+  const handleSave = () => {
+    onSave({ ...playthrough, name: name.trim() || playthrough.name, nuzlocke, updatedAt: Date.now() });
+  };
+
+  return (
+    <div className="flex flex-1 flex-col gap-6 overflow-y-auto px-1">
+      <div className="flex items-center gap-3">
+        <button onClick={onCancel} className="rounded-md p-1.5 hover:bg-muted">
+          <ArrowLeft className="h-4 w-4" />
+        </button>
+        <h2 className="text-lg font-semibold">Edit Playthrough</h2>
+      </div>
+
+      <div className="flex flex-col gap-4 max-w-sm">
+        {/* Game — read-only */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium">Game</label>
+          <div className="flex h-9 items-center rounded-md border border-input bg-muted px-3 text-sm text-muted-foreground">
+            {versionLabel}
+          </div>
+        </div>
+
+        {/* Name */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium">Name</label>
+          <input
+            className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") handleSave(); }}
+            autoFocus
+          />
+        </div>
+
+        {/* Nuzlocke */}
+        <NuzlockeOptionsForm nuzlocke={nuzlocke} onChange={setNuzlocke} />
+      </div>
+
+      <div className="flex gap-3">
+        <button
+          onClick={handleSave}
+          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+        >
+          Save Changes
         </button>
         <button onClick={onCancel} className="rounded-md px-4 py-2 text-sm font-medium hover:bg-muted">
           Cancel
@@ -341,6 +470,7 @@ function PlaythroughDetail({
   const badges = GAME_BADGES[group] ?? [];
 
   const [tab, setTab] = useState<DetailTab>("pokedex");
+  const [isEditing, setIsEditing] = useState(false);
 
   const handleArchive = () => {
     onUpdate({
@@ -391,6 +521,11 @@ function PlaythroughDetail({
           </div>
           <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
             <span>{VERSION_DISPLAY_LABEL[playthrough.gameValue] ?? game?.label}</span>
+            {playthrough.nuzlocke.enabled && (
+              <span className="flex items-center gap-1 text-red-500 dark:text-red-400">
+                <Skull className="h-3 w-3" />Nuzlocke
+              </span>
+            )}
             {total > 0 && <span>{earned}/{total} {badgeLabel}</span>}
             {playthrough.caught.length > 0 && <span>{playthrough.caught.length} caught</span>}
             <span className="flex items-center gap-0.5">
@@ -416,6 +551,13 @@ function PlaythroughDetail({
           >
             {playthrough.status === "active" ? "Archive" : "Restore"}
           </button>
+          <button
+            onClick={() => setIsEditing(true)}
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+            title="Edit playthrough"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </button>
           {playthrough.status !== "active" && (
             <button
               onClick={onDelete}
@@ -428,44 +570,79 @@ function PlaythroughDetail({
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 border-b pb-2 shrink-0">
-        <button className={tabCls("pokedex")} onClick={() => setTab("pokedex")}>
-          Pokédex
-          {playthrough.caught.length > 0 && (
-            <span className="ml-1.5 rounded-full bg-muted px-1.5 text-xs">
-              {playthrough.caught.length}
-            </span>
-          )}
-        </button>
-        <button className={tabCls("badges")} onClick={() => setTab("badges")}>
-          {total > 8 ? "Trials" : "Badges"}
-          {total > 0 && (
-            <span className="ml-1.5 rounded-full bg-muted px-1.5 text-xs">
-              {earned}/{total}
-            </span>
-          )}
-        </button>
-      </div>
-
-      {/* Tab content */}
-      {tab === "badges" && (
-        <div className="flex-1 overflow-y-auto">
-          <BadgesTab playthrough={playthrough} onUpdate={onUpdate} />
-        </div>
-      )}
-      {tab === "pokedex" && game && (
-        <PokedexTab
+      {/* Edit form — replaces tabs when active */}
+      {isEditing && (
+        <EditPlaythroughForm
           playthrough={playthrough}
-          onUpdate={onUpdate}
-          navigationTarget={navigationTarget}
-          game={game}
+          onSave={(updated) => { onUpdate(updated); setIsEditing(false); }}
+          onCancel={() => setIsEditing(false)}
         />
       )}
-      {tab === "pokedex" && !game && (
-        <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
-          Unknown game.
-        </div>
+
+      {/* Tabs + tab content */}
+      {!isEditing && (
+        <>
+          {/* Nuzlocke active rules */}
+          {playthrough.nuzlocke.enabled && (() => {
+            const activeRules = [
+              playthrough.nuzlocke.firstEncounterOnly && "First encounter per route",
+              playthrough.nuzlocke.releaseOnFaint     && "Release on faint",
+              playthrough.nuzlocke.speciesClause      && "Species clause",
+              playthrough.nuzlocke.nicknameClause     && "Nicknames required",
+              playthrough.nuzlocke.setMode            && "Set mode",
+            ].filter(Boolean) as string[];
+            return activeRules.length > 0 ? (
+              <div className="shrink-0 flex flex-wrap gap-1.5">
+                {activeRules.map((rule) => (
+                  <span
+                    key={rule}
+                    className="rounded-full border border-red-500/30 bg-red-500/10 px-2.5 py-0.5 text-xs font-medium text-red-600 dark:text-red-400"
+                  >
+                    {rule}
+                  </span>
+                ))}
+              </div>
+            ) : null;
+          })()}
+
+          <div className="flex gap-1 border-b pb-2 shrink-0">
+            <button className={tabCls("pokedex")} onClick={() => setTab("pokedex")}>
+              Pokédex
+              {playthrough.caught.length > 0 && (
+                <span className="ml-1.5 rounded-full bg-muted px-1.5 text-xs">
+                  {playthrough.caught.length}
+                </span>
+              )}
+            </button>
+            <button className={tabCls("badges")} onClick={() => setTab("badges")}>
+              {total > 8 ? "Trials" : "Badges"}
+              {total > 0 && (
+                <span className="ml-1.5 rounded-full bg-muted px-1.5 text-xs">
+                  {earned}/{total}
+                </span>
+              )}
+            </button>
+          </div>
+
+          {tab === "badges" && (
+            <div className="flex-1 overflow-y-auto">
+              <BadgesTab playthrough={playthrough} onUpdate={onUpdate} />
+            </div>
+          )}
+          {tab === "pokedex" && game && (
+            <PokedexTab
+              playthrough={playthrough}
+              onUpdate={onUpdate}
+              navigationTarget={navigationTarget}
+              game={game}
+            />
+          )}
+          {tab === "pokedex" && !game && (
+            <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
+              Unknown game.
+            </div>
+          )}
+        </>
       )}
     </div>
   );
