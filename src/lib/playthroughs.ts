@@ -9,6 +9,29 @@ export interface Badge {
   location?: string;
 }
 
+export interface NuzlockeOptions {
+  enabled: boolean;
+  /** Only the first Pokémon encountered on each route may be caught */
+  firstEncounterOnly: boolean;
+  /** Fainted Pokémon must be released or permanently boxed */
+  releaseOnFaint: boolean;
+  /** No duplicate species allowed */
+  speciesClause: boolean;
+  /** All caught Pokémon must be nicknamed */
+  nicknameClause: boolean;
+  /** Battle mode set to "Set" (no switching after opponent reveals) */
+  setMode: boolean;
+}
+
+export const DEFAULT_NUZLOCKE: NuzlockeOptions = {
+  enabled: false,
+  firstEncounterOnly: true,
+  releaseOnFaint: true,
+  speciesClause: false,
+  nicknameClause: false,
+  setMode: false,
+};
+
 export interface Playthrough {
   id: string;
   name: string;
@@ -18,6 +41,7 @@ export interface Playthrough {
   earnedBadges: string[];
   /** PokéAPI slugs of caught Pokémon for this specific run */
   caught: string[];
+  nuzlocke: NuzlockeOptions;
   createdAt: number;
   updatedAt: number;
 }
@@ -332,9 +356,11 @@ export function loadPlaythroughs(): Playthrough[] {
     if (!raw) return [];
     const list = JSON.parse(raw) as Playthrough[];
     // Migrate old group-based gameValues to individual version slugs
+    // and backfill nuzlocke field for playthroughs created before it existed
     return list.map((p) => ({
       ...p,
       gameValue: GROUP_TO_FIRST_VERSION[p.gameValue] ?? p.gameValue,
+      nuzlocke: (p.nuzlocke as NuzlockeOptions | undefined) ?? { ...DEFAULT_NUZLOCKE },
     }));
   } catch {
     return [];
