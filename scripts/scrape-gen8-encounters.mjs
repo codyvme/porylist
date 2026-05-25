@@ -454,8 +454,19 @@ async function scrapeGame(game) {
     console.log(`✓ ${encounters.length} encounters`);
   }
 
-  // Sort locations alphabetically by label
-  locations.sort((a, b) => a.label.localeCompare(b.label));
+  // Apply manual location ordering if available, else alphabetical
+  const manualOrderPath = join(__dirname, "location-order-manual.json");
+  const manualOrderData = existsSync(manualOrderPath)
+    ? JSON.parse(readFileSync(manualOrderPath, "utf8"))
+    : {};
+  const manualOrder = manualOrderData[game.value] ?? [];
+  const manualIndex = new Map(manualOrder.map((k, i) => [k, i]));
+  locations.sort((a, b) => {
+    const aIdx = manualIndex.get(a.key) ?? 9999;
+    const bIdx = manualIndex.get(b.key) ?? 9999;
+    if (aIdx !== bIdx) return aIdx - bIdx;
+    return a.label.localeCompare(b.label);
+  });
 
   console.log(`\nWriting ${locations.length} locations (${skipped} pages skipped)`);
   const out = { locations };

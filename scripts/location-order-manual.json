@@ -75,7 +75,6 @@
     "cerulean-cave-2f",
     "cerulean-cave-b1f"
   ],
-
   "gold-silver-crystal": [
     "new-bark-town-area",
     "johto-route-29-area",
@@ -323,7 +322,6 @@
     "hoenn-altering-cave-area",
     "roaming-hoenn-area"
   ],
-
   "diamond-pearl-platinum": [
     "twinleaf-town-area",
     "lake-verity-before-galactic-intervention",
@@ -488,7 +486,6 @@
     "roaming-sinnoh-area",
     "sinjoh-ruins-area"
   ],
-
   "black-white": [
     "nuvema-town-area",
     "unova-route-1-area",
@@ -578,7 +575,6 @@
     "trial-chamber-area",
     "team-flare-secret-hq-area"
   ],
-
   "x-y": [
     "aquacorde-town-area",
     "kalos-route-2-area",
@@ -659,7 +655,6 @@
     "friend-safari-water",
     "roaming-kalos-area"
   ],
-
   "firered-leafgreen": [
     "pallet-town-area",
     "kanto-route-1-area",
@@ -786,7 +781,6 @@
     "cerulean-cave-2f",
     "cerulean-cave-b1f"
   ],
-
   "heartgold-soulsilver": [
     "new-bark-town-area",
     "johto-route-29-area",
@@ -947,7 +941,6 @@
     "cerulean-cave-2f",
     "cerulean-cave-b1f"
   ],
-
   "black2-white2": [
     "aspertia-city-area",
     "unova-route-19-area",
@@ -1084,7 +1077,6 @@
     "guidance-chamber-area",
     "p2-laboratory-area"
   ],
-
   "omega-ruby-alpha-sapphire": [
     "hoenn-route-101-area",
     "hoenn-route-103-area",
@@ -1175,7 +1167,6 @@
     "crescent-isle-area",
     "soaring-in-the-sky-area"
   ],
-
   "ultra-sun-ultra-moon": [
     "mahalo-trail-area",
     "alola-route-1-south",
@@ -1304,7 +1295,6 @@
     "poke-pelago-ulaula-island-reached",
     "poke-pelago-elite-four-defeated"
   ],
-
   "lets-go": [
     "pallet-town-area",
     "kanto-route-1-area",
@@ -1367,7 +1357,6 @@
     "cerulean-cave-2f",
     "cerulean-cave-b1f"
   ],
-
   "sun-moon": [
     "alola-route-1-south",
     "alola-route-1-west",
@@ -1470,5 +1459,153 @@
     "poke-pelago-poni-island-reached",
     "poke-pelago-ulaula-island-reached",
     "poke-pelago-elite-four-defeated"
+  ],
+  "brilliant-diamond-shining-pearl": [
+    "twinleaf-town",
+    "sinnoh-route-201",
+    "sinnoh-route-202",
+    "sinnoh-route-203",
+    "oreburgh-gate",
+    "oreburgh-mine",
+    "sinnoh-route-204",
+    "ravaged-path",
+    "valley-windworks",
+    "fuego-ironworks",
+    "sinnoh-route-205",
+    "eterna-forest",
+    "old-chateau",
+    "eterna-city",
+    "sinnoh-route-206",
+    "wayward-cave",
+    "sinnoh-route-207",
+    "mount-coronet",
+    "sinnoh-route-208",
+    "sinnoh-route-209",
+    "lost-tower",
+    "solaceon-ruins",
+    "maniac-tunnel",
+    "sinnoh-route-210",
+    "sinnoh-route-215",
+    "sinnoh-route-214",
+    "valor-lakefront",
+    "sinnoh-route-213",
+    "great-marsh",
+    "pastoria-city",
+    "sinnoh-route-212",
+    "trophy-garden",
+    "celestic-town",
+    "sinnoh-route-211",
+    "sinnoh-route-218",
+    "canalave-city",
+    "iron-island",
+    "lake-verity",
+    "lake-valor",
+    "lake-acuity",
+    "sinnoh-route-216",
+    "sinnoh-route-217",
+    "acuity-lakefront",
+    "snowpoint-temple",
+    "sinnoh-route-222",
+    "sunyshore-city",
+    "sinnoh-route-223",
+    "victory-road-sinnoh",
+    "pok-mon-league-sinnoh",
+    "sinnoh-route-221",
+    "sinnoh-route-219",
+    "sinnoh-route-220",
+    "resort-area",
+    "sinnoh-route-224",
+    "sendoff-spring",
+    "turnback-cave",
+    "sinnoh-route-225",
+    "stark-mountain",
+    "sinnoh-route-226",
+    "sinnoh-route-227",
+    "sinnoh-route-228",
+    "sinnoh-route-229",
+    "sinnoh-route-230",
+    "spacious-cave",
+    "grassland-cave",
+    "dazzling-cave",
+    "icy-cave",
+    "swampy-cave",
+    "big-bluff-cavern",
+    "bogsunk-cavern",
+    "rocky-cave",
+    "riverbank-cave",
+    "still-water-cavern",
+    "sunlit-cavern",
+    "glacial-cavern",
+    "stargleam-cavern",
+    "fountainspring-cave",
+    "volcanic-cave",
+    "sandsear-cave",
+    "typhlo-cavern",
+    "whiteout-cave"
+  ],
+  "sword-shield": [
+    "slumbering-weald",
+    "galar-route-1",
+    "galar-route-2",
+    "rolling-fields",
+    "east-lake-axewell",
+    "west-lake-axewell",
+    "south-lake-miloch",
+    "watchtower-ruins",
+    "dappled-grove",
+    "motostoke-riverbank",
+    "motostoke",
+    "galar-route-3",
+    "galar-mine",
+    "galar-route-4",
+    "galar-route-5",
+    "hulbury",
+    "galar-mine-no-2",
+    "motostoke-outskirts",
+    "bridge-field",
+    "north-lake-miloch",
+    "axews-eye",
+    "giants-seat",
+    "stony-wilderness",
+    "dusty-bowl",
+    "giants-cap",
+    "hammerlocke-hills",
+    "lakeside-cave",
+    "lake-of-outrage",
+    "galar-route-6",
+    "glimwood-tangle",
+    "galar-route-7",
+    "galar-route-8",
+    "galar-route-9",
+    "galar-route-10",
+    "fields-of-honor",
+    "soothing-wetlands",
+    "forest-of-focus",
+    "challenge-beach",
+    "brawlers-cave",
+    "challenge-road",
+    "courageous-cavern",
+    "loop-lagoon",
+    "training-lowlands",
+    "warm-up-tunnel",
+    "potbottom-desert",
+    "honeycalm-sea",
+    "honeycalm-island",
+    "insular-sea",
+    "stepping-stone-sea",
+    "workout-sea",
+    "slippery-slope",
+    "frostpoint-field",
+    "giants-bed",
+    "giants-foot",
+    "giants-mirror",
+    "old-cemetery",
+    "snowslide-slope",
+    "tunnel-to-the-top",
+    "path-to-the-peak",
+    "three-point-pass",
+    "ballimere-lake",
+    "frigid-sea",
+    "roaring-sea-caves"
   ]
 }
