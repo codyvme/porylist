@@ -1,4 +1,10 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
+import {
+  fetchPlaythroughsFromDB,
+  upsertPlaythrough,
+  deletePlaythrough,
+  type User,
+} from "@/lib/supabase";
 import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Circle, MapPin, Pencil, Plus, Skull, Trash2, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GAMES_BY_VALUE, type GameOption } from "@/lib/games";
@@ -652,14 +658,41 @@ function PlaythroughDetail({
 
 export function PlaythroughTracker({
   navigationTarget,
+  user,
 }: {
   navigationTarget?: { gameValue: string; locationKey: string } | null;
+  user: User | null;
 }) {
   const [playthroughs, setPlaythroughs] = useState<Playthrough[]>(loadPlaythroughs);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
   const [runsCollapsed, setRunsCollapsed] = useState(false);
+  const didSyncRef = useRef<string | null>(null);
+
+  // On sign-in: pull playthroughs from DB and merge (newer updatedAt wins)
+  useEffect(() => {
+    if (!user || didSyncRef.current === user.id) return;
+    didSyncRef.current = user.id;
+    fetchPlaythroughsFromDB(user.id).then((remote) => {
+      if (remote.length === 0) return;
+      setPlaythroughs((local) => {
+        const merged = [...local];
+        for (const rp of remote) {
+          const idx = merged.findIndex((lp) => lp.id === rp.id);
+          if (idx === -1) merged.push(rp);
+          else if (rp.updatedAt > merged[idx].updatedAt) merged[idx] = rp;
+        }
+        savePlaythroughs(merged);
+        return merged;
+      });
+    });
+  }, [user]);
+
+  // Reset sync ref on sign-out so the next sign-in re-syncs
+  useEffect(() => {
+    if (!user) didSyncRef.current = null;
+  }, [user]);
 
   // Auto-select a playthrough matching the navigationTarget's game
   const didAutoSelectRef = useRef<string | null>(null);
@@ -678,14 +711,18 @@ export function PlaythroughTracker({
     }
   }, [navigationTarget, playthroughs]);
 
-  const persist = useCallback((next: Playthrough[]) => {
+  const persist = useCallback((next: Playthrough[], changed?: Playthrough, deletedId?: string) => {
     setPlaythroughs(next);
     savePlaythroughs(next);
-  }, []);
+    if (user) {
+      if (deletedId) deletePlaythrough(deletedId);
+      if (changed) upsertPlaythrough(user.id, changed);
+    }
+  }, [user]);
 
   const handleSaveNew = useCallback(
     (p: Playthrough) => {
-      persist([p, ...playthroughs]);
+      persist([p, ...playthroughs], p);
       setSelectedId(p.id);
       setIsCreating(false);
     },
@@ -694,7 +731,7 @@ export function PlaythroughTracker({
 
   const handleUpdate = useCallback(
     (updated: Playthrough) => {
-      persist(playthroughs.map((p) => (p.id === updated.id ? updated : p)));
+      persist(playthroughs.map((p) => (p.id === updated.id ? updated : p)), updated);
     },
     [playthroughs, persist],
   );
@@ -702,7 +739,7 @@ export function PlaythroughTracker({
   const handleDelete = useCallback(
     (id: string) => {
       if (!window.confirm("Permanently delete this playthrough? This cannot be undone.")) return;
-      persist(playthroughs.filter((p) => p.id !== id));
+      persist(playthroughs.filter((p) => p.id !== id), undefined, id);
       setSelectedId(null);
     },
     [playthroughs, persist],

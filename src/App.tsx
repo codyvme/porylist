@@ -545,7 +545,7 @@ export function App() {
               <Route path="/abilities" element={<AbilitiesTable game={selectedGame} />} />
               <Route path="/items" element={<ItemsTable game={selectedGame} />} />
               <Route path="/routes" element={
-                <PlaythroughTracker navigationTarget={catchTrackerTarget} />
+                <PlaythroughTracker navigationTarget={catchTrackerTarget} user={user} />
               } />
               <Route path="/natures" element={<NaturesTable />} />
               <Route path="/breeding" element={<BreedingTracker user={user} />} />
