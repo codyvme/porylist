@@ -236,14 +236,106 @@ export const GAME_BADGES: Record<string, Badge[]> = {
   ],
 };
 
+// ─── Individual version list (used in Playthroughs form) ─────────────────────
+
+/** One entry per individual game version, with its parent group for data lookups. */
+export const PLAYTHROUGH_VERSIONS: Array<{ value: string; label: string; group: string }> = [
+  // Gen I
+  { value: "red",    label: "Red",    group: "red-blue-yellow" },
+  { value: "blue",   label: "Blue",   group: "red-blue-yellow" },
+  { value: "yellow", label: "Yellow", group: "red-blue-yellow" },
+  // Gen II
+  { value: "gold",    label: "Gold",    group: "gold-silver-crystal" },
+  { value: "silver",  label: "Silver",  group: "gold-silver-crystal" },
+  { value: "crystal", label: "Crystal", group: "gold-silver-crystal" },
+  // Gen III
+  { value: "ruby",      label: "Ruby",      group: "ruby-sapphire-emerald" },
+  { value: "sapphire",  label: "Sapphire",  group: "ruby-sapphire-emerald" },
+  { value: "emerald",   label: "Emerald",   group: "ruby-sapphire-emerald" },
+  { value: "firered",   label: "FireRed",   group: "firered-leafgreen" },
+  { value: "leafgreen", label: "LeafGreen", group: "firered-leafgreen" },
+  // Gen IV
+  { value: "diamond",    label: "Diamond",    group: "diamond-pearl-platinum" },
+  { value: "pearl",      label: "Pearl",      group: "diamond-pearl-platinum" },
+  { value: "platinum",   label: "Platinum",   group: "diamond-pearl-platinum" },
+  { value: "heartgold",  label: "HeartGold",  group: "heartgold-soulsilver" },
+  { value: "soulsilver", label: "SoulSilver", group: "heartgold-soulsilver" },
+  // Gen V
+  { value: "black",   label: "Black",   group: "black-white" },
+  { value: "white",   label: "White",   group: "black-white" },
+  { value: "black-2", label: "Black 2", group: "black2-white2" },
+  { value: "white-2", label: "White 2", group: "black2-white2" },
+  // Gen VI
+  { value: "x",              label: "X",              group: "x-y" },
+  { value: "y",              label: "Y",              group: "x-y" },
+  { value: "omega-ruby",     label: "Omega Ruby",     group: "omega-ruby-alpha-sapphire" },
+  { value: "alpha-sapphire", label: "Alpha Sapphire", group: "omega-ruby-alpha-sapphire" },
+  // Gen VII
+  { value: "sun",             label: "Sun",                group: "sun-moon" },
+  { value: "moon",            label: "Moon",               group: "sun-moon" },
+  { value: "ultra-sun",       label: "Ultra Sun",          group: "ultra-sun-ultra-moon" },
+  { value: "ultra-moon",      label: "Ultra Moon",         group: "ultra-sun-ultra-moon" },
+  { value: "lets-go-pikachu", label: "Let's Go, Pikachu!", group: "lets-go" },
+  { value: "lets-go-eevee",   label: "Let's Go, Eevee!",   group: "lets-go" },
+  // Gen VIII
+  { value: "sword",             label: "Sword",             group: "sword-shield" },
+  { value: "shield",            label: "Shield",            group: "sword-shield" },
+  { value: "brilliant-diamond", label: "Brilliant Diamond", group: "brilliant-diamond-shining-pearl" },
+  { value: "shining-pearl",     label: "Shining Pearl",     group: "brilliant-diamond-shining-pearl" },
+  { value: "legends-arceus",    label: "Legends: Arceus",   group: "legends-arceus" },
+  // Gen IX
+  { value: "scarlet", label: "Scarlet", group: "scarlet-violet" },
+  { value: "violet",  label: "Violet",  group: "scarlet-violet" },
+];
+
+/** Maps individual version slug → game group (for badge/route-data lookups). */
+export const VERSION_TO_GAME_GROUP: Record<string, string> = Object.fromEntries(
+  PLAYTHROUGH_VERSIONS.map((v) => [v.value, v.group]),
+);
+
+/** Maps individual version slug → display label ("emerald" → "Emerald"). */
+export const VERSION_DISPLAY_LABEL: Record<string, string> = Object.fromEntries(
+  PLAYTHROUGH_VERSIONS.map((v) => [v.value, v.label]),
+);
+
 // ─── Storage ──────────────────────────────────────────────────────────────────
 
 const STORAGE_KEY = "porylist-playthroughs-v1";
 
+/**
+ * Old playthroughs stored gameValue as a game-group slug (e.g. "ruby-sapphire-emerald").
+ * Migrate them to the first individual version in that group.
+ */
+const GROUP_TO_FIRST_VERSION: Record<string, string> = {
+  "red-blue-yellow":              "red",
+  "gold-silver-crystal":          "gold",
+  "ruby-sapphire-emerald":        "ruby",
+  "firered-leafgreen":            "firered",
+  "diamond-pearl-platinum":       "diamond",
+  "heartgold-soulsilver":         "heartgold",
+  "black-white":                  "black",
+  "black2-white2":                "black-2",
+  "x-y":                          "x",
+  "omega-ruby-alpha-sapphire":    "omega-ruby",
+  "sun-moon":                     "sun",
+  "ultra-sun-ultra-moon":         "ultra-sun",
+  "lets-go":                      "lets-go-pikachu",
+  "sword-shield":                 "sword",
+  "brilliant-diamond-shining-pearl": "brilliant-diamond",
+  "legends-arceus":               "legends-arceus",
+  "scarlet-violet":               "scarlet",
+};
+
 export function loadPlaythroughs(): Playthrough[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as Playthrough[]) : [];
+    if (!raw) return [];
+    const list = JSON.parse(raw) as Playthrough[];
+    // Migrate old group-based gameValues to individual version slugs
+    return list.map((p) => ({
+      ...p,
+      gameValue: GROUP_TO_FIRST_VERSION[p.gameValue] ?? p.gameValue,
+    }));
   } catch {
     return [];
   }

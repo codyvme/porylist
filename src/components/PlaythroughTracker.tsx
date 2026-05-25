@@ -1,11 +1,14 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { ArrowLeft, CheckCircle2, Circle, MapPin, Plus, Trash2, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { GAMES, GAMES_BY_VALUE, GAME_VERSIONS, type GameOption } from "@/lib/games";
+import { GAMES_BY_VALUE, type GameOption } from "@/lib/games";
 import { Select } from "@/components/ui/select";
 import { RouteBrowser } from "@/components/RouteBrowser";
 import {
   GAME_BADGES,
+  PLAYTHROUGH_VERSIONS,
+  VERSION_TO_GAME_GROUP,
+  VERSION_DISPLAY_LABEL,
   loadPlaythroughs,
   savePlaythroughs,
   newPlaythroughId,
@@ -23,6 +26,13 @@ function formatDate(ts: number): string {
   });
 }
 
+/** Returns the public path for the cover art for an individual version slug. */
+const COVER_JPG = new Set(["diamond", "emerald", "pearl", "soulsilver"]);
+function coverArtUrl(version: string): string {
+  const ext = COVER_JPG.has(version) ? "jpg" : "png";
+  return `/images/covers/${version}.${ext}`;
+}
+
 // ─── Playthrough Card ─────────────────────────────────────────────────────────
 
 function PlaythroughCard({
@@ -34,10 +44,11 @@ function PlaythroughCard({
   selected: boolean;
   onClick: () => void;
 }) {
-  const game = GAMES_BY_VALUE[playthrough.gameValue];
-  const badges = GAME_BADGES[playthrough.gameValue] ?? [];
+  const group = VERSION_TO_GAME_GROUP[playthrough.gameValue] ?? playthrough.gameValue;
+  const badges = GAME_BADGES[group] ?? [];
   const earned = playthrough.earnedBadges.length;
   const total = badges.length;
+  const versionLabel = VERSION_DISPLAY_LABEL[playthrough.gameValue] ?? GAMES_BY_VALUE[group]?.label ?? playthrough.gameValue;
 
   return (
     <button
@@ -49,7 +60,18 @@ function PlaythroughCard({
           : "border-border hover:border-primary/40 hover:bg-muted/50",
       )}
     >
-      <div className="flex items-start gap-2.5">
+      <div className="flex items-start gap-3">
+        {/* Cover art */}
+        <div className="shrink-0 w-10 h-14 rounded overflow-hidden bg-muted flex items-center justify-center">
+          <img
+            src={coverArtUrl(playthrough.gameValue)}
+            alt={versionLabel}
+            className="w-full h-full object-cover"
+            loading="lazy"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+          />
+        </div>
+        {/* Info */}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <span className="truncate text-sm font-semibold">{playthrough.name}</span>
@@ -57,7 +79,7 @@ function PlaythroughCard({
               <Trophy className="h-3.5 w-3.5 shrink-0 text-amber-500" />
             )}
           </div>
-          <p className="mt-0.5 truncate text-xs text-muted-foreground">{game?.label ?? playthrough.gameValue}</p>
+          <p className="mt-0.5 truncate text-xs text-muted-foreground">{versionLabel}</p>
           {total > 0 && (
             <div className="mt-2">
               <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
@@ -92,13 +114,14 @@ function NewPlaythroughForm({
   onCancel: () => void;
 }) {
   const [name, setName] = useState("");
-  const [gameValue, setGameValue] = useState(GAMES[0]?.value ?? "");
+  const [gameValue, setGameValue] = useState(PLAYTHROUGH_VERSIONS[0]?.value ?? "");
+
+  const selectedVersion = PLAYTHROUGH_VERSIONS.find((v) => v.value === gameValue);
 
   const handleSave = () => {
-    const game = GAMES_BY_VALUE[gameValue];
     const playthrough: Playthrough = {
       id: newPlaythroughId(),
-      name: name.trim() || `${game?.label ?? gameValue} Run`,
+      name: name.trim() || `${selectedVersion?.label ?? gameValue} Run`,
       gameValue,
       status: "active",
       earnedBadges: [],
@@ -108,6 +131,19 @@ function NewPlaythroughForm({
     };
     onSave(playthrough);
   };
+
+  // Group versions by generation for <optgroup> sections
+  const GEN_GROUPS: Array<{ label: string; groups: string[] }> = [
+    { label: "Generation I",    groups: ["red-blue-yellow"] },
+    { label: "Generation II",   groups: ["gold-silver-crystal"] },
+    { label: "Generation III",  groups: ["ruby-sapphire-emerald", "firered-leafgreen"] },
+    { label: "Generation IV",   groups: ["diamond-pearl-platinum", "heartgold-soulsilver"] },
+    { label: "Generation V",    groups: ["black-white", "black2-white2"] },
+    { label: "Generation VI",   groups: ["x-y", "omega-ruby-alpha-sapphire"] },
+    { label: "Generation VII",  groups: ["sun-moon", "ultra-sun-ultra-moon", "lets-go"] },
+    { label: "Generation VIII", groups: ["sword-shield", "brilliant-diamond-shining-pearl", "legends-arceus"] },
+    { label: "Generation IX",   groups: ["scarlet-violet"] },
+  ];
 
   return (
     <div className="flex flex-1 flex-col gap-6 overflow-y-auto px-1">
@@ -123,8 +159,12 @@ function NewPlaythroughForm({
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium">Game</label>
           <Select value={gameValue} onChange={(e) => setGameValue(e.target.value)} className="w-full">
-            {GAMES.map((g) => (
-              <option key={g.value} value={g.value}>{g.label}</option>
+            {GEN_GROUPS.map((gen) => (
+              <optgroup key={gen.label} label={gen.label}>
+                {PLAYTHROUGH_VERSIONS.filter((v) => gen.groups.includes(v.group)).map((v) => (
+                  <option key={v.value} value={v.value}>{v.label}</option>
+                ))}
+              </optgroup>
             ))}
           </Select>
         </div>
@@ -134,7 +174,7 @@ function NewPlaythroughForm({
           <label className="text-sm font-medium">Name <span className="text-muted-foreground font-normal">(optional)</span></label>
           <input
             className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            placeholder={`${GAMES_BY_VALUE[gameValue]?.label ?? ""} Run`}
+            placeholder={`${selectedVersion?.label ?? ""} Run`}
             value={name}
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") handleSave(); }}
@@ -167,7 +207,8 @@ function BadgesTab({
   playthrough: Playthrough;
   onUpdate: (p: Playthrough) => void;
 }) {
-  const badges: Badge[] = GAME_BADGES[playthrough.gameValue] ?? [];
+  const group = VERSION_TO_GAME_GROUP[playthrough.gameValue] ?? playthrough.gameValue;
+  const badges: Badge[] = GAME_BADGES[group] ?? [];
   const earned = new Set(playthrough.earnedBadges);
 
   if (badges.length === 0) {
@@ -245,14 +286,14 @@ function PokedexTab({
   navigationTarget?: { gameValue: string; locationKey: string } | null;
   game: GameOption;
 }) {
-  // Build a caught map that covers both the game value key and all individual
-  // version keys — RouteBrowser's caughtKey is `selectedVersion || gameValue`.
-  const caughtForBrowser = useMemo(() => {
-    const versions = GAME_VERSIONS[playthrough.gameValue] ?? [];
-    const map: Record<string, string[]> = { [playthrough.gameValue]: playthrough.caught };
-    for (const v of versions) map[v] = playthrough.caught;
-    return map;
-  }, [playthrough.gameValue, playthrough.caught]);
+  // RouteBrowser's caughtKey = selectedVersion || gameValue.
+  // With lockedVersion set, selectedVersion = the individual version (e.g. "emerald"),
+  // so we map that version key and also the group key as a fallback.
+  const group = VERSION_TO_GAME_GROUP[playthrough.gameValue] ?? playthrough.gameValue;
+  const caughtForBrowser = useMemo(() => ({
+    [playthrough.gameValue]: playthrough.caught,
+    [group]: playthrough.caught,
+  }), [playthrough.gameValue, playthrough.caught, group]);
 
   const handleToggleCaught = useCallback(
     (name: string, _key: string) => {
@@ -272,6 +313,7 @@ function PokedexTab({
         game={game}
         navigationTarget={navigationTarget}
         embedded
+        lockedVersion={playthrough.gameValue}
       />
     </div>
   );
@@ -294,17 +336,18 @@ function PlaythroughDetail({
   onBack: () => void;
   navigationTarget?: { gameValue: string; locationKey: string } | null;
 }) {
-  const game = GAMES_BY_VALUE[playthrough.gameValue];
-  const badges = GAME_BADGES[playthrough.gameValue] ?? [];
+  const group = VERSION_TO_GAME_GROUP[playthrough.gameValue] ?? playthrough.gameValue;
+  const game = GAMES_BY_VALUE[group];
+  const badges = GAME_BADGES[group] ?? [];
 
-  // Auto-switch to Pokédex tab if a navigationTarget is provided for this game
+  // Auto-switch to Pokédex tab if a navigationTarget is provided for this game group
   const [tab, setTab] = useState<DetailTab>(() =>
-    navigationTarget?.gameValue === playthrough.gameValue ? "pokedex" : "badges"
+    navigationTarget?.gameValue === group ? "pokedex" : "badges"
   );
 
   useEffect(() => {
-    if (navigationTarget?.gameValue === playthrough.gameValue) setTab("pokedex");
-  }, [navigationTarget, playthrough.gameValue]);
+    if (navigationTarget?.gameValue === group) setTab("pokedex");
+  }, [navigationTarget, group]);
 
   const handleArchive = () => {
     onUpdate({
@@ -354,7 +397,7 @@ function PlaythroughDetail({
             )}
           </div>
           <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
-            <span>{game?.label}</span>
+            <span>{VERSION_DISPLAY_LABEL[playthrough.gameValue] ?? game?.label}</span>
             {total > 0 && <span>{earned}/{total} {badgeLabel}</span>}
             {playthrough.caught.length > 0 && <span>{playthrough.caught.length} caught</span>}
             <span className="flex items-center gap-0.5">

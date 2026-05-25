@@ -393,13 +393,15 @@ const GAMES_WITH_ROUTES = new Set([
   "brilliant-diamond-shining-pearl", "sword-shield",
 ]);
 
-export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: gameProp, embedded = false }: {
+export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: gameProp, embedded = false, lockedVersion }: {
   caught: Record<string, string[]>;
   onToggleCaught: (name: string, gameKey: string) => void;
   navigationTarget?: { gameValue: string; locationKey: string } | null;
   game: GameOption | null;
   /** When true, suppresses the page heading and outer padding (used inside PlaythroughTracker). */
   embedded?: boolean;
+  /** When set, locks the version selector to this version and hides the toggle (used inside PlaythroughTracker). */
+  lockedVersion?: string;
 }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [game, setGame] = useState(gameProp?.value ?? "");
@@ -409,7 +411,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
     setGame(gameProp?.value ?? "");
     setLocationKey(null);
     setLocationSearch("");
-    setSelectedVersion("");
+    setSelectedVersion(lockedVersion ?? "");
     setListMode("locations");
     setPokemonInput("");
     setPokemonQuery("");
@@ -418,7 +420,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
   }, [gameProp]);
   const [locationKey, setLocationKey] = useState<string | null>(() => searchParams.get("route"));
   const [locationSearch, setLocationSearch] = useState("");
-  const [selectedVersion, setSelectedVersion] = useState(() => searchParams.get("routeVersion") ?? "");
+  const [selectedVersion, setSelectedVersion] = useState(() => lockedVersion ?? searchParams.get("routeVersion") ?? "");
   const [selectedPokemon, setSelectedPokemon] = useState<string | null>(null);
   const [missingMode, setMissingMode] = useState<"routes" | "dex" | null>(null);
   const [filterUncaught, setFilterUncaught] = useState(false);
@@ -464,12 +466,14 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
     return [...versionSet].sort();
   }, [routeData]);
 
-  // Auto-select the first version when data loads (no "All" option)
+  // Auto-select the first version when data loads (no "All" option).
+  // Skip when lockedVersion is set — it's already correct.
   useEffect(() => {
+    if (lockedVersion) return;
     if (actualVersions.length > 0 && !selectedVersion) {
       setSelectedVersion(actualVersions[0]);
     }
-  }, [actualVersions, selectedVersion]);
+  }, [actualVersions, selectedVersion, lockedVersion]);
 
   const filteredLocations = useMemo(() => {
     if (!routeData) return [];
@@ -640,7 +644,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
       {!embedded && <h1 className="shrink-0 text-xl font-semibold border-b border-border py-3 -mx-6 px-6">Catch Tracker</h1>}
       {/* Controls row */}
       <div className="flex flex-wrap items-center gap-4">
-        {actualVersions.length > 1 && (
+        {actualVersions.length > 1 && !lockedVersion && (
           <div className="flex items-center gap-1.5">
             <span className="text-xs text-muted-foreground font-medium">Version:</span>
             <div className="flex rounded-md border overflow-hidden text-xs font-medium">
