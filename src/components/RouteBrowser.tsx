@@ -68,6 +68,8 @@ const METHOD_ICONS: Record<string, string> = {
   "gift":             "🎁",
   "gift-egg":         "🎁",
   "curry":            "🍛",
+  "hoenn-sound":      "📻",
+  "sinnoh-sound":     "📻",
 };
 
 // Method display order
@@ -78,6 +80,7 @@ const METHOD_ORDER = [
   "honey-tree", "grass-spots", "dark-grass-spots", "cave", "cave-spots", "bridge-spots",
   "surf-spots", "super-rod-spots", "dirt", "sand", "flying", "building", "backlot",
   "poke-radar", "pokeradar", "pokeradar-chain", "curry", "gift", "gift-egg",
+  "hoenn-sound", "sinnoh-sound",
 ];
 
 function methodOrder(method: string) {
@@ -138,6 +141,86 @@ function PokeballIcon({ caught, size = 14 }: { caught: boolean; size?: number })
   );
 }
 
+interface MergedEncounter {
+  id: number;
+  name: string;
+  heldItems: RouteEncounter["heldItems"];
+  minLevel: number;
+  maxLevel: number;
+  sortChance: number; // highest chance across slots, for sorting
+  timeSlots: Array<{ timeOfDay: string; chance: number }> | null;
+  // null = identical across all time slots (or no time-of-day), show single %
+  chance: number; // the single chance when timeSlots is null
+}
+
+function mergeEncountersByPokemon(encounters: RouteEncounter[]): MergedEncounter[] {
+  const byId = new Map<number, RouteEncounter[]>();
+  for (const enc of encounters) {
+    if (!byId.has(enc.id)) byId.set(enc.id, []);
+    byId.get(enc.id)!.push(enc);
+  }
+
+  const merged: MergedEncounter[] = [];
+  for (const [id, encs] of byId) {
+    const first = encs[0];
+    const allSame =
+      encs.length === 1 ||
+      encs.every(
+        (e) =>
+          e.minLevel === first.minLevel &&
+          e.maxLevel === first.maxLevel &&
+          e.chance === first.chance,
+      );
+
+    const heldItems = first.heldItems ? [...first.heldItems] : [];
+    for (const e of encs.slice(1)) {
+      for (const hi of e.heldItems ?? []) {
+        if (!heldItems.some((h) => h.item === hi.item)) heldItems.push(hi);
+      }
+    }
+
+    const minLevel = Math.min(...encs.map((e) => e.minLevel));
+    const maxLevel = Math.max(...encs.map((e) => e.maxLevel));
+    const sortChance = Math.max(...encs.map((e) => e.chance));
+
+    if (allSame) {
+      // If every entry shares the same non-empty timeOfDay, preserve it as a
+      // single-slot display (e.g. Hoothoot night-only → shows 🌙 85%).
+      // If they span multiple different time slots at equal rates, suppress the
+      // icons (e.g. Pidgey morning+day at 55% each → just show 55%).
+      const sharedTime = first.timeOfDay && encs.every((e) => e.timeOfDay === first.timeOfDay)
+        ? first.timeOfDay
+        : null;
+      merged.push({
+        id,
+        name: first.name,
+        heldItems,
+        minLevel,
+        maxLevel,
+        sortChance,
+        timeSlots: sharedTime ? [{ timeOfDay: sharedTime, chance: first.chance }] : null,
+        chance: first.chance,
+      });
+    } else {
+      const timeSlots = encs
+        .filter((e) => !!e.timeOfDay)
+        .map((e) => ({ timeOfDay: e.timeOfDay!, chance: e.chance }));
+      merged.push({
+        id,
+        name: first.name,
+        heldItems,
+        minLevel,
+        maxLevel,
+        sortChance,
+        timeSlots: timeSlots.length > 0 ? timeSlots : null,
+        chance: sortChance,
+      });
+    }
+  }
+
+  return merged;
+}
+
 function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, caughtKey, caught, onToggleCaught, onOpen, filterUncaught }: {
   method: string;
   methodLabel: string;
@@ -151,8 +234,9 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
   filterUncaught: boolean;
 }) {
   const caughtList = caught[caughtKey] ?? [];
-  const sorted = [...encounters]
-    .sort((a, b) => b.chance - a.chance || a.id - b.id)
+  const merged = mergeEncountersByPokemon(encounters);
+  const sorted = merged
+    .sort((a, b) => b.sortChance - a.sortChance || a.id - b.id)
     .filter((enc) => !filterUncaught || !caughtList.includes(enc.name));
 
   if (sorted.length === 0) return null;
@@ -163,10 +247,10 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
         {icon && <span className="mr-1">{icon}</span>}{methodLabel}
       </p>
       <div className="space-y-1 mb-4">
-        {sorted.map((enc, i) => {
+        {sorted.map((enc) => {
           const isCaught = caughtList.includes(enc.name);
           return (
-            <div key={`${enc.id}-${method}-${i}`} className="flex items-center gap-2 rounded-md px-2 py-0.5 hover:bg-muted/50">
+            <div key={`${enc.id}-${method}`} className="flex items-center gap-2 rounded-md px-2 py-0.5 hover:bg-muted/50">
               {game && (
                 <button
                   onClick={() => onToggleCaught(enc.name, caughtKey)}
@@ -206,11 +290,19 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
               <span className="flex-shrink-0 text-xs text-muted-foreground tabular-nums whitespace-nowrap">
                 {enc.minLevel === enc.maxLevel ? `Lv ${enc.minLevel}` : `Lv ${enc.minLevel}–${enc.maxLevel}`}
               </span>
-              <span className="hidden sm:inline flex-shrink-0 text-xs tabular-nums text-muted-foreground">{enc.chance}%</span>
-              {enc.timeOfDay && (
-                <Tooltip content={enc.timeOfDay.charAt(0).toUpperCase() + enc.timeOfDay.slice(1)}>
-                  <span className="flex-shrink-0 cursor-default text-sm">{TIME_ICON[enc.timeOfDay]}</span>
-                </Tooltip>
+              {enc.timeSlots ? (
+                <span className="hidden sm:flex flex-shrink-0 items-center gap-1 text-xs tabular-nums text-muted-foreground">
+                  {enc.timeSlots.map(({ timeOfDay, chance }) => (
+                    <Tooltip key={timeOfDay} content={timeOfDay.charAt(0).toUpperCase() + timeOfDay.slice(1)}>
+                      <span className="flex items-center gap-0.5 cursor-default">
+                        <span>{TIME_ICON[timeOfDay]}</span>
+                        <span>{chance}%</span>
+                      </span>
+                    </Tooltip>
+                  ))}
+                </span>
+              ) : (
+                <span className="hidden sm:inline flex-shrink-0 text-xs tabular-nums text-muted-foreground">{enc.chance}%</span>
               )}
             </div>
           );

@@ -74,6 +74,8 @@ const METHOD_LABEL = {
   "surf-spots":        "Surfing",
   "gift":              "Gift",
   "gift-egg":          "Egg Gift",
+  "hoenn-sound":       "Hoenn Sound",
+  "sinnoh-sound":      "Sinnoh Sound",
   "unknown":           "Unknown",
 };
 
@@ -111,6 +113,16 @@ function getTimeOfDay(conditionValues) {
   return "";
 }
 
+// If condition values indicate a radio encounter, return the override method name.
+// These are HGSS-specific radio channel encounters (Hoenn Sound / Sinnoh Sound).
+function getRadioMethod(conditionValues) {
+  for (const cv of conditionValues) {
+    if (cv.name === "radio-hoenn")  return "hoenn-sound";
+    if (cv.name === "radio-sinnoh") return "sinnoh-sound";
+  }
+  return null;
+}
+
 // Map: locationKey → Map(pokemonId → { id, name, versions: Map(versionName → Map(slotKey → {...})) })
 const locationMap = new Map();
 
@@ -135,8 +147,34 @@ for (let id = 1; id <= 1025; id++) {
       const slotMap = entry.versions.get(vName);
 
       for (const enc of vd.encounter_details) {
-        const mName = enc.method.name;
-        const timeOfDay = getTimeOfDay(enc.condition_values);
+        const radioMethod = getRadioMethod(enc.condition_values);
+        const mName = radioMethod ?? enc.method.name;
+        // Radio encounters don't have meaningful time-of-day distinctions
+        const timeOfDay = radioMethod ? "" : getTimeOfDay(enc.condition_values);
+
+        // HGSS-specific: grass walk encounters stored without a time condition
+        // in PokéAPI actually appear during morning and day (night encounters
+        // always carry an explicit time-night condition). This is a PokéAPI
+        // data-quality gap — Gold/Silver correctly tags these same slots as
+        // morning+day. Promote them here so they don't silently disappear.
+        if (
+          (vName === "heartgold" || vName === "soulsilver") &&
+          mName === "walk" && timeOfDay === "" && !radioMethod
+        ) {
+          for (const tod of ["morning", "day"]) {
+            const sk = `walk:${tod}`;
+            if (!slotMap.has(sk)) {
+              slotMap.set(sk, { method: "walk", timeOfDay: tod, minLevel: enc.min_level, maxLevel: enc.max_level, chance: enc.chance });
+            } else {
+              const existing = slotMap.get(sk);
+              existing.minLevel = Math.min(existing.minLevel, enc.min_level);
+              existing.maxLevel = Math.max(existing.maxLevel, enc.max_level);
+              existing.chance += enc.chance;
+            }
+          }
+          continue;
+        }
+
         const slotKey = `${mName}:${timeOfDay}`;
         if (!slotMap.has(slotKey)) {
           slotMap.set(slotKey, { method: mName, timeOfDay, minLevel: enc.min_level, maxLevel: enc.max_level, chance: enc.chance });
