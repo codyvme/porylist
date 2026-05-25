@@ -35,7 +35,7 @@ function formatDate(ts: number): string {
 }
 
 /** Returns the public path for the cover art for an individual version slug. */
-const COVER_JPG = new Set(["diamond", "emerald", "pearl", "soulsilver"]);
+const COVER_JPG = new Set(["diamond", "emerald", "heartgold", "pearl", "soulsilver"]);
 function coverArtUrl(version: string): string {
   const ext = COVER_JPG.has(version) ? "jpg" : "png";
   return `/images/covers/${version}.${ext}`;
