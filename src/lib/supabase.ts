@@ -50,6 +50,30 @@ export async function deleteCaught(userId: string, gameKey: string, pokemonName:
     .eq("pokemon_name", pokemonName);
 }
 
+// ── Playthroughs ──────────────────────────────────────────────────────────
+
+export async function fetchPlaythroughsFromDB(userId: string): Promise<import("./playthroughs").Playthrough[]> {
+  const { data, error } = await supabase
+    .from("playthroughs")
+    .select("data")
+    .eq("user_id", userId);
+  if (error || !data) return [];
+  return data.map((row) => row.data as import("./playthroughs").Playthrough);
+}
+
+export async function upsertPlaythrough(userId: string, playthrough: import("./playthroughs").Playthrough) {
+  return supabase.from("playthroughs").upsert({
+    id: playthrough.id,
+    user_id: userId,
+    data: playthrough,
+    updated_at: new Date().toISOString(),
+  });
+}
+
+export async function deletePlaythrough(playthroughId: string) {
+  return supabase.from("playthroughs").delete().eq("id", playthroughId);
+}
+
 // ── Breeding projects ──────────────────────────────────────────────────────
 
 export async function fetchBreedingProjectsFromDB(userId: string): Promise<import("./breeding").BreedingProject[]> {
@@ -112,6 +136,7 @@ export async function purgeUserData(userId: string): Promise<void> {
   await Promise.all([
     supabase.from("caught_pokemon").delete().eq("user_id", userId),
     supabase.from("breeding_projects").delete().eq("user_id", userId),
+    supabase.from("playthroughs").delete().eq("user_id", userId),
   ]);
 }
 
