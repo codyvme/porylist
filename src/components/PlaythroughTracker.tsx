@@ -16,6 +16,7 @@ import {
   VERSION_TO_GAME_GROUP,
   VERSION_DISPLAY_LABEL,
   DEFAULT_NUZLOCKE,
+  TRIAL_GAME_GROUPS,
   loadPlaythroughs,
   savePlaythroughs,
   newPlaythroughId,
@@ -145,7 +146,7 @@ function PlaythroughCard({
           {total > 0 && (
             <div className="mt-2">
               <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
-                <span>{earned}/{total} {total > 8 ? "trials" : "badges"}</span>
+                <span>{earned}/{total} {TRIAL_GAME_GROUPS.has(group) ? "trials" : "badges"}</span>
               </div>
               <div className="flex h-1.5 overflow-hidden rounded-full bg-muted">
                 <div
@@ -361,7 +362,7 @@ function BadgesTab({
     onUpdate({ ...playthrough, earnedBadges: next, updatedAt: Date.now() });
   };
 
-  const label = badges.length > 8 ? "trials" : "badges";
+  const label = TRIAL_GAME_GROUPS.has(group) ? "trials" : "badges";
 
   return (
     <div className="flex flex-col gap-4">
@@ -498,7 +499,7 @@ function PlaythroughDetail({
 
   const earned = playthrough.earnedBadges.length;
   const total = badges.length;
-  const badgeLabel = total > 8 ? "trials" : "badges";
+  const badgeLabel = TRIAL_GAME_GROUPS.has(group) ? "trials" : "badges";
 
   return (
     <div className="flex flex-1 flex-col gap-4 min-h-0">
@@ -621,7 +622,7 @@ function PlaythroughDetail({
               )}
             </button>
             <button className={tabCls("badges")} onClick={() => setTab("badges")}>
-              {total > 8 ? "Trials" : "Badges"}
+              {TRIAL_GAME_GROUPS.has(group) ? "Trials" : "Badges"}
               {total > 0 && (
                 <span className="ml-1.5 rounded-full bg-muted px-1.5 text-xs">
                   {earned}/{total}
@@ -833,7 +834,7 @@ export function PlaythroughTracker({
         {/* Right panel */}
         <div
           className={cn(
-            "flex flex-1 flex-col overflow-y-auto pt-3",
+            "flex flex-1 flex-col overflow-y-auto overflow-x-hidden pt-3",
             runsCollapsed ? "pl-2 sm:pl-4" : "pl-0 sm:pl-6",
             !showDetail && "hidden sm:flex",
           )}

@@ -260,6 +260,9 @@ export const GAME_BADGES: Record<string, Badge[]> = {
   ],
 };
 
+/** Game groups that use Trials instead of Badges. */
+export const TRIAL_GAME_GROUPS = new Set(["sun-moon", "ultra-sun-ultra-moon"]);
+
 // ─── Individual version list (used in Playthroughs form) ─────────────────────
 
 /** One entry per individual game version, with its parent group for data lookups. */
