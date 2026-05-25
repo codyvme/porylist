@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { ArrowLeft, ChevronDown, ChevronRight, Dna, Plus, Search, Star, Trash2, Trophy, X } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronLeft, ChevronRight, Dna, Plus, Search, Star, Trash2, Trophy, X } from "lucide-react";
 import { Select } from "@/components/ui/select";
 import { cn, formatPokemonName } from "@/lib/utils";
 import { GAMES } from "@/lib/games";
@@ -1251,6 +1251,7 @@ export function BreedingTracker({ user }: { user: User | null }) {
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
+  const [projectsCollapsed, setProjectsCollapsed] = useState(false);
   const [focusedIdx, setFocusedIdx] = useState(-1);
   const didSyncRef = useRef<string | null>(null);
   const cardRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
@@ -1383,6 +1384,7 @@ export function BreedingTracker({ user }: { user: User | null }) {
         className={cn(
           "flex w-72 shrink-0 flex-col gap-3 overflow-y-auto pt-3 sm:pr-6",
           showDetail && "hidden sm:flex",
+          projectsCollapsed && "sm:hidden",
         )}
       >
         <div className="flex items-center justify-between">
@@ -1450,13 +1452,23 @@ export function BreedingTracker({ user }: { user: User | null }) {
         )}
       </div>
 
-      {/* Divider */}
-      <div className="hidden sm:block w-px shrink-0 bg-border" />
+      {/* Divider with collapse toggle */}
+      <div className="hidden sm:block relative shrink-0 w-6">
+        <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-border" />
+        <button
+          onClick={() => setProjectsCollapsed((v) => !v)}
+          className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex h-5 w-5 items-center justify-center rounded-full border bg-background text-muted-foreground shadow-sm hover:bg-muted hover:text-foreground transition-colors"
+          title={projectsCollapsed ? "Show projects" : "Hide projects"}
+        >
+          {projectsCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
+        </button>
+      </div>
 
       {/* Right panel: detail or create form */}
       <div
         className={cn(
-          "flex flex-1 flex-col overflow-y-auto pt-3 pl-0 sm:pl-6",
+          "flex flex-1 flex-col overflow-y-auto overflow-x-hidden pt-3 pb-3 sm:pb-6",
+          projectsCollapsed ? "pl-2 sm:pl-4" : "pl-0 sm:pl-6",
           !showDetail && "hidden sm:flex",
         )}
       >
