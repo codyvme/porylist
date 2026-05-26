@@ -713,6 +713,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
   const [activeTab, setActiveTab] = useState<MoveTab>("level-up");
   const [showShiny, setShowShiny] = useState(false);
   const [expandedMove, setExpandedMove] = useState<string | null>(null);
+  const [locationsGameValue, setLocationsGameValue] = useState<string | null>(game?.value ?? null);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -766,6 +767,15 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
       })
       .filter((x): x is { game: GameOption; locations: ProcessedLocation[] } => x !== null);
   }, [encounterData]);
+
+  // Keep locationsGameValue pointing at a valid game; prefer the active game, fall back to first available
+  const resolvedLocationsGameValue = useMemo(() => {
+    if (allGamesLocations.length === 0) return null;
+    const available = new Set(allGamesLocations.map((x) => x.game.value));
+    if (locationsGameValue && available.has(locationsGameValue)) return locationsGameValue;
+    if (game && available.has(game.value)) return game.value;
+    return allGamesLocations[0].game.value;
+  }, [allGamesLocations, locationsGameValue, game]);
 
   const types = useMemo(
     () => (pokemon ? typesForGeneration(pokemon, generation) : []),
@@ -1049,11 +1059,17 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
             {/* Row 1: identity + close */}
             <div className="flex items-center gap-2 px-4 py-3 sm:min-w-0 sm:flex-1 sm:gap-6 sm:px-6 sm:py-4">
               <div className="flex min-w-0 flex-1 items-center gap-2.5">
-                {pokemon && (
-                  <span className="shrink-0 font-mono text-sm text-muted-foreground">
-                    #{String(pokemon.id).padStart(4, "0")}
-                  </span>
-                )}
+                {pokemon && (() => {
+                  // Alternate forms have IDs > 10000; extract the national dex number
+                  // from the species URL (e.g. .../pokemon-species/6/) instead.
+                  const speciesIdMatch = pokemon.species.url.match(/\/(\d+)\/?$/);
+                  const dexNum = speciesIdMatch ? Number(speciesIdMatch[1]) : pokemon.id;
+                  return (
+                    <span className="shrink-0 font-mono text-sm text-muted-foreground">
+                      #{String(dexNum).padStart(4, "0")}
+                    </span>
+                  );
+                })()}
                 <h2 className="text-xl font-bold">{displayName}</h2>
                 {pokemon && (
                   <CryButton
@@ -1497,7 +1513,20 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
 
               {/* Locations */}
               <div className="border-t px-6 py-5">
-                <h3 className="mb-4 text-base font-semibold">Locations</h3>
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <h3 className="text-base font-semibold">Locations</h3>
+                  {allGamesLocations.length > 0 && (
+                    <select
+                      value={resolvedLocationsGameValue ?? ""}
+                      onChange={(e) => setLocationsGameValue(e.target.value)}
+                      className="rounded-md border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                    >
+                      {allGamesLocations.map(({ game: g }) => (
+                        <option key={g.value} value={g.value}>{g.label}</option>
+                      ))}
+                    </select>
+                  )}
+                </div>
                 {encountersLoading ? (
                   <div className="space-y-2">
                     {[1, 2, 3].map((i) => <div key={i} className="h-8 animate-pulse rounded bg-muted" />)}
@@ -1507,19 +1536,17 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                     Not found in the wild in any supported game.
                   </p>
                 ) : (() => {
-                  // Flatten all rows into a single table
-                  const rows: { gameValue: string; gameLabel: string; isSelected: boolean; locKey: string; locName: string; versions: string[]; method: string; conditions: string[]; levelRange: string; chance: number; isFirstInGame: boolean; isFirstInLoc: boolean; }[] = [];
-                  for (const { game: g, locations } of allGamesLocations) {
-                    const isSelected = game?.value === g.value;
-                    let firstInGame = true;
-                    for (const loc of locations) {
-                      let firstInLoc = true;
-                      for (const m of loc.methods) {
-                        const levelRange = m.minLevel === m.maxLevel ? `${m.minLevel}` : `${m.minLevel}–${m.maxLevel}`;
-                        rows.push({ gameValue: g.value, gameLabel: g.label, isSelected, locKey: loc.key, locName: loc.name, versions: m.versions, method: m.method, conditions: m.conditions, levelRange, chance: m.chance, isFirstInGame: firstInGame, isFirstInLoc: firstInLoc });
-                        firstInGame = false;
-                        firstInLoc = false;
-                      }
+                  // Show only the selected game's locations
+                  const selected = allGamesLocations.find((x) => x.game.value === resolvedLocationsGameValue);
+                  if (!selected) return null;
+                  const { game: g, locations } = selected;
+                  const rows: { locKey: string; locName: string; versions: string[]; method: string; conditions: string[]; levelRange: string; chance: number; isFirstInLoc: boolean; }[] = [];
+                  for (const loc of locations) {
+                    let firstInLoc = true;
+                    for (const m of loc.methods) {
+                      const levelRange = m.minLevel === m.maxLevel ? `${m.minLevel}` : `${m.minLevel}–${m.maxLevel}`;
+                      rows.push({ locKey: loc.key, locName: loc.name, versions: m.versions, method: m.method, conditions: m.conditions, levelRange, chance: m.chance, isFirstInLoc: firstInLoc });
+                      firstInLoc = false;
                     }
                   }
                   const hasVersionLabels = rows.some((r) => r.versions.length > 0);
@@ -1528,7 +1555,6 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                       <table className="w-full text-sm">
                         <thead>
                           <tr className="border-b text-left text-xs font-medium text-muted-foreground">
-                            <th className="pb-2 pr-4">Game</th>
                             <th className="pb-2 pr-4">Location</th>
                             {hasVersionLabels && <th className="pb-2 pr-4">Version</th>}
                             <th className="pb-2 pr-4">Method</th>
@@ -1542,15 +1568,12 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                             const condLabel = row.conditions.map(formatConditionLabel).filter(Boolean).join(", ");
                             return (
                               <tr key={i} className="hover:bg-muted/30">
-                                <td className={cn("py-1.5 pr-4 font-medium whitespace-nowrap", row.isSelected && "text-primary")}>
-                                  {row.isFirstInGame ? row.gameLabel : ""}
-                                </td>
                                 <td className="py-1.5 pr-4 whitespace-nowrap">
                                   {row.isFirstInLoc ? (
                                     onOpenInCatchTracker ? (
                                       <button
                                         className="text-left text-muted-foreground hover:text-primary hover:underline transition-colors"
-                                        onClick={() => { onOpenInCatchTracker(row.gameValue, row.locKey); onClose(); }}
+                                        onClick={() => { onOpenInCatchTracker(g.value, row.locKey); onClose(); }}
                                       >
                                         {row.locName}
                                       </button>
