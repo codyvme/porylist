@@ -781,13 +781,13 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
           <div className="flex flex-col flex-1 min-h-0 overflow-hidden rounded-md border">
             {/* Compact top bar: mode toggle + location select or Pokémon search */}
             <div className="shrink-0 border-b px-2 py-2 space-y-2">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                 {/* Mode toggle pills */}
-                <div className="flex shrink-0 overflow-hidden rounded-md border text-xs font-medium">
+                <div className="flex w-full overflow-hidden rounded-md border text-xs font-medium sm:w-auto">
                   <button
                     onClick={() => setListMode("locations")}
                     className={cn(
-                      "px-2.5 py-1.5 transition-colors",
+                      "flex-1 whitespace-nowrap px-2.5 py-1.5 transition-colors sm:flex-none",
                       listMode === "locations" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted",
                     )}
                   >
@@ -796,7 +796,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
                   <button
                     onClick={() => setListMode("pokemon")}
                     className={cn(
-                      "border-l px-2.5 py-1.5 transition-colors",
+                      "flex-1 whitespace-nowrap border-l px-2.5 py-1.5 transition-colors sm:flex-none",
                       listMode === "pokemon" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted",
                     )}
                   >
@@ -932,7 +932,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
               )}
               {selectedLocation && (
                 <div className="p-4">
-                  <div className="mb-4 flex items-center justify-between gap-2">
+                  <div className="mb-4 flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
                     <h2 className="text-base font-semibold">{selectedLocation.label}</h2>
                     <div className="flex shrink-0 items-center gap-2">
                       {locationProgress && (
