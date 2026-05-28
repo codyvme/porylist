@@ -5,7 +5,7 @@ import {
   deletePlaythrough,
   type User,
 } from "@/lib/supabase";
-import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Circle, MapPin, Pencil, Plus, Skull, Trash2, Trophy } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Circle, MapPin, MoreHorizontal, Pencil, Plus, Skull, Trash2, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GAMES_BY_VALUE, type GameOption } from "@/lib/games";
 import { Select } from "@/components/ui/select";
@@ -442,7 +442,7 @@ function PokedexTab({
   );
 
   return (
-    <div className="flex flex-1 min-h-0 flex-col -mx-6">
+    <div className="flex flex-1 min-h-0 flex-col -mx-6 -mt-1 sm:mt-0">
       <RouteBrowser
         caught={caughtForBrowser}
         onToggleCaught={handleToggleCaught}
@@ -501,38 +501,33 @@ function PlaythroughDetail({
   const total = badges.length;
   const badgeLabel = TRIAL_GAME_GROUPS.has(group) ? "trials" : "badges";
 
-  // Extract action buttons into a variable so we can render them once
-  // (on mobile they move to their own row below the name).
-  const headerActions = (
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target as Node))
+        setMobileMenuOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [mobileMenuOpen]);
+
+  const desktopActions = (
     <div className="flex items-center gap-1">
       {playthrough.status === "active" && (
-        <button
-          onClick={handleComplete}
-          className="rounded-md px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted"
-          title="Mark as completed"
-        >
+        <button onClick={handleComplete} className="rounded-md px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted" title="Mark as completed">
           Complete
         </button>
       )}
-      <button
-        onClick={handleArchive}
-        className="rounded-md px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted"
-      >
+      <button onClick={handleArchive} className="rounded-md px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted">
         {playthrough.status === "active" ? "Archive" : "Restore"}
       </button>
-      <button
-        onClick={() => setIsEditing(true)}
-        className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-        title="Edit playthrough"
-      >
+      <button onClick={() => setIsEditing(true)} className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground" title="Edit playthrough">
         <Pencil className="h-3.5 w-3.5" />
       </button>
       {playthrough.status !== "active" && (
-        <button
-          onClick={onDelete}
-          className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-          title="Delete playthrough"
-        >
+        <button onClick={onDelete} className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive" title="Delete playthrough">
           <Trash2 className="h-3.5 w-3.5" />
         </button>
       )}
@@ -540,54 +535,69 @@ function PlaythroughDetail({
   );
 
   return (
-    <div className="flex flex-1 flex-col gap-4 min-h-0">
+    <div className="flex flex-1 flex-col gap-2 sm:gap-4 min-h-0">
       {/* Header */}
-      <div className="flex flex-col gap-1.5 shrink-0">
-        {/* Top row: back button + name/info + actions (actions hidden on mobile) */}
-        <div className="flex items-start gap-2">
-          <button
-            onClick={onBack}
-            className="mt-0.5 shrink-0 rounded-md p-1.5 hover:bg-muted sm:hidden"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </button>
+      <div className="flex items-center gap-2 shrink-0">
+        {/* Back button — mobile only */}
+        <button onClick={onBack} className="shrink-0 rounded-md p-1.5 hover:bg-muted sm:hidden">
+          <ArrowLeft className="h-4 w-4" />
+        </button>
 
-          <div className="flex-1 min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-lg font-semibold truncate">{playthrough.name}</h2>
-              {playthrough.status === "completed" && (
-                <span className="shrink-0 rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
-                  Completed
-                </span>
-              )}
-              {playthrough.status === "abandoned" && (
-                <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-                  Archived
-                </span>
-              )}
-            </div>
-            <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
-              <span>{VERSION_DISPLAY_LABEL[playthrough.gameValue] ?? game?.label}</span>
-              {playthrough.nuzlocke.enabled && (
-                <span className="flex items-center gap-1 text-red-500 dark:text-red-400">
-                  <Skull className="h-3 w-3" />Nuzlocke
-                </span>
-              )}
-              {total > 0 && <span>{earned}/{total} {badgeLabel}</span>}
-              {playthrough.caught.length > 0 && <span>{playthrough.caught.length} caught</span>}
-              <span className="flex items-center gap-0.5">
-                <MapPin className="h-3 w-3" />
-                Started {formatDate(playthrough.createdAt)}
-              </span>
-            </div>
+        {/* Name + info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-base font-semibold truncate sm:text-lg">{playthrough.name}</h2>
+            {playthrough.status === "completed" && (
+              <span className="shrink-0 rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">Completed</span>
+            )}
+            {playthrough.status === "abandoned" && (
+              <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">Archived</span>
+            )}
           </div>
-
-          {/* Actions inline on sm+ */}
-          <div className="hidden sm:block shrink-0">{headerActions}</div>
+          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+            <span>{VERSION_DISPLAY_LABEL[playthrough.gameValue] ?? game?.label}</span>
+            {playthrough.nuzlocke.enabled && (
+              <span className="flex items-center gap-1 text-red-500 dark:text-red-400"><Skull className="h-3 w-3" />Nuzlocke</span>
+            )}
+            {total > 0 && <span>{earned}/{total} {badgeLabel}</span>}
+            {playthrough.caught.length > 0 && <span>{playthrough.caught.length} caught</span>}
+            <span className="hidden sm:flex items-center gap-0.5"><MapPin className="h-3 w-3" />Started {formatDate(playthrough.createdAt)}</span>
+          </div>
         </div>
 
-        {/* Actions on their own row on mobile */}
-        <div className="sm:hidden">{headerActions}</div>
+        {/* Desktop actions */}
+        <div className="hidden sm:flex shrink-0">{desktopActions}</div>
+
+        {/* Mobile ··· menu */}
+        <div className="relative sm:hidden shrink-0" ref={mobileMenuRef}>
+          <button
+            onClick={() => setMobileMenuOpen((v) => !v)}
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+            aria-label="More actions"
+          >
+            <MoreHorizontal className="h-4 w-4" />
+          </button>
+          {mobileMenuOpen && (
+            <div className="absolute right-0 top-full z-50 mt-1 w-40 overflow-hidden rounded-lg border bg-background shadow-lg">
+              {playthrough.status === "active" && (
+                <button onClick={() => { handleComplete(); setMobileMenuOpen(false); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:bg-muted">
+                  <CheckCircle2 className="h-3.5 w-3.5" />Complete
+                </button>
+              )}
+              <button onClick={() => { handleArchive(); setMobileMenuOpen(false); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:bg-muted">
+                {playthrough.status === "active" ? "Archive" : "Restore"}
+              </button>
+              <button onClick={() => { setIsEditing(true); setMobileMenuOpen(false); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:bg-muted">
+                <Pencil className="h-3.5 w-3.5" />Edit
+              </button>
+              {playthrough.status !== "active" && (
+                <button onClick={() => { onDelete(); setMobileMenuOpen(false); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/10">
+                  <Trash2 className="h-3.5 w-3.5" />Delete
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Edit form — replaces tabs when active */}
@@ -625,7 +635,7 @@ function PlaythroughDetail({
             ) : null;
           })()}
 
-          <div className="flex gap-1 border-b pb-2 shrink-0">
+          <div className="flex gap-1 shrink-0">
             <button className={tabCls("pokedex")} onClick={() => setTab("pokedex")}>
               Pokédex
               {playthrough.caught.length > 0 && (
@@ -766,13 +776,13 @@ export function PlaythroughTracker({
 
   return (
     <div className="flex h-full flex-col px-6">
-      <h1 className="shrink-0 text-xl font-semibold border-b border-border py-3 -mx-6 px-6">Playthroughs</h1>
+      <h1 className={cn("shrink-0 text-xl font-semibold border-b border-border py-3 -mx-6 px-6", showDetail && "hidden sm:block")}>Playthroughs</h1>
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Left panel */}
         <div
           className={cn(
-            "flex w-72 shrink-0 flex-col gap-3 overflow-y-auto pt-3 sm:pr-6",
+            "flex w-full sm:w-72 shrink-0 flex-col gap-3 overflow-y-auto pt-3 sm:pr-6",
             showDetail && "hidden sm:flex",
             runsCollapsed && "sm:hidden",
           )}
@@ -847,7 +857,7 @@ export function PlaythroughTracker({
         {/* Right panel */}
         <div
           className={cn(
-            "flex flex-1 flex-col overflow-y-auto overflow-x-hidden pt-3 pb-3 sm:pb-6",
+            "flex flex-1 flex-col overflow-y-auto overflow-x-hidden pt-2 pb-3 sm:pt-3 sm:pb-6",
             runsCollapsed ? "pl-2 sm:pl-4" : "pl-0 sm:pl-6",
             !showDetail && "hidden sm:flex",
           )}
