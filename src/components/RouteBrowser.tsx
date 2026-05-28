@@ -410,6 +410,104 @@ function LocationDetail({ location, selectedVersion, spriteVersion, game, caught
   );
 }
 
+function CaughtModal({ caughtList, spriteVersion, onOpen, onToggleCaught, caughtKey, caught, onClose }: {
+  caughtList: { id: number; name: string }[];
+  spriteVersion: string | undefined;
+  onOpen: (name: string) => void;
+  onToggleCaught: (name: string, gameKey: string) => void;
+  caughtKey: string;
+  caught: Record<string, string[]>;
+  onClose: () => void;
+}) {
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return q ? caughtList.filter((p) => formatPokemonName(p.name).toLowerCase().includes(q)) : caughtList;
+  }, [caughtList, search]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
+      <div
+        className="relative flex h-[80vh] w-full max-w-lg flex-col rounded-xl bg-background shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex flex-shrink-0 items-center gap-3 border-b px-4 py-3">
+          <div className="shrink-0">
+            <h2 className="font-semibold">Caught Pokémon</h2>
+            <p className="text-xs text-muted-foreground">{filtered.length} caught</p>
+          </div>
+          <div className="relative flex-1">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search…"
+              className="w-full rounded-md border bg-background py-1 pl-8 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              autoFocus
+            />
+          </div>
+          <div className="flex items-center">
+            <button onClick={onClose} className="text-muted-foreground hover:text-foreground" aria-label="Close">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Grid */}
+        <div className="flex-1 overflow-y-auto p-3">
+          {filtered.length === 0 ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              {search ? "No Pokémon match your search." : "You haven't caught anything yet."}
+            </p>
+          ) : (
+            <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4">
+              {filtered.map((p) => {
+                const isCaught = (caught[caughtKey] ?? []).includes(p.name);
+                return (
+                  <div key={p.id} className="flex flex-col items-center gap-0.5 rounded-lg border bg-background px-2 py-2 text-center">
+                    <img
+                      src={spriteUrl(p.id, spriteVersion)}
+                      alt={p.name}
+                      className="h-12 w-12 object-contain"
+                      loading="lazy"
+                      onError={(e) => { const img = e.currentTarget; img.onerror = null; img.src = spriteUrl(p.id, undefined); }}
+                    />
+                    <button
+                      className="rounded-sm text-xs font-medium leading-tight hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      onClick={() => onOpen(p.name)}
+                    >
+                      {formatPokemonName(p.name)}
+                    </button>
+                    <button
+                      onClick={() => onToggleCaught(p.name, caughtKey)}
+                      className={cn(
+                        "mt-0.5 rounded-full p-1 transition-colors",
+                        isCaught ? "text-red-500 hover:text-red-400" : "text-muted-foreground/30 hover:text-muted-foreground",
+                      )}
+                      aria-label={isCaught ? `Mark ${p.name} as not caught` : `Mark ${p.name} as caught`}
+                    >
+                      <PokeballIcon caught={isCaught} size={13} />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function MissingModal({ title, missing, spriteVersion, onOpen, onToggleCaught, caughtKey, caught, onClose }: {
   title: string;
   missing: { id: number; name: string }[];
@@ -763,6 +861,20 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
       .sort((a, b) => a.id - b.id);
   }, [pokemonListQuery.data, selectedGame, caughtKey, caught]);
 
+  const caughtFromDex = useMemo(() => {
+    if (!pokemonListQuery.data || !selectedGame) return [];
+    const caughtList = caught[caughtKey] ?? [];
+    return pokemonListQuery.data.results
+      .map((entry) => {
+        const id = Number(entry.url.match(/\/(\d+)\/?$/)?.[1]);
+        return { name: entry.name, id };
+      })
+      .filter(({ id, name }) => id > 0 && id <= selectedGame.genMax && caughtList.includes(name))
+      .sort((a, b) => a.id - b.id);
+  }, [pokemonListQuery.data, selectedGame, caughtKey, caught]);
+
+  const [showCaughtModal, setShowCaughtModal] = useState(false);
+
   return (
     <div className={cn("flex flex-col gap-4 px-6", embedded ? "sm:h-full" : "h-full")}>
       {!embedded && <h1 className="shrink-0 text-xl font-semibold border-b border-border py-3 -mx-6 px-6">Catch Tracker</h1>}
@@ -821,6 +933,17 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
           >
             {gameProgress.count} / {gameProgress.dexTotal} Pokédex
           </button>
+          {gameProgress.count > 0 && (
+            <>
+              <span className="text-muted-foreground/40">·</span>
+              <button
+                onClick={() => setShowCaughtModal(true)}
+                className="hover:text-foreground hover:underline transition-colors"
+              >
+                View caught
+              </button>
+            </>
+          )}
         </div>
       )}
 
@@ -1273,6 +1396,17 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
           caughtKey={caughtKey}
           caught={caught}
           onClose={() => setMissingMode(null)}
+        />
+      )}
+      {showCaughtModal && (
+        <CaughtModal
+          caughtList={caughtFromDex}
+          spriteVersion={spriteVersion}
+          onOpen={(name) => { setShowCaughtModal(false); setSelectedPokemon(name); }}
+          onToggleCaught={onToggleCaught}
+          caughtKey={caughtKey}
+          caught={caught}
+          onClose={() => setShowCaughtModal(false)}
         />
       )}
 
