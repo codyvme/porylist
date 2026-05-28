@@ -263,7 +263,7 @@ const NAV_ITEMS = [
 
 // ─── Icon Rail (desktop) ──────────────────────────────────────────────────────
 
-function IconRail({ teamCount }: { teamCount: number }) {
+function IconRail() {
   const [navExpanded, setNavExpanded] = useState(
     () => window.matchMedia("(min-width: 1024px)").matches,
   );
@@ -289,20 +289,8 @@ function IconRail({ teamCount }: { teamCount: number }) {
             )}
             aria-label={label}
           >
-            <div className="relative shrink-0">
-              <Icon className="h-4 w-4" />
-              {to === "/team" && teamCount > 0 && (
-                <span className="absolute -right-1.5 -top-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
-                  {teamCount}
-                </span>
-              )}
-            </div>
+            <Icon className="h-4 w-4 shrink-0" />
             <span className="hidden lg:block whitespace-nowrap">{label}</span>
-            {to === "/team" && teamCount > 0 && (
-              <span className="ml-auto hidden lg:flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
-                {teamCount}
-              </span>
-            )}
           </NavLink>
         </Tooltip>
       ))}
@@ -312,7 +300,7 @@ function IconRail({ teamCount }: { teamCount: number }) {
 
 // ─── Mobile Drawer ────────────────────────────────────────────────────────────
 
-function MobileDrawer({ open, onClose, teamCount }: { open: boolean; onClose: () => void; teamCount: number }) {
+function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   // Close on Escape
   useEffect(() => {
     if (!open) return;
@@ -365,11 +353,6 @@ function MobileDrawer({ open, onClose, teamCount }: { open: boolean; onClose: ()
             >
               <Icon className="h-4 w-4 shrink-0" />
               {label}
-              {to === "/team" && teamCount > 0 && (
-                <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
-                  {teamCount}
-                </span>
-              )}
             </NavLink>
           ))}
         </nav>
@@ -550,7 +533,7 @@ export function App() {
 
         {/* ── Body (rail + content) ── */}
         <div className="flex flex-1 min-h-0">
-          <IconRail teamCount={team.length} />
+          <IconRail />
 
           <main className={cn(
             "flex-1 min-h-0 overflow-auto container !px-0 pb-3 sm:pb-6 flex flex-col",
@@ -578,7 +561,7 @@ export function App() {
         </div>
 
         {/* ── Overlays ── */}
-        <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} teamCount={team.length} />
+        <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
         {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
         {showSignIn && <SignInModal onClose={() => setShowSignIn(false)} />}
         {showAccountSettings && user && (
