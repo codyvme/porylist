@@ -348,14 +348,8 @@ function BadgesTab({
     onUpdate({ ...playthrough, earnedBadges: next, updatedAt: Date.now() });
   };
 
-  const label = TRIAL_GAME_GROUPS.has(group) ? "trials" : "badges";
-
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm text-muted-foreground">
-        {earned.size} / {badges.length} {label} earned
-      </p>
-
       <div className={cn(
         "grid gap-3",
         badges.length <= 8 ? "grid-cols-4 sm:grid-cols-8" : "grid-cols-3 sm:grid-cols-4",
@@ -613,7 +607,7 @@ function PlaythroughDetail({
           </div>
 
           {tab === "badges" && (
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto pt-3">
               <BadgesTab playthrough={playthrough} onUpdate={onUpdate} />
             </div>
           )}
