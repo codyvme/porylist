@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronLeft, ChevronRight, Loader2, Sparkles, Volume2, X } from "lucide-react";
 
@@ -480,9 +480,8 @@ function MoveTable({ moves, moveDetailsMap, showLevel, machineNumberMap, eggPare
             const effect = detail ? moveDescription(detail, versionGroups) : "";
             const machineNum = machineNumberMap?.[move.name];
             return (
-              <>
+              <Fragment key={move.name}>
                 <tr
-                  key={move.name}
                   className="cursor-pointer hover:bg-muted/30"
                   onClick={() => onToggleExpand(move.name)}
                 >
@@ -602,7 +601,7 @@ function MoveTable({ moves, moveDetailsMap, showLevel, machineNumberMap, eggPare
                     </td>
                   </tr>
                 )}
-              </>
+              </Fragment>
             );
           })}
         </tbody>
@@ -1427,7 +1426,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                             ) : (
                               <button
                                 key={node.speciesName}
-                                className="flex flex-col items-center gap-1 rounded-lg border bg-muted/30 px-3 py-2 text-center transition-colors hover:bg-muted/60 focus:outline-none min-w-[80px]"
+                                className="flex flex-col items-center gap-1 rounded-lg border bg-muted/30 px-3 py-2 text-center transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-w-[80px]"
                                 onClick={() => onNavigate(node.speciesName)}
                               >
                                 <img

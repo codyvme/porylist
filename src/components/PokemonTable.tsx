@@ -466,9 +466,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
       );
     }
     if (selectedTypes.size > 0) {
-      result = result.filter((r) =>
-        [...selectedTypes].every((t) => r.types.includes(t)),
-      );
+      result = result.filter((r) => r.types.some((t) => selectedTypes.has(t)));
     }
     if ((showLegendary || showMythical || showBaby) && speciesMap != null) {
       result = result.filter((r) =>
@@ -505,6 +503,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
 
 
   const showRegional = false;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TanStack ColumnDef is invariant in value type; `any` is required for mixed-type column arrays
   const columns = useMemo<ColumnDef<Row, any>[]>(() => {
     const spriteColumn = columnHelper.accessor("sprite", {
       header: () => null,
@@ -532,7 +531,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
         return (
           <div className="flex items-center gap-2">
             <button
-              className="text-left font-medium hover:underline focus:outline-none"
+              className="rounded-sm text-left font-medium hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               onClick={() => openModalRef.current(name)}
             >
               {formatPokemonName(getValue())}
@@ -702,7 +701,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
       captureRateCol,
       eggGroupsCol,
     ];
-  }, [isGen1, showRegional, selectedGame, toggleExpanded, gameProp]);
+  }, [isGen1, showRegional, selectedGame, toggleExpanded]);
 
   const [sorting, setSorting] = useState<SortingState>([]);
 
@@ -777,7 +776,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
       showEggGroups ? "160px" : "",
     ].filter(Boolean).join(" ");
     return `32px 72px 80px minmax(150px, 1fr) 160px ${statPart}${extraParts}`.trim();
-  }, [isGen1, columnVisibility, gameProp]);
+  }, [isGen1, columnVisibility]);
 
   const table = useReactTable({
     data,
@@ -1173,7 +1172,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
                       <div className="h-4 w-32 animate-pulse rounded bg-muted" />
                     ) : (
                       <button
-                        className="text-left font-medium text-muted-foreground hover:underline focus:outline-none"
+                        className="rounded-sm text-left font-medium text-muted-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         onClick={() => openModal(formName)}
                       >
                         {name}

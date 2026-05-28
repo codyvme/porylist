@@ -291,7 +291,7 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <button
-                    className="flex-1 min-w-0 truncate text-left font-medium text-sm hover:underline focus:outline-none"
+                    className="flex-1 min-w-0 truncate text-left font-medium text-sm hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-sm"
                     onClick={() => onOpen(enc.name)}
                   >
                     {formatPokemonName(enc.name)}
@@ -483,7 +483,7 @@ function MissingModal({ title, missing, spriteVersion, onOpen, onToggleCaught, c
                       onError={(e) => { const img = e.currentTarget; img.onerror = null; img.src = spriteUrl(p.id, undefined); }}
                     />
                     <button
-                      className="text-xs font-medium leading-tight hover:underline focus:outline-none"
+                      className="rounded-sm text-xs font-medium leading-tight hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       onClick={() => onOpen(p.name)}
                     >
                       {formatPokemonName(p.name)}

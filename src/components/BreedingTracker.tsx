@@ -1253,6 +1253,7 @@ export function BreedingTracker({ user }: { user: User | null }) {
   const [showArchived, setShowArchived] = useState(false);
   const [projectsCollapsed, setProjectsCollapsed] = useState(false);
   const [focusedIdx, setFocusedIdx] = useState(-1);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const didSyncRef = useRef<string | null>(null);
   const cardRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
 
@@ -1313,24 +1314,32 @@ export function BreedingTracker({ user }: { user: User | null }) {
     [projects, persist],
   );
 
-  const handleDelete = useCallback(
-    (projectId: string) => {
-      if (!window.confirm("Permanently delete this project? This cannot be undone.")) return;
-      const next = projects.filter((p) => p.id !== projectId);
-      persist(next, undefined, projectId);
-      setSelectedId(null);
-    },
-    [projects, persist],
-  );
+  const handleDelete = useCallback((projectId: string) => {
+    setPendingDeleteId(projectId);
+  }, []);
+
+  const confirmDelete = useCallback(() => {
+    if (!pendingDeleteId) return;
+    const next = projects.filter((p) => p.id !== pendingDeleteId);
+    persist(next, undefined, pendingDeleteId);
+    setSelectedId(null);
+    setPendingDeleteId(null);
+  }, [pendingDeleteId, projects, persist]);
+
+  const pendingDeleteProject = pendingDeleteId
+    ? projects.find((p) => p.id === pendingDeleteId) ?? null
+    : null;
 
   const selected = projects.find((p) => p.id === selectedId) ?? null;
-  const active = projects.filter((p) => p.status === "active");
-  const archived = projects.filter((p) => p.status !== "active");
-  const visibleProjects = useMemo(
-    () => (showArchived ? [...active, ...archived] : active),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [active.length, archived.length, showArchived],
-  );
+  const { active, archived, visibleProjects } = useMemo(() => {
+    const active = projects.filter((p) => p.status === "active");
+    const archived = projects.filter((p) => p.status !== "active");
+    return {
+      active,
+      archived,
+      visibleProjects: showArchived ? [...active, ...archived] : active,
+    };
+  }, [projects, showArchived]);
 
   // Reset focus when the list changes size
   useEffect(() => { setFocusedIdx(-1); }, [visibleProjects.length]);
@@ -1510,6 +1519,67 @@ export function BreedingTracker({ user }: { user: User | null }) {
           </div>
         )}
       </div>
+      </div>
+      {pendingDeleteProject && (
+        <ConfirmDeleteModal
+          projectName={pendingDeleteProject.name}
+          onConfirm={confirmDelete}
+          onCancel={() => setPendingDeleteId(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+function ConfirmDeleteModal({
+  projectName,
+  onConfirm,
+  onCancel,
+}: {
+  projectName: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onCancel();
+      else if (e.key === "Enter") onConfirm();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onCancel, onConfirm]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+      onClick={onCancel}
+    >
+      <div
+        className="relative w-full max-w-sm rounded-xl bg-background p-6 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirm-delete-title"
+      >
+        <h2 id="confirm-delete-title" className="mb-2 text-lg font-semibold">Delete project?</h2>
+        <p className="mb-5 text-sm text-muted-foreground">
+          Permanently delete <strong className="text-foreground">{projectName}</strong>? This cannot be undone.
+        </p>
+        <div className="flex justify-end gap-2">
+          <button
+            onClick={onCancel}
+            className="rounded-md border px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted"
+            autoFocus
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="rounded-md bg-destructive px-3 py-1.5 text-sm font-medium text-destructive-foreground hover:opacity-90"
+          >
+            Delete
+          </button>
+        </div>
       </div>
     </div>
   );

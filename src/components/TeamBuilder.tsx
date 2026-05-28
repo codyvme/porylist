@@ -90,7 +90,6 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
       if (!pkmn) return { name, types: [] as string[], id: 0, ready: false };
       return { name, types: typesForGeneration(pkmn, undefined), id: pkmn.id, ready: true };
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [team, p0.data, p1.data, p2.data, p3.data, p4.data, p5.data]);
 
   const defensiveRows = useMemo(
