@@ -5,7 +5,7 @@ import {
   deletePlaythrough,
   type User,
 } from "@/lib/supabase";
-import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Circle, Pencil, Plus, Settings, Skull, Trash2, Trophy } from "lucide-react";
+import { Archive, ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Circle, Pencil, Plus, RotateCcw, Settings, Skull, Trash2, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GAMES_BY_VALUE, type GameOption } from "@/lib/games";
 import { Select } from "@/components/ui/select";
@@ -518,12 +518,9 @@ function PlaythroughDetail({
               <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">Archived</span>
             )}
           </div>
-          {(playthrough.nuzlocke.enabled || playthrough.caught.length > 0) && (
+          {playthrough.nuzlocke.enabled && (
             <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
-              {playthrough.nuzlocke.enabled && (
-                <span className="flex items-center gap-1 text-red-500 dark:text-red-400"><Skull className="h-3 w-3" />Nuzlocke</span>
-              )}
-              {playthrough.caught.length > 0 && <span>{playthrough.caught.length} caught</span>}
+              <span className="flex items-center gap-1 text-red-500 dark:text-red-400"><Skull className="h-3 w-3" />Nuzlocke</span>
             </div>
           )}
         </div>
@@ -545,6 +542,7 @@ function PlaythroughDetail({
                 </button>
               )}
               <button onClick={() => { handleArchive(); setMenuOpen(false); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:bg-muted">
+                {playthrough.status === "active" ? <Archive className="h-3.5 w-3.5" /> : <RotateCcw className="h-3.5 w-3.5" />}
                 {playthrough.status === "active" ? "Archive" : "Restore"}
               </button>
               <button onClick={() => { setIsEditing(true); setMenuOpen(false); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:bg-muted">
@@ -598,9 +596,9 @@ function PlaythroughDetail({
           <div className="flex gap-1 shrink-0">
             <button className={tabCls("pokedex")} onClick={() => setTab("pokedex")}>
               Pokédex
-              {playthrough.caught.length > 0 && (
+              {playthrough.caught.length > 0 && game && (
                 <span className="ml-1.5 rounded-full bg-muted px-1.5 text-xs">
-                  {playthrough.caught.length}
+                  {playthrough.caught.length}/{game.genMax}
                 </span>
               )}
             </button>
