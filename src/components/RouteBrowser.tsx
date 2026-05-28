@@ -264,12 +264,12 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
         {sorted.map((enc) => {
           const isCaught = caughtList.includes(enc.name);
           return (
-            <div key={`${enc.id}-${method}`} className="flex items-start gap-2 rounded-md px-2 py-0.5 hover:bg-muted/50">
+            <div key={`${enc.id}-${method}`} className="flex items-start sm:items-center gap-2 rounded-md px-2 py-0.5 hover:bg-muted/50">
               {game && (
                 <button
                   onClick={() => onToggleCaught(enc.name, caughtKey)}
                   className={cn(
-                    "flex flex-shrink-0 items-center justify-center rounded-full p-1.5 mt-0.5 transition-colors",
+                    "flex flex-shrink-0 items-center justify-center rounded-full p-1.5 mt-0.5 sm:mt-0 transition-colors",
                     isCaught ? "text-red-500 hover:text-red-400" : "text-muted-foreground/30 hover:text-muted-foreground",
                   )}
                   aria-label={isCaught ? `Mark ${enc.name} as not caught` : `Mark ${enc.name} as caught`}
