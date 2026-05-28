@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { ArrowLeft, ChevronDown, ChevronLeft, ChevronRight, Dna, Plus, Search, Star, Trash2, Trophy, X } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronLeft, ChevronRight, Dna, Pencil, Plus, RotateCcw, Search, Settings, Archive, Star, Trash2, Trophy, X } from "lucide-react";
 import { Select } from "@/components/ui/select";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { cn, formatPokemonName } from "@/lib/utils";
@@ -1070,7 +1070,19 @@ function ProjectDetail({
   onEdit: () => void;
 }) {
   const [tab, setTab] = useState<DetailTab>("plan");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const [eggData, setEggData] = useState<Record<string, { n: string; p: string; i: number; g: string[]; l: Record<string, number> }> | null>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node))
+        setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menuOpen]);
 
   useEffect(() => {
     import("../data/egg-parents.json").then((m) => setEggData(m.default as typeof eggData));
@@ -1179,28 +1191,29 @@ function ProjectDetail({
           )}
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="relative shrink-0 self-start" ref={menuRef}>
           <button
-            onClick={onEdit}
-            className="rounded-md px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted"
+            onClick={() => setMenuOpen((v) => !v)}
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+            aria-label="Project settings"
           >
-            Edit
+            <Settings className="h-4 w-4" />
           </button>
-          <button
-            onClick={handleArchive}
-            className="rounded-md px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted"
-          >
-            {project.status === "active" ? "Archive" : "Restore"}
-          </button>
-          {project.status !== "active" && (
-            <button
-              onClick={onDelete}
-              className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-              title="Delete project"
-              aria-label="Delete project"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </button>
+          {menuOpen && (
+            <div className="absolute right-0 top-full z-50 mt-1 w-44 overflow-hidden rounded-lg border bg-background shadow-lg">
+              <button onClick={() => { onEdit(); setMenuOpen(false); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:bg-muted">
+                <Pencil className="h-3.5 w-3.5" />Edit
+              </button>
+              <button onClick={() => { handleArchive(); setMenuOpen(false); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:bg-muted">
+                {project.status === "active" ? <Archive className="h-3.5 w-3.5" /> : <RotateCcw className="h-3.5 w-3.5" />}
+                {project.status === "active" ? "Archive" : "Restore"}
+              </button>
+              {project.status !== "active" && (
+                <button onClick={() => { onDelete(); setMenuOpen(false); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/10">
+                  <Trash2 className="h-3.5 w-3.5" />Delete
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>

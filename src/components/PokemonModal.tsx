@@ -1045,8 +1045,6 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
         <div
           className="relative z-10 w-full max-w-4xl rounded-xl border bg-background overflow-hidden"
           style={types[0] ? {
-            borderTopColor: TYPE_COLORS[types[0]],
-            borderTopWidth: 4,
             boxShadow: `0 0 0 1px ${TYPE_COLORS[types[0]]}30, 0 25px 60px ${TYPE_COLORS[types[0]]}30, 0 8px 24px rgba(0,0,0,0.4)`,
           } : { boxShadow: "0 25px 60px rgba(0,0,0,0.4)" }}
         >
