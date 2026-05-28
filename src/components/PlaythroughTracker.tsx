@@ -442,7 +442,7 @@ function PokedexTab({
   );
 
   return (
-    <div className="flex flex-1 min-h-0 flex-col -mx-6 -mt-1 sm:mt-0">
+    <div className="flex flex-col -mx-6 -mt-1 sm:mt-0 sm:flex-1 sm:min-h-0">
       <RouteBrowser
         caught={caughtForBrowser}
         onToggleCaught={handleToggleCaught}
@@ -535,7 +535,7 @@ function PlaythroughDetail({
   );
 
   return (
-    <div className="flex flex-1 flex-col gap-2 sm:gap-4 min-h-0">
+    <div className="flex flex-1 flex-col gap-2 sm:gap-4 sm:min-h-0">
       {/* Header */}
       <div className="flex items-center gap-2 shrink-0">
         {/* Back button — mobile only */}
@@ -775,10 +775,10 @@ export function PlaythroughTracker({
   const showDetail = selected || isCreating;
 
   return (
-    <div className="flex h-full flex-col px-6">
+    <div className="flex flex-col px-6 sm:h-full">
       <h1 className={cn("shrink-0 text-xl font-semibold border-b border-border py-3 -mx-6 px-6", showDetail && "hidden sm:block")}>Playthroughs</h1>
 
-      <div className="flex flex-1 min-h-0 overflow-hidden">
+      <div className="flex flex-1 sm:min-h-0 sm:overflow-hidden">
         {/* Left panel */}
         <div
           className={cn(
@@ -857,7 +857,7 @@ export function PlaythroughTracker({
         {/* Right panel */}
         <div
           className={cn(
-            "flex flex-1 flex-col overflow-y-auto overflow-x-hidden pt-2 pb-3 sm:pt-3 sm:pb-6",
+            "flex flex-1 flex-col sm:overflow-y-auto overflow-x-hidden pt-2 pb-3 sm:pt-3 sm:pb-6",
             runsCollapsed ? "pl-2 sm:pl-4" : "pl-0 sm:pl-6",
             !showDetail && "hidden sm:flex",
           )}

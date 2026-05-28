@@ -253,12 +253,12 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
         {sorted.map((enc) => {
           const isCaught = caughtList.includes(enc.name);
           return (
-            <div key={`${enc.id}-${method}`} className="flex items-center gap-2 rounded-md px-2 py-0.5 hover:bg-muted/50">
+            <div key={`${enc.id}-${method}`} className="flex items-start gap-2 rounded-md px-2 py-0.5 hover:bg-muted/50">
               {game && (
                 <button
                   onClick={() => onToggleCaught(enc.name, caughtKey)}
                   className={cn(
-                    "flex flex-shrink-0 items-center justify-center rounded-full p-1.5 transition-colors",
+                    "flex flex-shrink-0 items-center justify-center rounded-full p-1.5 mt-0.5 transition-colors",
                     isCaught ? "text-red-500 hover:text-red-400" : "text-muted-foreground/30 hover:text-muted-foreground",
                   )}
                   aria-label={isCaught ? `Mark ${enc.name} as not caught` : `Mark ${enc.name} as caught`}
@@ -278,35 +278,37 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
                 }}
               />
               <div className="flex-1 min-w-0">
-                <button
-                  className="block truncate text-left font-medium text-sm hover:underline focus:outline-none max-w-full"
-                  onClick={() => onOpen(enc.name)}
-                >
-                  {formatPokemonName(enc.name)}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    className="flex-1 min-w-0 truncate text-left font-medium text-sm hover:underline focus:outline-none"
+                    onClick={() => onOpen(enc.name)}
+                  >
+                    {formatPokemonName(enc.name)}
+                  </button>
+                  <span className="flex-shrink-0 text-xs text-muted-foreground tabular-nums whitespace-nowrap">
+                    {enc.minLevel === enc.maxLevel ? `Lv ${enc.minLevel}` : `Lv ${enc.minLevel}–${enc.maxLevel}`}
+                  </span>
+                </div>
                 {enc.heldItems?.length > 0 && (
                   <p className="truncate text-xs text-muted-foreground">
                     🎒 {enc.heldItems.map((h) => `${formatItemName(h.item)} (${h.rarity}%)`).join(", ")}
                   </p>
                 )}
+                {enc.timeSlots ? (
+                  <span className="flex items-center gap-1 text-xs tabular-nums text-muted-foreground">
+                    {enc.timeSlots.map(({ timeOfDay, chance }) => (
+                      <Tooltip key={timeOfDay} content={timeOfDay.charAt(0).toUpperCase() + timeOfDay.slice(1)}>
+                        <span className="flex items-center gap-0.5 cursor-default">
+                          <span>{TIME_ICON[timeOfDay]}</span>
+                          <span>{chance}%</span>
+                        </span>
+                      </Tooltip>
+                    ))}
+                  </span>
+                ) : (
+                  <span className="text-xs tabular-nums text-muted-foreground">{enc.chance}%</span>
+                )}
               </div>
-              <span className="flex-shrink-0 text-xs text-muted-foreground tabular-nums whitespace-nowrap">
-                {enc.minLevel === enc.maxLevel ? `Lv ${enc.minLevel}` : `Lv ${enc.minLevel}–${enc.maxLevel}`}
-              </span>
-              {enc.timeSlots ? (
-                <span className="hidden sm:flex flex-shrink-0 items-center gap-1 text-xs tabular-nums text-muted-foreground">
-                  {enc.timeSlots.map(({ timeOfDay, chance }) => (
-                    <Tooltip key={timeOfDay} content={timeOfDay.charAt(0).toUpperCase() + timeOfDay.slice(1)}>
-                      <span className="flex items-center gap-0.5 cursor-default">
-                        <span>{TIME_ICON[timeOfDay]}</span>
-                        <span>{chance}%</span>
-                      </span>
-                    </Tooltip>
-                  ))}
-                </span>
-              ) : (
-                <span className="hidden sm:inline flex-shrink-0 text-xs tabular-nums text-muted-foreground">{enc.chance}%</span>
-              )}
             </div>
           );
         })}
@@ -735,7 +737,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
   }, [pokemonListQuery.data, selectedGame, caughtKey, caught]);
 
   return (
-    <div className={cn("flex h-full flex-col gap-4", embedded ? "px-6" : "px-6")}>
+    <div className={cn("flex flex-col gap-4 px-6", embedded ? "sm:h-full" : "h-full")}>
       {!embedded && <h1 className="shrink-0 text-xl font-semibold border-b border-border py-3 -mx-6 px-6">Catch Tracker</h1>}
       {/* Controls row */}
       <div className="flex flex-wrap items-center gap-4">
@@ -778,7 +780,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
       {game && GAMES_WITH_ROUTES.has(game) && (
         embedded ? (
           /* Compact embedded layout — dropdown top bar + full-width encounter panel */
-          <div className="flex flex-col flex-1 min-h-0 overflow-hidden rounded-md border">
+          <div className="flex flex-col sm:flex-1 sm:min-h-0 sm:overflow-hidden rounded-md border">
             {/* Compact top bar: mode toggle + location select or Pokémon search */}
             <div className="shrink-0 border-b px-2 py-2 space-y-2">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -917,7 +919,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
             </div>
 
             {/* Encounter panel — full width */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="sm:flex-1 sm:overflow-y-auto">
               {routeDataQuery.isLoading && (
                 <div className="space-y-2 p-4">
                   {Array.from({ length: 6 }).map((_, i) => (
