@@ -368,15 +368,26 @@ function BadgesTab({
                   : "border-border text-muted-foreground hover:border-primary/40 hover:bg-muted/50",
               )}
             >
-              <div className={cn(
-                "flex h-8 w-8 items-center justify-center rounded-full border-2",
-                isEarned ? "border-primary bg-primary text-primary-foreground" : "border-muted-foreground/30",
-              )}>
-                {isEarned
-                  ? <CheckCircle2 className="h-5 w-5" />
-                  : <Circle className="h-4 w-4 opacity-40" />
-                }
-              </div>
+              {badge.image ? (
+                <img
+                  src={badge.image}
+                  alt={badge.name}
+                  className={cn(
+                    "h-10 w-10 object-contain",
+                    !isEarned && "opacity-30 grayscale",
+                  )}
+                />
+              ) : (
+                <div className={cn(
+                  "flex h-8 w-8 items-center justify-center rounded-full border-2",
+                  isEarned ? "border-primary bg-primary text-primary-foreground" : "border-muted-foreground/30",
+                )}>
+                  {isEarned
+                    ? <CheckCircle2 className="h-5 w-5" />
+                    : <Circle className="h-4 w-4 opacity-40" />
+                  }
+                </div>
+              )}
               <span className="text-xs font-medium leading-tight">{badge.name}</span>
               {badge.leader && (
                 <span className="text-[10px] leading-tight opacity-60 line-clamp-1">{badge.leader}</span>
