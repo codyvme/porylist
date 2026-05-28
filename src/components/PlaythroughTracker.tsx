@@ -9,6 +9,7 @@ import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Circle, MapPin, Mor
 import { cn } from "@/lib/utils";
 import { GAMES_BY_VALUE, type GameOption } from "@/lib/games";
 import { Select } from "@/components/ui/select";
+import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { RouteBrowser } from "@/components/RouteBrowser";
 import {
   GAME_BADGES,
@@ -692,6 +693,7 @@ export function PlaythroughTracker({
   const [isCreating, setIsCreating] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
   const [runsCollapsed, setRunsCollapsed] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const didSyncRef = useRef<string | null>(null);
 
   // On sign-in: pull playthroughs from DB and merge (newer updatedAt wins)
@@ -760,14 +762,20 @@ export function PlaythroughTracker({
     [playthroughs, persist],
   );
 
-  const handleDelete = useCallback(
-    (id: string) => {
-      if (!window.confirm("Permanently delete this playthrough? This cannot be undone.")) return;
-      persist(playthroughs.filter((p) => p.id !== id), undefined, id);
-      setSelectedId(null);
-    },
-    [playthroughs, persist],
-  );
+  const handleDelete = useCallback((id: string) => {
+    setPendingDeleteId(id);
+  }, []);
+
+  const confirmDelete = useCallback(() => {
+    if (!pendingDeleteId) return;
+    persist(playthroughs.filter((p) => p.id !== pendingDeleteId), undefined, pendingDeleteId);
+    setSelectedId(null);
+    setPendingDeleteId(null);
+  }, [pendingDeleteId, playthroughs, persist]);
+
+  const pendingDeletePlaythrough = pendingDeleteId
+    ? playthroughs.find((p) => p.id === pendingDeleteId) ?? null
+    : null;
 
   const active = playthroughs.filter((p) => p.status === "active");
   const archived = playthroughs.filter((p) => p.status !== "active");
@@ -892,6 +900,14 @@ export function PlaythroughTracker({
           )}
         </div>
       </div>
+      {pendingDeletePlaythrough && (
+        <ConfirmDeleteModal
+          title="Delete playthrough?"
+          subject={pendingDeletePlaythrough.name}
+          onConfirm={confirmDelete}
+          onCancel={() => setPendingDeleteId(null)}
+        />
+      )}
     </div>
   );
 }
