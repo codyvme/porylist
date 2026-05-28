@@ -766,9 +766,9 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
   return (
     <div className={cn("flex flex-col gap-4 px-6", embedded ? "sm:h-full" : "h-full")}>
       {!embedded && <h1 className="shrink-0 text-xl font-semibold border-b border-border py-3 -mx-6 px-6">Catch Tracker</h1>}
-      {/* Controls row */}
-      <div className="flex flex-wrap items-center gap-4">
-        {actualVersions.length > 1 && !lockedVersion && (
+      {/* Controls row — only rendered when there's something to show */}
+      {actualVersions.length > 1 && !lockedVersion && (
+        <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-1.5">
             <span className="text-xs text-muted-foreground font-medium">Version:</span>
             <div className="flex rounded-md border overflow-hidden text-xs font-medium">
@@ -787,8 +787,8 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
               ))}
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* No data notice for gen 8+ */}
       {game && !GAMES_WITH_ROUTES.has(game) && (
