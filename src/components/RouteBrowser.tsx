@@ -157,6 +157,13 @@ interface MergedEncounter {
 }
 
 function mergeEncountersByPokemon(encounters: RouteEncounter[]): MergedEncounter[] {
+  // All distinct time-of-day slots present anywhere in this encounter group.
+  // Used to decide whether a Pokémon covers "all" slots (→ suppress icons) or
+  // only a subset (→ show specific slot icons so the player knows it's partial).
+  const groupTimeSlots = new Set(
+    encounters.map((e) => e.timeOfDay).filter((t): t is string => !!t),
+  );
+
   const byId = new Map<number, RouteEncounter[]>();
   for (const enc of encounters) {
     if (!byId.has(enc.id)) byId.set(enc.id, []);
@@ -187,23 +194,27 @@ function mergeEncountersByPokemon(encounters: RouteEncounter[]): MergedEncounter
     const sortChance = Math.max(...encs.map((e) => e.chance));
 
     if (allSame) {
-      // If every entry shares the same non-empty timeOfDay, preserve it as a
-      // single-slot display (e.g. Hoothoot night-only → shows 🌙 85%).
-      // If they span multiple different time slots at equal rates, suppress the
-      // icons (e.g. Pidgey morning+day at 55% each → just show 55%).
-      const sharedTime = first.timeOfDay && encs.every((e) => e.timeOfDay === first.timeOfDay)
-        ? first.timeOfDay
-        : null;
-      merged.push({
-        id,
-        name: first.name,
-        heldItems,
-        minLevel,
-        maxLevel,
-        sortChance,
-        timeSlots: sharedTime ? [{ timeOfDay: sharedTime, chance: first.chance }] : null,
-        chance: first.chance,
-      });
+      const encTimeSlots = new Set(
+        encs.map((e) => e.timeOfDay).filter((t): t is string => !!t),
+      );
+
+      if (encTimeSlots.size === 0) {
+        // No time-of-day data — show plain %.
+        merged.push({ id, name: first.name, heldItems, minLevel, maxLevel, sortChance, timeSlots: null, chance: first.chance });
+      } else if (encTimeSlots.size === 1) {
+        // Single slot only (e.g. Hoothoot night-only → 🌙 85%).
+        merged.push({ id, name: first.name, heldItems, minLevel, maxLevel, sortChance, timeSlots: [{ timeOfDay: first.timeOfDay!, chance: first.chance }], chance: first.chance });
+      } else if (encTimeSlots.size === groupTimeSlots.size) {
+        // Covers ALL available time slots at an equal rate — suppress icons,
+        // show plain % (e.g. Pidgey morning+day+night at 55% each).
+        merged.push({ id, name: first.name, heldItems, minLevel, maxLevel, sortChance, timeSlots: null, chance: first.chance });
+      } else {
+        // Covers only SOME time slots at equal % — show specific slot icons so
+        // the player can see it's time-restricted (e.g. Hoppip morning+day only,
+        // Zubat morning+night only).
+        const timeSlots = [...encTimeSlots].map((timeOfDay) => ({ timeOfDay, chance: first.chance }));
+        merged.push({ id, name: first.name, heldItems, minLevel, maxLevel, sortChance, timeSlots, chance: first.chance });
+      }
     } else {
       const timeSlots = encs
         .filter((e) => !!e.timeOfDay)
@@ -288,14 +299,30 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
                   <span className="flex-shrink-0 text-xs text-muted-foreground tabular-nums whitespace-nowrap">
                     {enc.minLevel === enc.maxLevel ? `Lv ${enc.minLevel}` : `Lv ${enc.minLevel}–${enc.maxLevel}`}
                   </span>
+                  {/* Desktop-only: percentage inline with name+level */}
+                  {enc.timeSlots ? (
+                    <span className="hidden sm:flex flex-shrink-0 items-center gap-1 text-xs tabular-nums text-muted-foreground">
+                      {enc.timeSlots.map(({ timeOfDay, chance }) => (
+                        <Tooltip key={timeOfDay} content={timeOfDay.charAt(0).toUpperCase() + timeOfDay.slice(1)}>
+                          <span className="flex items-center gap-0.5 cursor-default">
+                            <span>{TIME_ICON[timeOfDay]}</span>
+                            <span>{chance}%</span>
+                          </span>
+                        </Tooltip>
+                      ))}
+                    </span>
+                  ) : (
+                    <span className="hidden sm:inline flex-shrink-0 text-xs tabular-nums text-muted-foreground">{enc.chance}%</span>
+                  )}
                 </div>
                 {enc.heldItems?.length > 0 && (
                   <p className="truncate text-xs text-muted-foreground">
                     🎒 {enc.heldItems.map((h) => `${formatItemName(h.item)} (${h.rarity}%)`).join(", ")}
                   </p>
                 )}
+                {/* Mobile-only: percentage below name */}
                 {enc.timeSlots ? (
-                  <span className="flex items-center gap-1 text-xs tabular-nums text-muted-foreground">
+                  <span className="flex sm:hidden items-center gap-1 text-xs tabular-nums text-muted-foreground">
                     {enc.timeSlots.map(({ timeOfDay, chance }) => (
                       <Tooltip key={timeOfDay} content={timeOfDay.charAt(0).toUpperCase() + timeOfDay.slice(1)}>
                         <span className="flex items-center gap-0.5 cursor-default">
@@ -306,7 +333,7 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
                     ))}
                   </span>
                 ) : (
-                  <span className="text-xs tabular-nums text-muted-foreground">{enc.chance}%</span>
+                  <span className="sm:hidden text-xs tabular-nums text-muted-foreground">{enc.chance}%</span>
                 )}
               </div>
             </div>
