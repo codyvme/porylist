@@ -50,91 +50,91 @@ export interface Playthrough {
 
 // ─── Badge data per game ──────────────────────────────────────────────────────
 
-// Shorthand helpers for badge image URLs
-const B = "https://archives.bulbagarden.net/media/upload";
+// Badge images are committed to public/images/badges/ to avoid CORS/hotlink issues
+const B = "/images/badges";
 // Kanto badge images (shared across RBY, FRLG, LGPE, and Kanto half of GSC/HGSS)
 const KANTO: Record<string, string> = {
-  boulder: `${B}/d/dd/Boulder_Badge.png`,
-  cascade: `${B}/9/9c/Cascade_Badge.png`,
-  thunder: `${B}/a/a6/Thunder_Badge.png`,
-  rainbow: `${B}/b/b5/Rainbow_Badge.png`,
-  soul:    `${B}/7/7d/Soul_Badge.png`,
-  marsh:   `${B}/6/6b/Marsh_Badge.png`,
-  volcano: `${B}/1/12/Volcano_Badge.png`,
-  earth:   `${B}/7/78/Earth_Badge.png`,
+  boulder: `${B}/Boulder_Badge.png`,
+  cascade: `${B}/Cascade_Badge.png`,
+  thunder: `${B}/Thunder_Badge.png`,
+  rainbow: `${B}/Rainbow_Badge.png`,
+  soul:    `${B}/Soul_Badge.png`,
+  marsh:   `${B}/Marsh_Badge.png`,
+  volcano: `${B}/Volcano_Badge.png`,
+  earth:   `${B}/Earth_Badge.png`,
 };
 // Johto badge images
 const JOHTO: Record<string, string> = {
-  zephyr:  `${B}/4/4a/Zephyr_Badge.png`,
-  hive:    `${B}/0/08/Hive_Badge.png`,
-  plain:   `${B}/a/a7/Plain_Badge.png`,
-  fog:     `${B}/4/48/Fog_Badge.png`,
-  storm:   `${B}/b/b9/Storm_Badge.png`,
-  mineral: `${B}/7/7b/Mineral_Badge.png`,
-  glacier: `${B}/e/e6/Glacier_Badge.png`,
-  rising:  `${B}/5/58/Rising_Badge.png`,
+  zephyr:  `${B}/Zephyr_Badge.png`,
+  hive:    `${B}/Hive_Badge.png`,
+  plain:   `${B}/Plain_Badge.png`,
+  fog:     `${B}/Fog_Badge.png`,
+  storm:   `${B}/Storm_Badge.png`,
+  mineral: `${B}/Mineral_Badge.png`,
+  glacier: `${B}/Glacier_Badge.png`,
+  rising:  `${B}/Rising_Badge.png`,
 };
 // Hoenn badge images
 const HOENN: Record<string, string> = {
-  stone:   `${B}/6/63/Stone_Badge.png`,
-  knuckle: `${B}/9/97/Knuckle_Badge.png`,
-  dynamo:  `${B}/3/34/Dynamo_Badge.png`,
-  heat:    `${B}/c/c4/Heat_Badge.png`,
-  balance: `${B}/6/63/Balance_Badge.png`,
-  feather: `${B}/6/62/Feather_Badge.png`,
-  mind:    `${B}/c/cc/Mind_Badge.png`,
-  rain:    `${B}/9/9b/Rain_Badge.png`,
+  stone:   `${B}/Stone_Badge.png`,
+  knuckle: `${B}/Knuckle_Badge.png`,
+  dynamo:  `${B}/Dynamo_Badge.png`,
+  heat:    `${B}/Heat_Badge.png`,
+  balance: `${B}/Balance_Badge.png`,
+  feather: `${B}/Feather_Badge.png`,
+  mind:    `${B}/Mind_Badge.png`,
+  rain:    `${B}/Rain_Badge.png`,
 };
 // Sinnoh badge images
 const SINNOH: Record<string, string> = {
-  coal:   `${B}/0/0b/Coal_Badge.png`,
-  forest: `${B}/8/8c/Forest_Badge.png`,
-  cobble: `${B}/2/27/Cobble_Badge.png`,
-  fen:    `${B}/1/13/Fen_Badge.png`,
-  relic:  `${B}/2/28/Relic_Badge.png`,
-  mine:   `${B}/f/fe/Mine_Badge.png`,
-  icicle: `${B}/0/09/Icicle_Badge.png`,
-  beacon: `${B}/0/0c/Beacon_Badge.png`,
+  coal:   `${B}/Coal_Badge.png`,
+  forest: `${B}/Forest_Badge.png`,
+  cobble: `${B}/Cobble_Badge.png`,
+  fen:    `${B}/Fen_Badge.png`,
+  relic:  `${B}/Relic_Badge.png`,
+  mine:   `${B}/Mine_Badge.png`,
+  icicle: `${B}/Icicle_Badge.png`,
+  beacon: `${B}/Beacon_Badge.png`,
 };
 // Unova badge images
 const UNOVA: Record<string, string> = {
-  trio:   `${B}/7/74/Trio_Badge.png`,
-  basic:  `${B}/8/85/Basic_Badge.png`,
-  insect: `${B}/8/8a/Insect_Badge.png`,
-  bolt:   `${B}/5/5b/Bolt_Badge.png`,
-  quake:  `${B}/2/29/Quake_Badge.png`,
-  jet:    `${B}/9/9c/Jet_Badge.png`,
-  freeze: `${B}/a/ac/Freeze_Badge.png`,
-  legend: `${B}/c/c0/Legend_Badge.png`,
-  toxic:  `${B}/3/3e/Toxic_Badge.png`,
-  wave:   `${B}/0/00/Wave_Badge.png`,
+  trio:   `${B}/Trio_Badge.png`,
+  basic:  `${B}/Basic_Badge.png`,
+  insect: `${B}/Insect_Badge.png`,
+  bolt:   `${B}/Bolt_Badge.png`,
+  quake:  `${B}/Quake_Badge.png`,
+  jet:    `${B}/Jet_Badge.png`,
+  freeze: `${B}/Freeze_Badge.png`,
+  legend: `${B}/Legend_Badge.png`,
+  toxic:  `${B}/Toxic_Badge.png`,
+  wave:   `${B}/Wave_Badge.png`,
 };
 // Kalos badge images
 const KALOS: Record<string, string> = {
-  bug:     `${B}/a/a5/Bug_Badge.png`,
-  cliff:   `${B}/3/39/Cliff_Badge.png`,
-  rumble:  `${B}/d/d4/Rumble_Badge.png`,
-  plant:   `${B}/7/7d/Plant_Badge.png`,
-  voltage: `${B}/f/fc/Voltage_Badge.png`,
-  fairy:   `${B}/d/d1/Fairy_Badge.png`,
-  psychic: `${B}/1/13/Psychic_Badge.png`,
-  iceberg: `${B}/8/84/Iceberg_Badge.png`,
+  bug:     `${B}/Bug_Badge.png`,
+  cliff:   `${B}/Cliff_Badge.png`,
+  rumble:  `${B}/Rumble_Badge.png`,
+  plant:   `${B}/Plant_Badge.png`,
+  voltage: `${B}/Voltage_Badge.png`,
+  fairy:   `${B}/Fairy_Badge.png`,
+  psychic: `${B}/Psychic_Badge.png`,
+  iceberg: `${B}/Iceberg_Badge.png`,
 };
 // Galar badge images
 const GALAR: Record<string, string> = {
-  grass:  `${B}/0/00/Grass_Badge.png`,
-  water:  `${B}/7/7a/Water_Badge.png`,
-  fire:   `${B}/c/cc/Fire_Badge.png`,
-  ghost:  `${B}/3/30/Ghost_Badge.png`,
-  fairy:  `${B}/e/e3/GalarFairy_Badge.png`,
-  rock:   `${B}/3/3e/Rock_Badge.png`,
-  dark:   `${B}/4/4d/Dark_Badge.png`,
-  dragon: `${B}/2/27/Dragon_Badge.png`,
+  grass:  `${B}/Grass_Badge.png`,
+  water:  `${B}/Water_Badge.png`,
+  fire:   `${B}/Fire_Badge.png`,
+  ghost:  `${B}/Ghost_Badge.png`,
+  fairy:  `${B}/GalarFairy_Badge.png`,
+  rock:   `${B}/Rock_Badge.png`,
+  dark:   `${B}/Dark_Badge.png`,
+  dragon: `${B}/Dragon_Badge.png`,
 };
-// Paldea badge images (only confirmed ones)
+// Paldea badge images
 const PALDEA: Record<string, string> = {
-  electric: `${B}/f/ff/SVbadge_VictoryRoad_Electric.png`,
-  normal:   `${B}/d/d6/SVbadge_VictoryRoad_Normal.png`,
+  electric: `${B}/SVbadge_VictoryRoad_Electric.png`,
+  normal:   `${B}/SVbadge_VictoryRoad_Normal.png`,
 };
 
 export const GAME_BADGES: Record<string, Badge[]> = {
