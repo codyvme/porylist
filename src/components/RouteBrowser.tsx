@@ -804,6 +804,26 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
         </div>
       )}
 
+      {/* Catch progress — shown above the location box */}
+      {game && GAMES_WITH_ROUTES.has(game) && gameProgress && (
+        <div className="flex items-center gap-x-2 gap-y-0 flex-wrap text-sm text-muted-foreground -mb-2">
+          <PokeballIcon caught={gameProgress.count > 0} size={13} />
+          <button
+            onClick={() => setMissingMode("routes")}
+            className="hover:text-foreground hover:underline transition-colors"
+          >
+            {gameProgress.count} / {gameProgress.routeTotal} catchable
+          </button>
+          <span className="text-muted-foreground/40">·</span>
+          <button
+            onClick={() => setMissingMode("dex")}
+            className="hover:text-foreground hover:underline transition-colors"
+          >
+            {gameProgress.count} / {gameProgress.dexTotal} Pokédex
+          </button>
+        </div>
+      )}
+
       {game && GAMES_WITH_ROUTES.has(game) && (
         embedded ? (
           /* Compact embedded layout — dropdown top bar + full-width encounter panel */
@@ -1242,32 +1262,13 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
         )
       )}
 
-      {/* Catch progress footer */}
-      {game && GAMES_WITH_ROUTES.has(game) && gameProgress && (
-        <div className="flex items-center gap-x-2 gap-y-0 flex-wrap text-sm text-muted-foreground">
-          <PokeballIcon caught={gameProgress.count > 0} size={13} />
-          <button
-            onClick={() => setMissingMode("routes")}
-            className="hover:text-foreground hover:underline transition-colors"
-          >
-            {gameProgress.count} / {gameProgress.routeTotal} routes
-          </button>
-          <span className="text-muted-foreground/40">·</span>
-          <button
-            onClick={() => setMissingMode("dex")}
-            className="hover:text-foreground hover:underline transition-colors"
-          >
-            {gameProgress.count} / {gameProgress.dexTotal} dex
-          </button>
-        </div>
-      )}
 
       {missingMode && (
         <MissingModal
           title={
             missingMode === "routes"
-              ? `Missing from routes — ${selectedVersion ? (VERSION_LABELS[selectedVersion] ?? selectedVersion) : selectedGame!.label}`
-              : `Missing from dex — ${selectedVersion ? (VERSION_LABELS[selectedVersion] ?? selectedVersion) : selectedGame!.label}`
+              ? `Uncaught (in routes) — ${selectedVersion ? (VERSION_LABELS[selectedVersion] ?? selectedVersion) : selectedGame!.label}`
+              : `Uncaught (full Pokédex) — ${selectedVersion ? (VERSION_LABELS[selectedVersion] ?? selectedVersion) : selectedGame!.label}`
           }
           missing={missingMode === "routes" ? missingFromRoutes : missingFromDex}
           spriteVersion={spriteVersion}

@@ -5,7 +5,7 @@ import {
   deletePlaythrough,
   type User,
 } from "@/lib/supabase";
-import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Circle, MapPin, MoreHorizontal, Pencil, Plus, Skull, Trash2, Trophy } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Circle, Pencil, Plus, Settings, Skull, Trash2, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GAMES_BY_VALUE, type GameOption } from "@/lib/games";
 import { Select } from "@/components/ui/select";
@@ -28,13 +28,6 @@ import {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function formatDate(ts: number): string {
-  return new Date(ts).toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
 
 /** Returns the public path for the cover art for an individual version slug. */
 const COVER_JPG = new Set(["diamond", "emerald", "heartgold", "pearl", "soulsilver"]);
@@ -106,9 +99,7 @@ function PlaythroughCard({
   onClick: () => void;
 }) {
   const group = VERSION_TO_GAME_GROUP[playthrough.gameValue] ?? playthrough.gameValue;
-  const badges = GAME_BADGES[group] ?? [];
-  const earned = playthrough.earnedBadges.length;
-  const total = badges.length;
+  const dexTotal = GAMES_BY_VALUE[group]?.genMax ?? 0;
   const versionLabel = VERSION_DISPLAY_LABEL[playthrough.gameValue] ?? GAMES_BY_VALUE[group]?.label ?? playthrough.gameValue;
 
   return (
@@ -143,24 +134,18 @@ function PlaythroughCard({
               <span title="Nuzlocke"><Skull className="h-3.5 w-3.5 shrink-0 text-red-500" /></span>
             )}
           </div>
-          <p className="mt-0.5 truncate text-xs text-muted-foreground">{versionLabel}</p>
-          {total > 0 && (
+          {dexTotal > 0 && (
             <div className="mt-2">
               <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
-                <span>{earned}/{total} {TRIAL_GAME_GROUPS.has(group) ? "trials" : "badges"}</span>
+                <span>{playthrough.caught.length}/{dexTotal} Pokédex</span>
               </div>
               <div className="flex h-1.5 overflow-hidden rounded-full bg-muted">
                 <div
                   className="h-full rounded-full bg-primary transition-all"
-                  style={{ width: total > 0 ? `${(earned / total) * 100}%` : "0%" }}
+                  style={{ width: `${(playthrough.caught.length / dexTotal) * 100}%` }}
                 />
               </div>
             </div>
-          )}
-          {playthrough.caught.length > 0 && (
-            <p className="mt-1.5 text-xs text-muted-foreground">
-              {playthrough.caught.length} caught
-            </p>
           )}
         </div>
       </div>
@@ -500,43 +485,21 @@ function PlaythroughDetail({
 
   const earned = playthrough.earnedBadges.length;
   const total = badges.length;
-  const badgeLabel = TRIAL_GAME_GROUPS.has(group) ? "trials" : "badges";
 
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (!mobileMenuOpen) return;
+    if (!menuOpen) return;
     const handler = (e: MouseEvent) => {
-      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target as Node))
-        setMobileMenuOpen(false);
+      if (menuRef.current && !menuRef.current.contains(e.target as Node))
+        setMenuOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
-  }, [mobileMenuOpen]);
-
-  const desktopActions = (
-    <div className="flex items-center gap-1">
-      {playthrough.status === "active" && (
-        <button onClick={handleComplete} className="rounded-md px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted" title="Mark as completed">
-          Complete
-        </button>
-      )}
-      <button onClick={handleArchive} className="rounded-md px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted">
-        {playthrough.status === "active" ? "Archive" : "Restore"}
-      </button>
-      <button onClick={() => setIsEditing(true)} className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground" title="Edit playthrough">
-        <Pencil className="h-3.5 w-3.5" />
-      </button>
-      {playthrough.status !== "active" && (
-        <button onClick={onDelete} className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive" title="Delete playthrough">
-          <Trash2 className="h-3.5 w-3.5" />
-        </button>
-      )}
-    </div>
-  );
+  }, [menuOpen]);
 
   return (
-    <div className="flex flex-1 flex-col gap-2 sm:gap-4 sm:min-h-0">
+    <div className="flex flex-1 flex-col gap-2 sm:min-h-0">
       {/* Header */}
       <div className="flex items-center gap-2 shrink-0">
         {/* Back button — mobile only */}
@@ -555,44 +518,40 @@ function PlaythroughDetail({
               <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">Archived</span>
             )}
           </div>
-          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
-            <span>{VERSION_DISPLAY_LABEL[playthrough.gameValue] ?? game?.label}</span>
-            {playthrough.nuzlocke.enabled && (
-              <span className="flex items-center gap-1 text-red-500 dark:text-red-400"><Skull className="h-3 w-3" />Nuzlocke</span>
-            )}
-            {total > 0 && <span>{earned}/{total} {badgeLabel}</span>}
-            {playthrough.caught.length > 0 && <span>{playthrough.caught.length} caught</span>}
-            <span className="hidden sm:flex items-center gap-0.5"><MapPin className="h-3 w-3" />Started {formatDate(playthrough.createdAt)}</span>
-          </div>
+          {(playthrough.nuzlocke.enabled || playthrough.caught.length > 0) && (
+            <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+              {playthrough.nuzlocke.enabled && (
+                <span className="flex items-center gap-1 text-red-500 dark:text-red-400"><Skull className="h-3 w-3" />Nuzlocke</span>
+              )}
+              {playthrough.caught.length > 0 && <span>{playthrough.caught.length} caught</span>}
+            </div>
+          )}
         </div>
 
-        {/* Desktop actions */}
-        <div className="hidden sm:flex shrink-0">{desktopActions}</div>
-
-        {/* Mobile ··· menu */}
-        <div className="relative sm:hidden shrink-0" ref={mobileMenuRef}>
+        {/* Gear menu — all screen sizes */}
+        <div className="relative shrink-0 self-start" ref={menuRef}>
           <button
-            onClick={() => setMobileMenuOpen((v) => !v)}
+            onClick={() => setMenuOpen((v) => !v)}
             className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-            aria-label="More actions"
+            aria-label="Playthrough settings"
           >
-            <MoreHorizontal className="h-4 w-4" />
+            <Settings className="h-4 w-4" />
           </button>
-          {mobileMenuOpen && (
-            <div className="absolute right-0 top-full z-50 mt-1 w-40 overflow-hidden rounded-lg border bg-background shadow-lg">
+          {menuOpen && (
+            <div className="absolute right-0 top-full z-50 mt-1 w-44 overflow-hidden rounded-lg border bg-background shadow-lg">
               {playthrough.status === "active" && (
-                <button onClick={() => { handleComplete(); setMobileMenuOpen(false); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:bg-muted">
+                <button onClick={() => { handleComplete(); setMenuOpen(false); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:bg-muted">
                   <CheckCircle2 className="h-3.5 w-3.5" />Complete
                 </button>
               )}
-              <button onClick={() => { handleArchive(); setMobileMenuOpen(false); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:bg-muted">
+              <button onClick={() => { handleArchive(); setMenuOpen(false); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:bg-muted">
                 {playthrough.status === "active" ? "Archive" : "Restore"}
               </button>
-              <button onClick={() => { setIsEditing(true); setMobileMenuOpen(false); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:bg-muted">
+              <button onClick={() => { setIsEditing(true); setMenuOpen(false); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:bg-muted">
                 <Pencil className="h-3.5 w-3.5" />Edit
               </button>
               {playthrough.status !== "active" && (
-                <button onClick={() => { onDelete(); setMobileMenuOpen(false); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/10">
+                <button onClick={() => { onDelete(); setMenuOpen(false); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/10">
                   <Trash2 className="h-3.5 w-3.5" />Delete
                 </button>
               )}
