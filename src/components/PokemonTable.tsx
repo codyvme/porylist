@@ -183,7 +183,7 @@ const typesColumn = columnHelper.accessor("types", {
           <Badge
             key={t}
             variant="default"
-            className="capitalize !rounded !px-1.5"
+            className="capitalize !px-2"
             style={typeStyle(t)}
           >
             {t}
@@ -971,7 +971,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
                     key={t}
                     onClick={() => toggleType(t)}
                     className={cn(
-                      "rounded border-0 px-2.5 py-0.5 text-xs font-semibold capitalize transition-opacity",
+                      "rounded-full border-0 px-2.5 py-0.5 text-xs font-semibold capitalize transition-opacity",
                       selectedTypes.has(t) ? "opacity-100 ring-2 ring-white/40 ring-offset-1 ring-offset-background" : "opacity-40 hover:opacity-70",
                     )}
                     style={typeStyle(t)}
@@ -1189,7 +1189,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
                           <Badge
                             key={t}
                             variant="default"
-                            className="capitalize !rounded !px-1.5"
+                            className="capitalize !px-2"
                             style={typeStyle(t)}
                           >
                             {t}

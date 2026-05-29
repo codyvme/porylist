@@ -233,7 +233,7 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
                 {sharedWeaknesses.map(({ type, count }) => (
                   <span key={type} className="flex items-center gap-1.5">
                     <span
-                      className="rounded px-2 py-0.5 text-xs font-semibold capitalize"
+                      className="rounded-full px-2 py-0.5 text-xs font-semibold capitalize"
                       style={typeStyle(type)}
                     >
                       {type}
@@ -321,7 +321,7 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
                 <span
                   key={t}
                   className={cn(
-                    "rounded px-1.5 py-0.5 text-xs font-semibold capitalize transition-opacity",
+                    "rounded-full px-2 py-0.5 text-xs font-semibold capitalize transition-opacity",
                     covered.has(t) ? "opacity-100" : "opacity-20",
                   )}
                   style={typeStyle(t)}
@@ -343,7 +343,7 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
                     {uncovered.map(t => (
                       <span
                         key={t}
-                        className="rounded px-1.5 py-0.5 text-xs font-semibold capitalize"
+                        className="rounded-full px-2 py-0.5 text-xs font-semibold capitalize"
                         style={typeStyle(t)}
                       >
                         {t}
