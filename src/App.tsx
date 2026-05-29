@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { Routes, Route, Navigate, NavLink, useNavigate, useLocation } from "react-router-dom";
+import { Routes, Route, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { persister, queryClient } from "@/lib/query-client";
 import { PokemonTable } from "@/components/PokemonTable";
@@ -12,7 +12,8 @@ import { CompareView } from "@/components/CompareView";
 import { NaturesTable } from "@/components/NaturesTable";
 import { ItemsTable } from "@/components/ItemsTable";
 import { CatchCalculator } from "@/components/CatchCalculator";
-import { CircleHelp, Crosshair, Dna, Leaf, List, LogOut, Menu, Moon, Backpack, Scale, Settings, Sparkles, Sun, Swords, Trophy, Users, X } from "lucide-react";
+import { HomePage } from "@/components/HomePage";
+import { CircleHelp, Crosshair, Dna, House, Leaf, List, LogOut, Menu, Moon, Backpack, Scale, Settings, Sparkles, Sun, Swords, Trophy, Users, X } from "lucide-react";
 import { GAMES, SPRITES_ROOT, type GameOption } from "@/lib/games";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -72,9 +73,8 @@ function AboutModal({ onClose }: { onClose: () => void }) {
         <h2 className="mb-3 text-lg font-semibold">About Porylist</h2>
         <div className="space-y-4 text-sm text-muted-foreground">
           <p>
-            Pokédex, moves, abilities, items, and natures for every game. Compare Pokémon side-by-side, build and analyze teams, track your catches, and plan breeding chains — all in one place.
+            Pokédex, moves, abilities, items, and natures for every game. Simulate catch probabilities, compare Pokémon side-by-side, build and analyze teams, track playthroughs with route encounter tables, and plan breeding chains — all in one place.
           </p>
-          <p>Sign in to sync your progress across devices.</p>
 
           <div className="flex gap-2">
             <Tooltip content="Coming soon..." className="flex flex-1 cursor-not-allowed">
@@ -251,16 +251,19 @@ function UserMenu({
 }
 
 const NAV_ITEMS = [
-  { to: "/pokedex",    label: "Pokédex",         Icon: List          },
-  { to: "/compare",    label: "Compare",          Icon: Scale         },
-  { to: "/moves",      label: "Moves",            Icon: Swords        },
-  { to: "/abilities",  label: "Abilities",        Icon: Sparkles      },
-  { to: "/natures",    label: "Natures",          Icon: Leaf          },
-  { to: "/items",      label: "Items",            Icon: Backpack      },
-  { to: "/catch",      label: "Catch Calculator", Icon: Crosshair     },
-  { to: "/routes",     label: "Playthroughs",     Icon: Trophy        },
-  { to: "/breeding",   label: "Breeding Tracker", Icon: Dna           },
-  { to: "/team",       label: "Team Builder",     Icon: Users         },
+  { to: "/",           label: "Home",              Icon: House         },
+  null, // separator
+  { to: "/abilities",  label: "Abilities",         Icon: Sparkles      },
+  { to: "/items",      label: "Items",             Icon: Backpack      },
+  { to: "/moves",      label: "Moves",             Icon: Swords        },
+  { to: "/natures",    label: "Natures",           Icon: Leaf          },
+  { to: "/pokedex",    label: "Pokédex",           Icon: List          },
+  null, // separator
+  { to: "/breeding",   label: "Breeding Tracker",  Icon: Dna           },
+  { to: "/catch",      label: "Catch Calculator",  Icon: Crosshair     },
+  { to: "/compare",    label: "Compare",           Icon: Scale         },
+  { to: "/routes",     label: "Playthroughs",      Icon: Trophy        },
+  { to: "/team",       label: "Team Builder",      Icon: Users         },
 ] as const;
 
 // ─── Icon Rail (desktop) ──────────────────────────────────────────────────────
@@ -278,24 +281,29 @@ function IconRail() {
 
   return (
     <aside className="hidden sm:flex flex-col w-14 lg:w-44 shrink-0 border-r border-border bg-background dark:border-[hsl(193_60%_18%/0.6)] dark:bg-[hsl(193_90%_9%)] py-2">
-      {NAV_ITEMS.map(({ to, label, Icon }) => (
-        <Tooltip key={to} content={label} side="right" className="block w-full" disabled={navExpanded}>
-          <NavLink
-            to={to}
-            className={({ isActive }) => cn(
-              "flex h-11 w-full items-center border-l-2 px-3 text-sm transition-colors",
-              "justify-center lg:justify-start gap-0 lg:gap-3 lg:px-4",
-              isActive
-                ? "border-[hsl(var(--porygon-red))] bg-primary/10 font-semibold text-primary dark:bg-white/10 dark:text-white"
-                : "border-transparent font-medium text-muted-foreground hover:bg-muted hover:text-foreground dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-slate-200",
-            )}
-            aria-label={label}
-          >
-            <Icon className="h-4 w-4 shrink-0" />
-            <span className="hidden lg:block whitespace-nowrap">{label}</span>
-          </NavLink>
-        </Tooltip>
-      ))}
+      {NAV_ITEMS.map((item, i) =>
+        item === null ? (
+          <div key={`sep-${i}`} className="my-1.5 border-t border-border dark:border-[hsl(193_60%_18%/0.6)]" />
+        ) : (
+          <Tooltip key={item.to} content={item.label} side="right" className="block w-full" disabled={navExpanded}>
+            <NavLink
+              to={item.to}
+              end={item.to === "/"}
+              className={({ isActive }) => cn(
+                "flex h-11 w-full items-center border-l-2 px-3 text-sm transition-colors",
+                "justify-center lg:justify-start gap-0 lg:gap-3 lg:px-4",
+                isActive
+                  ? "border-[hsl(var(--porygon-red))] bg-primary/10 font-semibold text-primary dark:bg-white/10 dark:text-white"
+                  : "border-transparent font-medium text-muted-foreground hover:bg-muted hover:text-foreground dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-slate-200",
+              )}
+              aria-label={item.label}
+            >
+              <item.Icon className="h-4 w-4 shrink-0" />
+              <span className="hidden lg:block whitespace-nowrap">{item.label}</span>
+            </NavLink>
+          </Tooltip>
+        )
+      )}
     </aside>
   );
 }
@@ -341,22 +349,27 @@ function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void })
         </div>
         {/* Nav items */}
         <nav className="flex flex-col py-2">
-          {NAV_ITEMS.map(({ to, label, Icon }) => (
-            <NavLink
-              key={to}
-              to={to}
-              onClick={onClose}
-              className={({ isActive }) => cn(
-                "flex items-center gap-3 border-l-2 px-5 py-3 text-sm transition-colors whitespace-nowrap",
-                isActive
-                  ? "border-[hsl(var(--porygon-red))] bg-primary/10 font-semibold text-primary dark:bg-white/10 dark:text-white"
-                  : "border-transparent font-medium text-muted-foreground hover:bg-muted hover:text-foreground dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-slate-200",
-              )}
-            >
-              <Icon className="h-4 w-4 shrink-0" />
-              {label}
-            </NavLink>
-          ))}
+          {NAV_ITEMS.map((item, i) =>
+            item === null ? (
+              <div key={`sep-${i}`} className="my-1.5 border-t border-border dark:border-[hsl(193_60%_18%/0.6)]" />
+            ) : (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to === "/"}
+                onClick={onClose}
+                className={({ isActive }) => cn(
+                  "flex items-center gap-3 border-l-2 px-5 py-3 text-sm transition-colors whitespace-nowrap",
+                  isActive
+                    ? "border-[hsl(var(--porygon-red))] bg-primary/10 font-semibold text-primary dark:bg-white/10 dark:text-white"
+                    : "border-transparent font-medium text-muted-foreground hover:bg-muted hover:text-foreground dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-slate-200",
+                )}
+              >
+                <item.Icon className="h-4 w-4 shrink-0" />
+                {item.label}
+              </NavLink>
+            )
+          )}
         </nav>
       </div>
     </>
@@ -479,12 +492,20 @@ export function App() {
             </button>
 
             {/* Logo */}
-            <NavLink to="/pokedex" className="flex shrink-0 items-center py-3">
-              <img
-                src={`${SPRITES_ROOT}/versions/generation-iv/diamond-pearl/137.png`}
-                alt="Porygon"
-                className="h-10 w-10 object-contain"
-              />
+            <NavLink to="/" className="group flex shrink-0 items-center py-3">
+              <div className="relative h-10 w-10">
+                <img
+                  src={`${SPRITES_ROOT}/versions/generation-iv/diamond-pearl/137.png`}
+                  alt="Porygon"
+                  className="h-10 w-10 object-contain group-hover:opacity-0"
+                />
+                <img
+                  src="https://archives.bulbagarden.net/media/upload/7/78/Spr_4d_137.png"
+                  alt=""
+                  aria-hidden="true"
+                  className="absolute inset-0 h-10 w-10 object-contain opacity-0 group-hover:opacity-100"
+                />
+              </div>
               <h1 className="text-2xl font-bold tracking-tight text-white">Porylist</h1>
             </NavLink>
 
@@ -542,7 +563,7 @@ export function App() {
             ["/routes", "/breeding"].includes(location.pathname) && "!pb-0",
           )}>
             <Routes>
-              <Route path="/" element={<Navigate to="/pokedex" replace />} />
+              <Route path="/" element={<HomePage game={selectedGame} />} />
               <Route path="/pokedex" element={
                 <PokemonTable game={selectedGame} onOpenInCatchTracker={handleOpenInCatchTracker} />
               } />

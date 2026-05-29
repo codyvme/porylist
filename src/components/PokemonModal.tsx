@@ -212,7 +212,7 @@ function VersionBadge({ version }: { version: string }) {
   if (!hex) return <span className="text-xs text-muted-foreground">{formatVersionName(version)}</span>;
   return (
     <span
-      className="inline-block rounded px-1.5 py-0.5 text-xs font-medium"
+      className="inline-block rounded-full px-2 py-0.5 text-xs font-medium"
       style={{ backgroundColor: `#${hex}`, color: versionTextColor(hex) }}
     >
       {formatVersionName(version)}
@@ -401,7 +401,7 @@ function DamageCategoryBadge({ category }: { category: string }) {
   const bg = CATEGORY_COLORS[category] ?? CATEGORY_COLORS.status;
   return (
     <span
-      className="rounded px-1.5 py-0.5 text-xs font-medium capitalize text-white"
+      className="rounded-full px-2 py-0.5 text-xs font-medium capitalize text-white"
       style={{ backgroundColor: bg }}
     >
       {category}
@@ -509,7 +509,7 @@ function MoveTable({ moves, moveDetailsMap, showLevel, machineNumberMap, eggPare
                     {detail ? (
                       <Badge
                         variant="default"
-                        className="capitalize !rounded !px-1.5"
+                        className="capitalize !px-2"
                         style={typeStyle(detail.type.name)}
                       >
                         {detail.type.name}
@@ -1078,7 +1078,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                 )}
                 <div className="flex shrink-0 items-center gap-1.5">
                   {types.map((t) => (
-                    <Badge key={t} variant="default" className="capitalize !rounded !px-1.5" style={typeStyle(t)}>{t}</Badge>
+                    <Badge key={t} variant="default" className="capitalize !px-2" style={typeStyle(t)}>{t}</Badge>
                   ))}
                 </div>
               </div>
@@ -1235,7 +1235,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                               <div className="flex items-center gap-2">
                                 <button
                                   onClick={() => navigate(`/abilities?ability=${a.ability.name}`)}
-                                  className="font-medium capitalize text-primary hover:underline"
+                                  className="font-bold capitalize text-primary hover:underline"
                                 >
                                   {a.ability.name.replace(/-/g, " ")}
                                 </button>
@@ -1329,6 +1329,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                   { label: "EV Yield", value: evYields || "—" },
                   { label: "Growth Rate", value: species ? (GROWTH_RATE_LABELS[species.growth_rate.name] ?? species.growth_rate.name) : "—" },
                   { label: "Color", value: species ? species.color.name : "—" },
+                  { label: "Catch Rate", value: species != null ? `${species.capture_rate}/255` : "—" },
                   { label: "Base Friendship", value: species != null ? String(species.base_happiness) : "—" },
                   { label: "Egg Groups", value: species ? species.egg_groups.map((g) => g.name.replace(/-/g, " ")).join(", ") : "—" },
                 ];
@@ -1461,7 +1462,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                         <p className="mb-1.5 text-xs font-medium text-muted-foreground">Immune (0×)</p>
                         <div className="flex flex-wrap gap-2">
                           {typeEffectiveness.immune.map((t) => (
-                            <Badge key={t} variant="default" className="capitalize text-xs !rounded !px-1.5" style={typeStyle(t)}>{t}</Badge>
+                            <Badge key={t} variant="default" className="capitalize text-xs !px-2" style={typeStyle(t)}>{t}</Badge>
                           ))}
                         </div>
                       </div>
@@ -1472,13 +1473,13 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                         <div className="flex flex-wrap gap-x-4 gap-y-2">
                           {typeEffectiveness.quarter.map((t) => (
                             <span key={t} className="inline-flex items-center gap-1">
-                              <Badge variant="default" className="capitalize text-xs !rounded !px-1.5" style={typeStyle(t)}>{t}</Badge>
+                              <Badge variant="default" className="capitalize text-xs !px-2" style={typeStyle(t)}>{t}</Badge>
                               <span className="text-xs text-muted-foreground">¼×</span>
                             </span>
                           ))}
                           {typeEffectiveness.half.map((t) => (
                             <span key={t} className="inline-flex items-center gap-1">
-                              <Badge variant="default" className="capitalize text-xs !rounded !px-1.5" style={typeStyle(t)}>{t}</Badge>
+                              <Badge variant="default" className="capitalize text-xs !px-2" style={typeStyle(t)}>{t}</Badge>
                               <span className="text-xs text-muted-foreground">½×</span>
                             </span>
                           ))}
@@ -1491,13 +1492,13 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                         <div className="flex flex-wrap gap-x-4 gap-y-2">
                           {typeEffectiveness.quadruple.map((t) => (
                             <span key={t} className="inline-flex items-center gap-1">
-                              <Badge variant="default" className="capitalize text-xs !rounded !px-1.5" style={typeStyle(t)}>{t}</Badge>
+                              <Badge variant="default" className="capitalize text-xs !px-2" style={typeStyle(t)}>{t}</Badge>
                               <span className="text-xs text-muted-foreground">4×</span>
                             </span>
                           ))}
                           {typeEffectiveness.double.map((t) => (
                             <span key={t} className="inline-flex items-center gap-1">
-                              <Badge variant="default" className="capitalize text-xs !rounded !px-1.5" style={typeStyle(t)}>{t}</Badge>
+                              <Badge variant="default" className="capitalize text-xs !px-2" style={typeStyle(t)}>{t}</Badge>
                               <span className="text-xs text-muted-foreground">2×</span>
                             </span>
                           ))}

@@ -95,14 +95,14 @@ export function MoveModal({ name, entry, game, onClose }: MoveModalProps) {
             <h2 className="text-xl font-bold">{displayName}</h2>
             <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
               <span
-                className="inline-block rounded px-1.5 py-0.5 text-xs font-medium capitalize text-white"
+                className="inline-block rounded-full px-2 py-0.5 text-xs font-medium capitalize text-white"
                 style={{ backgroundColor: typeColor }}
               >
                 {type}
               </span>
               {catStyle && (
                 <span
-                  className="inline-block rounded px-2 py-0.5 text-xs font-medium text-white"
+                  className="inline-block rounded-full px-2 py-0.5 text-xs font-medium text-white"
                   style={{ backgroundColor: catStyle.bg }}
                 >
                   {catStyle.label}

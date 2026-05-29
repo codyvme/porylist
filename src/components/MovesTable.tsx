@@ -19,7 +19,7 @@ function CategoryBadge({ category }: { category: string }) {
   if (!s) return <span className="text-xs capitalize text-muted-foreground">{category}</span>;
   return (
     <span
-      className="inline-block rounded px-1.5 py-0.5 text-xs font-medium text-white"
+      className="inline-block rounded-full px-2 py-0.5 text-xs font-medium text-white"
       style={{ backgroundColor: s.bg }}
     >
       {s.label}
