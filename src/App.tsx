@@ -11,7 +11,8 @@ import { BreedingTracker } from "@/components/BreedingTracker";
 import { CompareView } from "@/components/CompareView";
 import { NaturesTable } from "@/components/NaturesTable";
 import { ItemsTable } from "@/components/ItemsTable";
-import { CircleHelp, Dna, Leaf, List, LogOut, Menu, Moon, Backpack, Scale, Settings, Sparkles, Sun, Swords, Trophy, Users, X } from "lucide-react";
+import { CatchCalculator } from "@/components/CatchCalculator";
+import { CircleHelp, Crosshair, Dna, Leaf, List, LogOut, Menu, Moon, Backpack, Scale, Settings, Sparkles, Sun, Swords, Trophy, Users, X } from "lucide-react";
 import { GAMES, SPRITES_ROOT, type GameOption } from "@/lib/games";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -256,6 +257,7 @@ const NAV_ITEMS = [
   { to: "/abilities",  label: "Abilities",        Icon: Sparkles      },
   { to: "/natures",    label: "Natures",          Icon: Leaf          },
   { to: "/items",      label: "Items",            Icon: Backpack      },
+  { to: "/catch",      label: "Catch Calculator", Icon: Crosshair     },
   { to: "/routes",     label: "Playthroughs",     Icon: Trophy        },
   { to: "/breeding",   label: "Breeding Tracker", Icon: Dna           },
   { to: "/team",       label: "Team Builder",     Icon: Users         },
@@ -551,6 +553,7 @@ export function App() {
                 <PlaythroughTracker navigationTarget={catchTrackerTarget} user={user} />
               } />
               <Route path="/natures" element={<NaturesTable />} />
+              <Route path="/catch" element={<CatchCalculator game={selectedGame} />} />
               <Route path="/breeding" element={<BreedingTracker user={user} />} />
               <Route path="/compare" element={<CompareView game={selectedGame} />} />
               <Route path="/team" element={
