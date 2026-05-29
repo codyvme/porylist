@@ -311,20 +311,6 @@ function IconRail() {
 // ─── Mobile Drawer ────────────────────────────────────────────────────────────
 
 function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
-  // Mount the full-screen backdrop only while open (plus the fade-out window),
-  // then unmount it. Leaving a fixed bg-black/60 layer at opacity-0 makes iOS
-  // Safari keep a stale composited layer over the area behind its floating
-  // toolbar, leaving a dark band after the drawer closes.
-  const [backdropMounted, setBackdropMounted] = useState(false);
-  useEffect(() => {
-    if (open) {
-      setBackdropMounted(true);
-      return;
-    }
-    const t = setTimeout(() => setBackdropMounted(false), 200);
-    return () => clearTimeout(t);
-  }, [open]);
-
   // Close on Escape
   useEffect(() => {
     if (!open) return;
@@ -336,15 +322,13 @@ function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void })
   return (
     <>
       {/* Backdrop */}
-      {backdropMounted && (
-        <div
-          className={cn(
-            "fixed inset-0 z-40 bg-black/60 transition-opacity sm:hidden",
-            open ? "opacity-100" : "pointer-events-none opacity-0",
-          )}
-          onClick={onClose}
-        />
-      )}
+      <div
+        className={cn(
+          "fixed inset-0 z-40 bg-black/60 transition-opacity sm:hidden",
+          open ? "opacity-100" : "pointer-events-none opacity-0",
+        )}
+        onClick={onClose}
+      />
       {/* Drawer */}
       <div
         className={cn(
@@ -404,23 +388,6 @@ export function App() {
   const navigate = useNavigate();
   const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const mainRef = useRef<HTMLElement>(null);
-
-  // After the mobile drawer closes, iOS Safari can fail to repaint the strip
-  // behind its floating toolbar, leaving a dark band. Force the scroll area to
-  // recomposite once the close animation has finished.
-  useEffect(() => {
-    if (drawerOpen) return;
-    const t = setTimeout(() => {
-      const el = mainRef.current;
-      if (!el) return;
-      el.style.transform = "translateZ(0)";
-      requestAnimationFrame(() => {
-        if (mainRef.current) mainRef.current.style.transform = "";
-      });
-    }, 220);
-    return () => clearTimeout(t);
-  }, [drawerOpen]);
 
   const [caught, setCaught] = useState<Record<string, string[]>>(() => {
     try { return JSON.parse(localStorage.getItem("porylist-caught") ?? "{}"); }
@@ -510,7 +477,7 @@ export function App() {
       client={queryClient}
       persistOptions={{ persister, maxAge: 1000 * 60 * 60 * 24 * 30 }}
     >
-      <div className="h-screen flex flex-col overflow-hidden bg-background">
+      <div className="h-dvh flex flex-col overflow-hidden bg-background">
 
         {/* ── Header ── */}
         <header className="flex-shrink-0 border-b border-[hsl(193_60%_18%/0.6)] bg-[hsl(193_90%_9%)] pt-[env(safe-area-inset-top)]">
@@ -591,8 +558,8 @@ export function App() {
         <div className="flex flex-1 min-h-0">
           <IconRail />
 
-          <main ref={mainRef} className={cn(
-            "flex-1 min-h-0 overflow-auto container !px-0 pb-[calc(env(safe-area-inset-bottom)_+_3.5rem)] sm:pb-6 flex flex-col",
+          <main className={cn(
+            "flex-1 min-h-0 overflow-auto container !px-0 pb-[calc(env(safe-area-inset-bottom)_+_1.5rem)] sm:pb-6 flex flex-col",
             ["/routes", "/breeding"].includes(location.pathname) && "!pb-0",
           )}>
             <Routes>
