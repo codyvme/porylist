@@ -278,7 +278,7 @@ function NewPlaythroughForm({
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium">Name <span className="text-muted-foreground font-normal">(optional)</span></label>
           <input
-            className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="h-9 w-full rounded-md border border-input bg-background px-3 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             placeholder={`${selectedVersion?.label ?? ""} Run`}
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -347,7 +347,7 @@ function EditPlaythroughForm({
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium">Name</label>
           <input
-            className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="h-9 w-full rounded-md border border-input bg-background px-3 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             value={name}
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") handleSave(); }}
