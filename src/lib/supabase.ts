@@ -132,6 +132,24 @@ export async function upsertUserProfile(profile: UserProfile): Promise<void> {
   });
 }
 
+export async function fetchDashboardConfig(userId: string): Promise<Record<string, boolean> | null> {
+  const { data, error } = await supabase
+    .from("user_profiles")
+    .select("dashboard_config")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error || !data) return null;
+  return (data as { dashboard_config: Record<string, boolean> | null }).dashboard_config ?? null;
+}
+
+export async function upsertDashboardConfig(userId: string, config: Record<string, boolean>): Promise<void> {
+  await supabase.from("user_profiles").upsert({
+    user_id: userId,
+    dashboard_config: config,
+    updated_at: new Date().toISOString(),
+  });
+}
+
 export async function purgeUserData(userId: string): Promise<void> {
   await Promise.all([
     supabase.from("caught_pokemon").delete().eq("user_id", userId),

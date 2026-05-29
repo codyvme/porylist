@@ -251,7 +251,7 @@ function UserMenu({
 }
 
 const NAV_ITEMS = [
-  { to: "/",           label: "Home",              Icon: House         },
+  { to: "/",           label: "Dashboard",         Icon: House         },
   null, // separator
   { to: "/abilities",  label: "Abilities",         Icon: Sparkles      },
   { to: "/items",      label: "Items",             Icon: Backpack      },
@@ -563,7 +563,7 @@ export function App() {
             ["/routes", "/breeding"].includes(location.pathname) && "!pb-0",
           )}>
             <Routes>
-              <Route path="/" element={<HomePage game={selectedGame} />} />
+              <Route path="/" element={<HomePage game={selectedGame} user={user} />} />
               <Route path="/pokedex" element={
                 <PokemonTable game={selectedGame} onOpenInCatchTracker={handleOpenInCatchTracker} />
               } />

@@ -1,17 +1,110 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { PokemonModal } from "@/components/PokemonModal";
 import { Link } from "react-router-dom";
 import {
   Backpack, Crosshair, Dna, Leaf, List, Scale,
-  Sparkles, Swords, Trophy, Users, ArrowRight, Skull, ExternalLink,
+  Sparkles, Swords, Trophy, Users, ArrowRight, Skull,
+  ExternalLink, Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatPokemonName } from "@/lib/utils";
-import { spriteUrl, type GameOption } from "@/lib/games";
+import { spriteUrl, type GameOption, GAMES_BY_VALUE } from "@/lib/games";
 import { usePokemonSummaryList, usePokemonSpecies } from "@/lib/pokeapi";
 import { TYPE_COLORS, typeStyle } from "@/lib/types";
 import { loadPlaythroughs, VERSION_TO_GAME_GROUP, VERSION_DISPLAY_LABEL } from "@/lib/playthroughs";
-import { GAMES_BY_VALUE } from "@/lib/games";
+import { loadProjects } from "@/lib/breeding";
+import { fetchDashboardConfig, upsertDashboardConfig, type User } from "@/lib/supabase";
+
+// ─── Module config ────────────────────────────────────────────────────────────
+
+type ModuleId = "pokemon-of-the-day" | "playthroughs" | "breeding" | "quick-links";
+
+interface ModuleDef {
+  id: ModuleId;
+  label: string;
+}
+
+const MODULE_DEFS: ModuleDef[] = [
+  { id: "pokemon-of-the-day", label: "Pokémon of the Day" },
+  { id: "playthroughs",       label: "Playthroughs"       },
+  { id: "breeding",           label: "Breeding Projects"  },
+  { id: "quick-links",        label: "Quick Links"        },
+];
+
+const STORAGE_KEY = "porylist-dashboard-v1";
+
+function loadModuleConfig(): Record<ModuleId, boolean> {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return { ...defaultConfig(), ...JSON.parse(raw) };
+  } catch { /* ignore */ }
+  return defaultConfig();
+}
+
+function defaultConfig(): Record<ModuleId, boolean> {
+  return { "pokemon-of-the-day": true, playthroughs: true, breeding: true, "quick-links": true };
+}
+
+function saveModuleConfig(cfg: Record<ModuleId, boolean>) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+}
+
+// ─── Module toggle dropdown ───────────────────────────────────────────────────
+
+function ModuleToggle({
+  config,
+  onChange,
+}: {
+  config: Record<ModuleId, boolean>;
+  onChange: (id: ModuleId, val: boolean) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+        aria-label="Customize dashboard"
+      >
+        <Settings className="h-3.5 w-3.5" />
+        Customize
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full z-50 mt-1 w-52 overflow-hidden rounded-lg border bg-background shadow-lg">
+          <p className="border-b px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+            Modules
+          </p>
+          {MODULE_DEFS.map(({ id, label }) => (
+            <label
+              key={id}
+              className="flex cursor-pointer items-center gap-3 px-3 py-2.5 text-sm hover:bg-muted transition-colors"
+            >
+              <input
+                type="checkbox"
+                checked={config[id]}
+                onChange={(e) => onChange(id, e.target.checked)}
+                className="h-4 w-4 accent-primary"
+              />
+              {label}
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ─── Pokémon of the Day ────────────────────────────────────────────────────────
 
@@ -53,9 +146,7 @@ function PokemonOfTheDay({ game }: { game: GameOption | null }) {
   const primaryType = pokemon?.types[0]?.type.name ?? "normal";
   const typeColor = TYPE_COLORS[primaryType] ?? "#A8A8A8";
 
-  if (!pokemon) return (
-    <div className="rounded-xl border bg-muted/30 h-48 animate-pulse" />
-  );
+  if (!pokemon) return <div className="rounded-xl border bg-muted/30 h-48 animate-pulse" />;
 
   return (
     <>
@@ -73,75 +164,66 @@ function PokemonOfTheDay({ game }: { game: GameOption | null }) {
         className="rounded-xl border overflow-hidden"
         style={{ background: `linear-gradient(135deg, ${typeColor}18 0%, transparent 60%)` }}
       >
-      <div className="flex flex-col sm:flex-row gap-4 p-5">
-
-        {/* Sprite */}
-        <div className="flex shrink-0 items-center justify-center sm:items-start">
-          <img
-            src={spriteUrl(pokemon.id, game?.spriteVersion)}
-            alt={formatPokemonName(pokemon.name)}
-            className="h-36 w-36 object-contain drop-shadow-sm"
-          />
-        </div>
-
-        {/* Info */}
-        <div className="flex flex-1 flex-col gap-3 min-w-0">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-              Pokémon of the Day
-            </p>
-            <button
-              onClick={() => setModalOpen(true)}
-              className="group mt-0.5 inline-flex items-center gap-1.5"
-            >
-              <h2 className="text-2xl font-bold text-primary group-hover:underline underline-offset-2">
-                {formatPokemonName(pokemon.name)}
-              </h2>
-              <ExternalLink className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-            </button>
-            <div className="mt-1.5 flex flex-wrap gap-1.5">
-              {pokemon.types.map((t) => (
-                <span
-                  key={t.type.name}
-                  className="rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize text-white"
-                  style={typeStyle(t.type.name)}
-                >
-                  {t.type.name}
-                </span>
+        <div className="flex flex-col sm:flex-row gap-4 p-5">
+          <div className="flex shrink-0 items-center justify-center sm:items-start">
+            <img
+              src={spriteUrl(pokemon.id, game?.spriteVersion)}
+              alt={formatPokemonName(pokemon.name)}
+              className="h-36 w-36 object-contain drop-shadow-sm"
+            />
+          </div>
+          <div className="flex flex-1 flex-col gap-3 min-w-0">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                Pokémon of the Day
+              </p>
+              <button
+                onClick={() => setModalOpen(true)}
+                className="group mt-0.5 inline-flex items-center gap-1.5"
+              >
+                <h2 className="text-2xl font-bold text-primary group-hover:underline underline-offset-2">
+                  {formatPokemonName(pokemon.name)}
+                </h2>
+                <ExternalLink className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {pokemon.types.map((t) => (
+                  <span
+                    key={t.type.name}
+                    className="rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize text-white"
+                    style={typeStyle(t.type.name)}
+                  >
+                    {t.type.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+              {pokemon.stats.map((s) => (
+                <div key={s.stat.name} className="flex items-center gap-2">
+                  <span className="w-8 shrink-0 text-[11px] font-semibold text-muted-foreground">
+                    {STAT_LABELS[s.stat.name] ?? s.stat.name}
+                  </span>
+                  <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className={cn("h-full rounded-full", statColor(s.base_stat))}
+                      style={{ width: `${Math.min(100, (s.base_stat / 255) * 100)}%` }}
+                    />
+                  </div>
+                  <span className="w-6 shrink-0 text-right text-[11px] tabular-nums text-muted-foreground">
+                    {s.base_stat}
+                  </span>
+                </div>
               ))}
             </div>
+            {flavorText && (
+              <p className="text-xs italic text-muted-foreground leading-relaxed line-clamp-2">
+                "{flavorText}"
+              </p>
+            )}
           </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-            {pokemon.stats.map((s) => (
-              <div key={s.stat.name} className="flex items-center gap-2">
-                <span className="w-8 shrink-0 text-[11px] font-semibold text-muted-foreground">
-                  {STAT_LABELS[s.stat.name] ?? s.stat.name}
-                </span>
-                <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
-                  <div
-                    className={cn("h-full rounded-full", statColor(s.base_stat))}
-                    style={{ width: `${Math.min(100, (s.base_stat / 255) * 100)}%` }}
-                  />
-                </div>
-                <span className="w-6 shrink-0 text-right text-[11px] tabular-nums text-muted-foreground">
-                  {s.base_stat}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          {/* Flavor text + link */}
-          {flavorText && (
-            <p className="text-xs italic text-muted-foreground leading-relaxed line-clamp-2">
-              "{flavorText}"
-            </p>
-          )}
-
         </div>
       </div>
-    </div>
     </>
   );
 }
@@ -174,7 +256,6 @@ function PlaythroughsSection() {
         const dexTotal = game?.genMax ?? 0;
         const pct = dexTotal > 0 ? (p.caught.length / dexTotal) * 100 : 0;
         const versionLabel = VERSION_DISPLAY_LABEL[p.gameValue] ?? game?.label ?? p.gameValue;
-
         return (
           <Link
             key={p.id}
@@ -198,16 +279,77 @@ function PlaythroughsSection() {
               {dexTotal > 0 && (
                 <div className="mt-1.5">
                   <div className="flex h-1.5 overflow-hidden rounded-full bg-muted">
-                    <div
-                      className="h-full rounded-full bg-primary transition-all"
-                      style={{ width: `${pct}%` }}
-                    />
+                    <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
                   </div>
                   <p className="mt-0.5 text-[10px] text-muted-foreground tabular-nums">
                     {p.caught.length}/{dexTotal} caught
                   </p>
                 </div>
               )}
+            </div>
+            <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground/50" />
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Breeding Projects ────────────────────────────────────────────────────────
+
+function BreedingSection() {
+  const projects = useMemo(() => loadProjects().filter((p) => p.status === "active"), []);
+
+  if (projects.length === 0) return (
+    <div className="rounded-xl border border-dashed p-6 text-center">
+      <Dna className="mx-auto mb-2 h-8 w-8 text-muted-foreground/30" />
+      <p className="text-sm font-medium text-muted-foreground">No active breeding projects</p>
+      <p className="mt-1 text-xs text-muted-foreground/60">
+        <Link to="/breeding" className="underline underline-offset-2 hover:text-foreground">Start a project</Link> to track your breeding.
+      </p>
+    </div>
+  );
+
+  return (
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {projects.map((p) => {
+        const eggCount = p.hatches.length;
+        const bestIVs = p.hatches.reduce(
+          (best, h) => Math.max(best, h.perfectIVs.filter((s) => p.targetIVs.includes(s)).length),
+          0,
+        );
+        return (
+          <Link
+            key={p.id}
+            to="/breeding"
+            className="flex items-center gap-3 rounded-lg border p-3 hover:border-primary/40 hover:bg-muted/50 transition-colors"
+          >
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-muted overflow-hidden">
+              <img
+                src={spriteUrl(0)}
+                alt={p.targetSpeciesName}
+                onLoad={(e) => { (e.currentTarget as HTMLImageElement).style.display = "block"; }}
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                  (e.currentTarget.parentElement as HTMLElement).innerHTML = `<span class="text-lg">${p.targetSpeciesName[0] ?? "?"}</span>`;
+                }}
+                className="hidden h-10 w-10 object-contain"
+              />
+              <span className="text-sm font-bold text-muted-foreground">
+                {p.targetSpeciesName.slice(0, 2).toUpperCase()}
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold truncate">{p.name}</p>
+              <p className="text-xs text-muted-foreground truncate">
+                {p.targetIVs.length > 0 ? `${p.targetIVs.length}IV` : ""}
+                {p.targetNature ? ` · ${p.targetNature}` : ""}
+                {p.shinyHunting ? " · Shiny" : ""}
+              </p>
+              <p className="mt-0.5 text-[10px] text-muted-foreground tabular-nums">
+                {eggCount} egg{eggCount !== 1 ? "s" : ""} hatched
+                {bestIVs > 0 ? ` · best ${bestIVs}/${p.targetIVs.length} IVs` : ""}
+              </p>
             </div>
             <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground/50" />
           </Link>
@@ -242,11 +384,7 @@ function QuickLinks() {
         <h3 className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Reference</h3>
         <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
           {REFERENCE_LINKS.map(({ to, Icon, label, desc }) => (
-            <Link
-              key={to}
-              to={to}
-              className="flex flex-col gap-2 rounded-lg border p-3 hover:border-primary/40 hover:bg-muted/50 transition-colors"
-            >
+            <Link key={to} to={to} className="flex flex-col gap-2 rounded-lg border p-3 hover:border-primary/40 hover:bg-muted/50 transition-colors">
               <Icon className="h-4 w-4 text-muted-foreground" />
               <div>
                 <p className="text-sm font-medium">{label}</p>
@@ -256,16 +394,11 @@ function QuickLinks() {
           ))}
         </div>
       </div>
-
       <div>
         <h3 className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Tools</h3>
         <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
           {TOOL_LINKS.map(({ to, Icon, label, desc }) => (
-            <Link
-              key={to}
-              to={to}
-              className="flex flex-col gap-2 rounded-lg border p-3 hover:border-primary/40 hover:bg-muted/50 transition-colors"
-            >
+            <Link key={to} to={to} className="flex flex-col gap-2 rounded-lg border p-3 hover:border-primary/40 hover:bg-muted/50 transition-colors">
               <Icon className="h-4 w-4 text-muted-foreground" />
               <div>
                 <p className="text-sm font-medium">{label}</p>
@@ -281,25 +414,82 @@ function QuickLinks() {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export function HomePage({ game }: { game: GameOption | null }) {
+export function HomePage({ game, user }: { game: GameOption | null; user: User | null }) {
+  const [moduleConfig, setModuleConfig] = useState<Record<ModuleId, boolean>>(loadModuleConfig);
+  const didSyncRef = useRef<string | null>(null);
+
+  // On sign-in, pull config from DB and merge (DB wins over local)
+  useEffect(() => {
+    if (!user || didSyncRef.current === user.id) return;
+    didSyncRef.current = user.id;
+    fetchDashboardConfig(user.id).then((remote) => {
+      if (!remote) return;
+      setModuleConfig((local) => {
+        const merged = { ...local, ...remote };
+        saveModuleConfig(merged);
+        return merged;
+      });
+    });
+  }, [user]);
+
+  // Reset sync ref on sign-out
+  useEffect(() => {
+    if (!user) didSyncRef.current = null;
+  }, [user]);
+
+  const toggleModule = (id: ModuleId, val: boolean) => {
+    setModuleConfig((prev) => {
+      const next = { ...prev, [id]: val };
+      saveModuleConfig(next);
+      if (user) upsertDashboardConfig(user.id, next);
+      return next;
+    });
+  };
+
   return (
-    <div className="flex flex-col gap-8 px-4 sm:px-6 py-6 max-w-4xl">
-      <PokemonOfTheDay game={game} />
+    <div className="flex flex-col gap-8 px-4 sm:px-6 py-6">
 
-      <section>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base font-semibold">Your Playthroughs</h2>
-          <Link to="/routes" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-            View all
-          </Link>
-        </div>
-        <PlaythroughsSection />
-      </section>
+      {/* Header */}
+      <div className="flex items-center justify-between shrink-0 border-b border-border py-3 -mx-4 sm:-mx-6 px-4 sm:px-6 -mt-6">
+        <h1 className="text-xl font-semibold">Dashboard</h1>
+        <ModuleToggle config={moduleConfig} onChange={toggleModule} />
+      </div>
 
-      <section>
-        <h2 className="text-base font-semibold mb-3">Quick Links</h2>
-        <QuickLinks />
-      </section>
+      {moduleConfig["pokemon-of-the-day"] && (
+        <PokemonOfTheDay game={game} />
+      )}
+
+      {moduleConfig["playthroughs"] && (
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-semibold">Your Playthroughs</h2>
+            <Link to="/routes" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+              View all
+            </Link>
+          </div>
+          <PlaythroughsSection />
+        </section>
+      )}
+
+      {moduleConfig["breeding"] && (
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-semibold">Breeding Projects</h2>
+            <Link to="/breeding" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+              View all
+            </Link>
+          </div>
+          <BreedingSection />
+        </section>
+      )}
+
+      {moduleConfig["quick-links"] && (
+        <section>
+          <h2 className="text-base font-semibold mb-3">Quick Links</h2>
+          <QuickLinks />
+        </section>
+      )}
+
     </div>
   );
 }
