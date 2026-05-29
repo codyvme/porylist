@@ -143,78 +143,95 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
       </div>
 
       {/* Team slots */}
-      <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
-        {Array.from({ length: 6 }).map((_, i) => {
-          const m = members[i];
-          return (
-            <div
-              key={i}
-              ref={activeSlot === i ? searchRef : undefined}
-              className={cn(
-                "relative flex flex-col items-center justify-center gap-1 rounded-lg border p-2",
-                m ? "border-border bg-card" : "border-dashed border-muted-foreground/25",
-                !m && activeSlot !== i && "cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-colors",
-              )}
-              onClick={!m && activeSlot !== i ? () => { setActiveSlot(i); setSearchQuery(""); setTimeout(() => inputRef.current?.focus(), 0); } : undefined}
-            >
-              {m ? (
-                <>
-                  <img
-                    src={spriteUrl(m.id, undefined)}
-                    alt={m.name}
-                    className="h-16 w-16 object-contain"
-                    onError={(e) => { (e.target as HTMLImageElement).src = `${SPRITES_ROOT}/${m.id}.png`; }}
-                  />
-                  <span className="max-w-full truncate text-center text-xs font-medium">
-                    {formatPokemonName(m.name)}
-                  </span>
-                  <button
-                    onClick={() => onRemove(m.name)}
-                    className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[11px] text-white shadow hover:bg-destructive/80 transition-colors"
-                    aria-label={`Remove ${m.name}`}
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </>
-              ) : activeSlot === i ? (
-                <>
-                  <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
-                  <input
-                    ref={inputRef}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search…"
-                    className="w-full bg-transparent text-center text-xs outline-none placeholder:text-muted-foreground/50"
-                    onKeyDown={(e) => { if (e.key === "Escape") { setActiveSlot(null); setSearchQuery(""); } }}
-                  />
-                  {suggestions.length > 0 && (
-                    <div className="absolute left-0 top-full z-50 mt-1 w-48 overflow-hidden rounded-lg border bg-background shadow-lg">
-                      {suggestions.map(p => (
-                        <button
-                          key={p.name}
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            onAdd(p.name);
-                            setActiveSlot(null);
-                            setSearchQuery("");
-                          }}
-                          className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs hover:bg-muted"
-                        >
-                          <img src={`${SPRITES_ROOT}/${p.id}.png`} alt={p.name} className="h-6 w-6 object-contain" />
-                          {formatPokemonName(p.name)}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="flex h-16 w-16 items-center justify-center">
-                  <Plus className="h-5 w-5 text-muted-foreground/30" />
-                </div>
+      <div ref={searchRef} className="flex flex-col gap-2">
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
+          {Array.from({ length: 6 }).map((_, i) => {
+            const m = members[i];
+            const isActive = activeSlot === i;
+            return (
+              <div
+                key={i}
+                className={cn(
+                  "relative flex flex-col items-center justify-center gap-1 rounded-lg border p-2 transition-colors",
+                  m ? "border-border bg-card" : "border-dashed",
+                  isActive && !m && "border-primary bg-primary/5",
+                  !m && !isActive && "border-muted-foreground/25 cursor-pointer hover:border-primary/50 hover:bg-muted/30",
+                )}
+                onClick={!m && !isActive ? () => { setActiveSlot(i); setSearchQuery(""); setTimeout(() => inputRef.current?.focus(), 0); } : undefined}
+              >
+                {m ? (
+                  <>
+                    <img
+                      src={spriteUrl(m.id, undefined)}
+                      alt={m.name}
+                      className="h-16 w-16 object-contain"
+                      onError={(e) => { (e.target as HTMLImageElement).src = `${SPRITES_ROOT}/${m.id}.png`; }}
+                    />
+                    <span className="max-w-full truncate text-center text-xs font-medium">
+                      {formatPokemonName(m.name)}
+                    </span>
+                    <button
+                      onClick={() => onRemove(m.name)}
+                      className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[11px] text-white shadow hover:bg-destructive/80 transition-colors"
+                      aria-label={`Remove ${m.name}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </>
+                ) : isActive ? (
+                  <Search className="h-5 w-5 text-primary" />
+                ) : (
+                  <div className="flex h-16 w-16 items-center justify-center">
+                    <Plus className="h-5 w-5 text-muted-foreground/30" />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Search input + dropdown — shown below slots when a slot is active */}
+        {activeSlot !== null && (
+          <div className="relative">
+            <div className="flex items-center gap-2 rounded-lg border border-primary bg-background px-3 py-2 shadow-sm">
+              <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+              <input
+                ref={inputRef}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search Pokémon…"
+                className="flex-1 bg-transparent text-base sm:text-sm outline-none placeholder:text-muted-foreground"
+                onKeyDown={(e) => { if (e.key === "Escape") { setActiveSlot(null); setSearchQuery(""); } }}
+              />
+              {searchQuery && (
+                <button onClick={() => setSearchQuery("")} className="text-muted-foreground hover:text-foreground">
+                  <X className="h-3.5 w-3.5" />
+                </button>
               )}
             </div>
-          );
-        })}
+            {suggestions.length > 0 && (
+              <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-lg border bg-background shadow-xl">
+                <div className="max-h-64 overflow-y-auto py-1">
+                  {suggestions.map(p => (
+                    <button
+                      key={p.name}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        onAdd(p.name);
+                        setActiveSlot(null);
+                        setSearchQuery("");
+                      }}
+                      className="flex w-full items-center gap-2 px-3 py-1.5 text-sm hover:bg-muted transition-colors"
+                    >
+                      <img src={spriteUrl(p.id)} alt={p.name} className="h-7 w-7 object-contain" />
+                      <span className="flex-1 text-left">{formatPokemonName(p.name)}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {team.length === 0 ? (

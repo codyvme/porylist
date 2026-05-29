@@ -317,9 +317,6 @@ function PokemonPicker({
                     className="h-7 w-7 object-contain"
                   />
                   <span className="flex-1 text-left">{formatPokemonName(p.name)}</span>
-                  <span className="text-xs text-muted-foreground">
-                    #{String(p.id).padStart(4, "0")}
-                  </span>
                 </button>
               ))
             )}
@@ -439,9 +436,6 @@ export function CompareView({ game }: { game: GameOption | null }) {
                         <div className="text-center">
                           <p className="text-sm font-semibold leading-tight">
                             {formatPokemonName(p.name)}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            #{String(p.id).padStart(4, "0")}
                           </p>
                         </div>
                         <div className="flex flex-wrap justify-center gap-1">
