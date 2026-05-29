@@ -311,6 +311,18 @@ function IconRail() {
 // ─── Mobile Drawer ────────────────────────────────────────────────────────────
 
 function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+  // Keep backdrop mounted during open + close animation, then remove it so iOS
+  // Safari doesn't use the black overlay to repaint its chrome background.
+  const [backdropMounted, setBackdropMounted] = useState(false);
+  useEffect(() => {
+    if (open) {
+      setBackdropMounted(true);
+    } else {
+      const t = setTimeout(() => setBackdropMounted(false), 250);
+      return () => clearTimeout(t);
+    }
+  }, [open]);
+
   // Close on Escape
   useEffect(() => {
     if (!open) return;
@@ -321,14 +333,16 @@ function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void })
 
   return (
     <>
-      {/* Backdrop */}
-      <div
-        className={cn(
-          "fixed inset-0 z-40 bg-black/60 transition-opacity sm:hidden",
-          open ? "opacity-100" : "pointer-events-none opacity-0",
-        )}
-        onClick={onClose}
-      />
+      {/* Backdrop — unmounted after close transition to avoid iOS Safari chrome repaint */}
+      {backdropMounted && (
+        <div
+          className={cn(
+            "fixed inset-0 z-40 bg-black/60 transition-opacity sm:hidden",
+            open ? "opacity-100" : "pointer-events-none opacity-0",
+          )}
+          onClick={onClose}
+        />
+      )}
       {/* Drawer */}
       <div
         className={cn(
@@ -477,7 +491,7 @@ export function App() {
       client={queryClient}
       persistOptions={{ persister, maxAge: 1000 * 60 * 60 * 24 * 30 }}
     >
-      <div className="h-screen flex flex-col overflow-hidden bg-background">
+      <div className="h-dvh flex flex-col overflow-hidden bg-background">
 
         {/* ── Header ── */}
         <header className="flex-shrink-0 border-b border-[hsl(193_60%_18%/0.6)] bg-[hsl(193_90%_9%)]">
