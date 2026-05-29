@@ -616,7 +616,7 @@ const GAMES_WITH_ROUTES = new Set([
   "red-blue-yellow", "gold-silver-crystal", "ruby-sapphire-emerald", "firered-leafgreen",
   "diamond-pearl-platinum", "heartgold-soulsilver", "black-white", "black2-white2",
   "x-y", "omega-ruby-alpha-sapphire", "sun-moon", "ultra-sun-ultra-moon", "lets-go",
-  "brilliant-diamond-shining-pearl", "sword-shield",
+  "brilliant-diamond-shining-pearl", "sword-shield", "legends-arceus", "scarlet-violet",
 ]);
 
 export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: gameProp, embedded = false, lockedVersion }: {
@@ -909,7 +909,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
       {/* No data notice for gen 8+ */}
       {game && !GAMES_WITH_ROUTES.has(game) && (
         <div className="flex-1 min-h-0 flex items-center justify-center rounded-lg border border-dashed text-center text-sm text-muted-foreground">
-          Route data isn't available for this game yet — PokéAPI doesn't include encounter data for Gen 8+ games.
+          Route data isn't available for this game yet.
         </div>
       )}
 

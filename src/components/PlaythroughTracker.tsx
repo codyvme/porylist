@@ -93,63 +93,117 @@ function PlaythroughCard({
   playthrough,
   selected,
   onClick,
+  onComplete,
+  onArchive,
+  onEdit,
+  onDelete,
 }: {
   playthrough: Playthrough;
   selected: boolean;
   onClick: () => void;
+  onComplete: () => void;
+  onArchive: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
 }) {
   const group = VERSION_TO_GAME_GROUP[playthrough.gameValue] ?? playthrough.gameValue;
   const dexTotal = GAMES_BY_VALUE[group]?.genMax ?? 0;
   const versionLabel = VERSION_DISPLAY_LABEL[playthrough.gameValue] ?? GAMES_BY_VALUE[group]?.label ?? playthrough.gameValue;
 
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node))
+        setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menuOpen]);
+
   return (
-    <button
-      onClick={onClick}
+    <div
       className={cn(
-        "w-full rounded-lg border p-3 text-left transition-colors",
+        "relative w-full rounded-lg border transition-colors",
         selected
           ? "border-primary bg-primary/5"
           : "border-border hover:border-primary/40 hover:bg-muted/50",
       )}
     >
-      <div className="flex items-start gap-3">
-        {/* Cover art */}
-        <div className="shrink-0 w-10 h-14 rounded overflow-hidden bg-muted flex items-center justify-center">
-          <img
-            src={coverArtUrl(playthrough.gameValue)}
-            alt={versionLabel}
-            className="w-full h-full object-cover"
-            loading="lazy"
-            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-          />
-        </div>
-        {/* Info */}
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
-            <span className="truncate text-sm font-semibold">{playthrough.name}</span>
-            {playthrough.status === "completed" && (
-              <Trophy className="h-3.5 w-3.5 shrink-0 text-amber-500" />
-            )}
-            {playthrough.nuzlocke.enabled && (
-              <span title="Nuzlocke"><Skull className="h-3.5 w-3.5 shrink-0 text-red-500" /></span>
+      {/* Main clickable area */}
+      <button onClick={onClick} className="w-full p-3 text-left">
+        <div className="flex items-start gap-3 pr-6">
+          {/* Cover art */}
+          <div className="shrink-0 w-10 h-14 rounded overflow-hidden bg-muted flex items-center justify-center">
+            <img
+              src={coverArtUrl(playthrough.gameValue)}
+              alt={versionLabel}
+              className="w-full h-full object-cover"
+              loading="lazy"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+            />
+          </div>
+          {/* Info */}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5">
+              <span className="truncate text-sm font-semibold">{playthrough.name}</span>
+              {playthrough.status === "completed" && (
+                <Trophy className="h-3.5 w-3.5 shrink-0 text-amber-500" />
+              )}
+              {playthrough.nuzlocke.enabled && (
+                <span title="Nuzlocke"><Skull className="h-3.5 w-3.5 shrink-0 text-red-500" /></span>
+              )}
+            </div>
+            {dexTotal > 0 && (
+              <div className="mt-2">
+                <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
+                  <span>{playthrough.caught.length}/{dexTotal} Pokédex</span>
+                </div>
+                <div className="flex h-1.5 overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full rounded-full bg-primary transition-all"
+                    style={{ width: `${(playthrough.caught.length / dexTotal) * 100}%` }}
+                  />
+                </div>
+              </div>
             )}
           </div>
-          {dexTotal > 0 && (
-            <div className="mt-2">
-              <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
-                <span>{playthrough.caught.length}/{dexTotal} Pokédex</span>
-              </div>
-              <div className="flex h-1.5 overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full rounded-full bg-primary transition-all"
-                  style={{ width: `${(playthrough.caught.length / dexTotal) * 100}%` }}
-                />
-              </div>
-            </div>
-          )}
         </div>
+      </button>
+
+      {/* Gear menu */}
+      <div className="absolute top-2 right-2" ref={menuRef}>
+        <button
+          onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v); }}
+          className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          aria-label="Playthrough options"
+        >
+          <Settings className="h-3.5 w-3.5" />
+        </button>
+        {menuOpen && (
+          <div className="absolute right-0 top-full z-50 mt-1 w-40 overflow-hidden rounded-lg border bg-background shadow-lg">
+            {playthrough.status === "active" && (
+              <button onClick={() => { onComplete(); setMenuOpen(false); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:bg-muted">
+                <CheckCircle2 className="h-3.5 w-3.5" />Complete
+              </button>
+            )}
+            <button onClick={() => { onArchive(); setMenuOpen(false); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:bg-muted">
+              {playthrough.status === "active" ? <Archive className="h-3.5 w-3.5" /> : <RotateCcw className="h-3.5 w-3.5" />}
+              {playthrough.status === "active" ? "Archive" : "Restore"}
+            </button>
+            <button onClick={() => { onEdit(); setMenuOpen(false); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:bg-muted">
+              <Pencil className="h-3.5 w-3.5" />Edit
+            </button>
+            {playthrough.status !== "active" && (
+              <button onClick={() => { onDelete(); setMenuOpen(false); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/10">
+                <Trash2 className="h-3.5 w-3.5" />Delete
+              </button>
+            )}
+          </div>
+        )}
       </div>
-    </button>
+    </div>
   );
 }
 
@@ -456,12 +510,16 @@ function PlaythroughDetail({
   onDelete,
   onBack,
   navigationTarget,
+  startEditing = false,
+  onEditConsumed,
 }: {
   playthrough: Playthrough;
   onUpdate: (p: Playthrough) => void;
   onDelete: () => void;
   onBack: () => void;
   navigationTarget?: { gameValue: string; locationKey: string } | null;
+  startEditing?: boolean;
+  onEditConsumed?: () => void;
 }) {
   const group = VERSION_TO_GAME_GROUP[playthrough.gameValue] ?? playthrough.gameValue;
   const game = GAMES_BY_VALUE[group];
@@ -469,6 +527,13 @@ function PlaythroughDetail({
 
   const [tab, setTab] = useState<DetailTab>("pokedex");
   const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    if (startEditing) {
+      setIsEditing(true);
+      onEditConsumed?.();
+    }
+  }, [startEditing, onEditConsumed]);
 
   const handleArchive = () => {
     onUpdate({
@@ -656,6 +721,7 @@ export function PlaythroughTracker({
   const [showArchived, setShowArchived] = useState(false);
   const [runsCollapsed, setRunsCollapsed] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const didSyncRef = useRef<string | null>(null);
 
   // On sign-in: pull playthroughs from DB and merge (newer updatedAt wins)
@@ -784,6 +850,10 @@ export function PlaythroughTracker({
               playthrough={p}
               selected={p.id === selectedId}
               onClick={() => { setSelectedId(p.id); setIsCreating(false); }}
+              onComplete={() => handleUpdate({ ...p, status: "completed", updatedAt: Date.now() })}
+              onArchive={() => handleUpdate({ ...p, status: p.status === "active" ? "abandoned" : "active", updatedAt: Date.now() })}
+              onEdit={() => { setSelectedId(p.id); setIsCreating(false); setEditingId(p.id); }}
+              onDelete={() => handleDelete(p.id)}
             />
           ))}
 
@@ -804,6 +874,10 @@ export function PlaythroughTracker({
                       playthrough={p}
                       selected={p.id === selectedId}
                       onClick={() => { setSelectedId(p.id); setIsCreating(false); }}
+                      onComplete={() => handleUpdate({ ...p, status: "completed", updatedAt: Date.now() })}
+                      onArchive={() => handleUpdate({ ...p, status: "active", updatedAt: Date.now() })}
+                      onEdit={() => { setSelectedId(p.id); setIsCreating(false); setEditingId(p.id); }}
+                      onDelete={() => handleDelete(p.id)}
                     />
                   ))}
                 </div>
@@ -842,6 +916,8 @@ export function PlaythroughTracker({
               onDelete={() => handleDelete(selected.id)}
               onBack={() => setSelectedId(null)}
               navigationTarget={navigationTarget}
+              startEditing={editingId === selected.id}
+              onEditConsumed={() => setEditingId(null)}
             />
           )}
           {!isCreating && !selected && (
