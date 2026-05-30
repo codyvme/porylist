@@ -467,7 +467,7 @@ export function HomePage({ game, user }: { game: GameOption | null; user: User |
     <div className="flex flex-col gap-5 px-4 sm:px-6 pt-4 pb-6">
 
       {/* Header */}
-      <div className="flex items-center justify-between shrink-0 border-b border-border py-3 -mx-4 sm:-mx-6 px-4 sm:px-6 -mt-4 -mb-3">
+      <div className="flex items-center justify-between shrink-0 border-b border-border py-3 -mx-4 sm:-mx-6 px-4 sm:px-6 -mt-4">
         <h1 className="text-xl font-semibold">Dashboard</h1>
         <ModuleToggle config={moduleConfig} onChange={toggleModule} />
       </div>
