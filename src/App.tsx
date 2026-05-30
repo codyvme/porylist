@@ -559,7 +559,7 @@ export function App() {
           <IconRail />
 
           <main className={cn(
-            "flex-1 min-h-0 overflow-auto container !px-0 pb-[calc(env(safe-area-inset-bottom)_+_3.5rem)] sm:pb-6 flex flex-col",
+            "flex-1 min-h-0 overflow-auto w-full pb-[calc(env(safe-area-inset-bottom)_+_3.5rem)] sm:pb-6 flex flex-col",
             ["/routes", "/breeding"].includes(location.pathname) && "!pb-0",
           )}>
             <Routes>
