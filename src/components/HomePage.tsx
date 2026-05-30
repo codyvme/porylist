@@ -31,6 +31,22 @@ const MODULE_DEFS: ModuleDef[] = [
   { id: "quick-links",        label: "Quick Links"        },
 ];
 
+// ─── Seeded shuffle ───────────────────────────────────────────────────────────
+
+/** Fisher-Yates shuffle with a fixed seed (LCG) — same scrambled order every time. */
+function seededShuffle<T>(arr: T[], seed: number): T[] {
+  const result = [...arr];
+  let s = seed;
+  for (let i = result.length - 1; i > 0; i--) {
+    s = Math.imul(s, 1664525) + 1013904223 | 0;
+    const j = Math.abs(s) % (i + 1);
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+const POTD_SEED = 0x504f5459; // "POTY" in hex — fixed, never changes
+
 const STORAGE_KEY = "porylist-dashboard-v1";
 
 function loadModuleConfig(): Record<ModuleId, boolean> {
@@ -125,8 +141,9 @@ function PokemonOfTheDay({ game }: { game: GameOption | null }) {
 
   const pokemon = useMemo(() => {
     if (pokemonList.length === 0) return null;
+    const shuffled = seededShuffle(pokemonList, POTD_SEED);
     const day = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
-    return pokemonList[day % pokemonList.length];
+    return shuffled[day % shuffled.length];
   }, [pokemonList]);
 
   const speciesName = pokemon?.species?.name ?? pokemon?.name ?? null;
