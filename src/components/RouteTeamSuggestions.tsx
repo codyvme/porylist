@@ -11,6 +11,12 @@ interface Props {
   routePokemonNames: string[];
   game: GameOption | null;
   onOpen: (name: string) => void;
+  /**
+   * Override the team list — when provided, used directly instead of reading
+   * from the global Team Builder localStorage. PlaythroughTracker passes the
+   * playthrough's own team so suggestions are run-scoped.
+   */
+  teamOverride?: string[];
 }
 
 function loadTeam(): string[] {
@@ -31,17 +37,20 @@ function loadTeam(): string[] {
  *
  * Read-only: we just look at localStorage for the team. No-ops when no team.
  */
-export function RouteTeamSuggestions({ routePokemonNames, game, onOpen }: Props) {
-  const [teamNames, setTeamNames] = useState<string[]>(loadTeam);
+export function RouteTeamSuggestions({ routePokemonNames, game, onOpen, teamOverride }: Props) {
+  const [globalTeam, setGlobalTeam] = useState<string[]>(loadTeam);
+  const teamNames = teamOverride ?? globalTeam;
 
-  // Refresh team list when the localStorage changes (e.g. user edits team in another tab)
+  // Refresh global team when localStorage changes — only matters when we're
+  // falling back to the global Team Builder (i.e. teamOverride is undefined).
   useEffect(() => {
+    if (teamOverride) return;
     const handler = (e: StorageEvent) => {
-      if (e.key === "porylist-team") setTeamNames(loadTeam());
+      if (e.key === "porylist-team") setGlobalTeam(loadTeam());
     };
     window.addEventListener("storage", handler);
     return () => window.removeEventListener("storage", handler);
-  }, []);
+  }, [teamOverride]);
 
   const { data: summaryList = [] } = usePokemonSummaryList();
   const summaryByName = useMemo(() => {

@@ -81,8 +81,22 @@ export interface Playthrough {
   nuzlocke: NuzlockeOptions;
   /** Per-route Nuzlocke encounter log (optional; absent on non-Nuzlocke runs) */
   encounters?: EncounterRecord[];
+  /**
+   * The user's current team for this playthrough — up to 6 entries. Each
+   * holds the PokéAPI species slug plus an optional nickname so people who
+   * nickname their teammates can see them as such. Independent from the
+   * global Team Builder.
+   */
+  team?: TeamMember[];
   createdAt: number;
   updatedAt: number;
+}
+
+export interface TeamMember {
+  /** PokéAPI species slug (e.g. "garchomp"). */
+  species: string;
+  /** Optional player-chosen nickname. */
+  nickname?: string;
 }
 
 /**
@@ -107,6 +121,31 @@ export function currentLevelCap(playthrough: Playthrough): { cap: number; nextBa
 
 export function newEncounterId(): string {
   return `enc_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+/**
+ * Migrates whatever shape was previously persisted into the current
+ * TeamMember[] form. Accepts:
+ *   - missing/null/non-array → []
+ *   - string[]              → [{ species: name }, …]    (pre-nickname format)
+ *   - TeamMember[]          → trimmed to 6 + species coerced to string
+ */
+export function normalizeTeam(raw: unknown): TeamMember[] {
+  if (!Array.isArray(raw)) return [];
+  const out: TeamMember[] = [];
+  for (const entry of raw) {
+    if (out.length >= 6) break;
+    if (typeof entry === "string") {
+      if (entry) out.push({ species: entry });
+    } else if (entry && typeof entry === "object" && typeof (entry as { species?: unknown }).species === "string") {
+      const e = entry as TeamMember;
+      out.push({
+        species: e.species,
+        nickname: typeof e.nickname === "string" && e.nickname.trim() ? e.nickname : undefined,
+      });
+    }
+  }
+  return out;
 }
 
 // ─── Badge data per game ──────────────────────────────────────────────────────
@@ -517,6 +556,7 @@ export function loadPlaythroughs(): Playthrough[] {
       gameValue: GROUP_TO_FIRST_VERSION[p.gameValue] ?? p.gameValue,
       nuzlocke: (p.nuzlocke as NuzlockeOptions | undefined) ?? { ...DEFAULT_NUZLOCKE },
       encounters: Array.isArray(p.encounters) ? p.encounters : undefined,
+      team: normalizeTeam(p.team),
     }));
   } catch {
     return [];

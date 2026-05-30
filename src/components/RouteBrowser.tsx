@@ -349,7 +349,7 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
   );
 }
 
-function LocationDetail({ location, selectedVersion, spriteVersion, game, caughtKey, caught, onToggleCaught, onOpen, filterUncaught }: {
+function LocationDetail({ location, selectedVersion, spriteVersion, game, caughtKey, caught, onToggleCaught, onOpen, filterUncaught, teamOverride }: {
   location: RouteLocation;
   selectedVersion: string;
   spriteVersion: string | undefined;
@@ -359,6 +359,12 @@ function LocationDetail({ location, selectedVersion, spriteVersion, game, caught
   onToggleCaught: (name: string, gameKey: string) => void;
   onOpen: (name: string) => void;
   filterUncaught: boolean;
+  /**
+   * When provided (typically by PlaythroughTracker), the team-coverage panel
+   * uses this list instead of reading from the global Team Builder. When
+   * undefined, falls back to the global team.
+   */
+  teamOverride?: string[];
 }) {
   const filtered = selectedVersion
     ? location.encounters.filter((e) => e.version === selectedVersion)
@@ -400,6 +406,7 @@ function LocationDetail({ location, selectedVersion, spriteVersion, game, caught
         routePokemonNames={allRoutePokemon}
         game={gameOption}
         onOpen={onOpen}
+        teamOverride={teamOverride}
       />
       {allCaught ? (
         <p className="py-8 text-center text-sm text-muted-foreground">
@@ -631,7 +638,7 @@ const GAMES_WITH_ROUTES = new Set([
   "brilliant-diamond-shining-pearl", "sword-shield", "legends-arceus", "scarlet-violet",
 ]);
 
-export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: gameProp, embedded = false, lockedVersion }: {
+export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: gameProp, embedded = false, lockedVersion, teamOverride }: {
   caught: Record<string, string[]>;
   onToggleCaught: (name: string, gameKey: string) => void;
   navigationTarget?: { gameValue: string; locationKey: string } | null;
@@ -640,6 +647,8 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
   embedded?: boolean;
   /** When set, locks the version selector to this version and hides the toggle (used inside PlaythroughTracker). */
   lockedVersion?: string;
+  /** Override the team for "Picks for your team" — used by PlaythroughTracker. */
+  teamOverride?: string[];
 }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [game, setGame] = useState(gameProp?.value ?? "");
@@ -1154,6 +1163,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
                     onToggleCaught={onToggleCaught}
                     onOpen={setSelectedPokemon}
                     filterUncaught={filterUncaught}
+                    teamOverride={teamOverride}
                   />
                 </div>
               )}
@@ -1392,6 +1402,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
                     onToggleCaught={onToggleCaught}
                     onOpen={setSelectedPokemon}
                     filterUncaught={filterUncaught}
+                    teamOverride={teamOverride}
                   />
                 </>
               )}

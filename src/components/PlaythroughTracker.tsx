@@ -27,6 +27,7 @@ import {
   type NuzlockeOptions,
 } from "@/lib/playthroughs";
 import { EncountersTab } from "@/components/EncountersTab";
+import { PlaythroughTeamTab } from "@/components/PlaythroughTeamTab";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -40,12 +41,12 @@ function coverArtUrl(version: string): string {
 
 // ─── Nuzlocke Options Form (shared) ───────────────────────────────────────────
 
-const NUZLOCKE_RULES: Array<{ key: keyof NuzlockeOptions; label: string }> = [
-  { key: "firstEncounterOnly", label: "First encounter per route only" },
-  { key: "releaseOnFaint",     label: "Release / permanently box on faint" },
-  { key: "speciesClause",      label: "Species clause (no duplicate species)" },
-  { key: "nicknameClause",     label: "Nickname all Pokémon" },
-  { key: "setMode",            label: "Set mode (no switching after reveal)" },
+const NUZLOCKE_RULES: Array<{ key: keyof NuzlockeOptions; label: string; description: string }> = [
+  { key: "firstEncounterOnly", label: "First encounter per route only",         description: "Only the first wild Pokémon encountered on each route may be caught — flee or KO it and the route is burned." },
+  { key: "releaseOnFaint",     label: "Release / permanently box on faint",     description: "Any Pokémon that faints is considered dead and must be permanently boxed or released." },
+  { key: "speciesClause",      label: "Species clause (no duplicate species)",  description: "No duplicate species — if you've already caught Pidgey, skip the next Pidgey encounter." },
+  { key: "nicknameClause",     label: "Nickname all Pokémon",                   description: "Every caught Pokémon must be nicknamed (you'll bond with them more and feel the losses harder)." },
+  { key: "setMode",            label: "Set mode (no switching after reveal)",   description: "Disable battle-style switching — no swapping after the opponent reveals their next Pokémon." },
 ];
 
 function NuzlockeOptionsForm({
@@ -497,14 +498,67 @@ function PokedexTab({
         navigationTarget={navigationTarget}
         embedded
         lockedVersion={playthrough.gameValue}
+        teamOverride={(playthrough.team ?? []).map((m) => m.species)}
       />
+    </div>
+  );
+}
+
+// ─── Rules Tab ────────────────────────────────────────────────────────────────
+
+function RulesTab({ playthrough, onUpdate }: { playthrough: Playthrough; onUpdate: (p: Playthrough) => void }) {
+  const toggle = (key: keyof NuzlockeOptions) => {
+    if (key === "enabled") return;
+    onUpdate({
+      ...playthrough,
+      nuzlocke: { ...playthrough.nuzlocke, [key]: !playthrough.nuzlocke[key] },
+      updatedAt: Date.now(),
+    });
+  };
+
+  return (
+    <div className="flex flex-col gap-2 overflow-y-auto pt-3 pb-8">
+      <p className="text-xs text-muted-foreground">
+        Toggle Nuzlocke clauses for this run. Some clauses affect what the Encounters tab enforces (route burning, species duplicates).
+      </p>
+      {NUZLOCKE_RULES.map((rule) => {
+        const active = playthrough.nuzlocke[rule.key] as boolean;
+        return (
+          <button
+            key={rule.key}
+            onClick={() => toggle(rule.key)}
+            className={cn(
+              "flex items-start gap-3 rounded-lg border p-3 text-left transition-colors",
+              active
+                ? "border-red-500/40 bg-red-500/5 hover:bg-red-500/10"
+                : "border-border bg-card hover:bg-muted/50",
+            )}
+            aria-pressed={active}
+          >
+            <span
+              className={cn(
+                "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border",
+                active ? "border-red-500 bg-red-500 text-white" : "border-muted-foreground/40",
+              )}
+            >
+              {active && <CheckCircle2 className="h-3.5 w-3.5" />}
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className={cn("text-sm font-medium", active ? "text-red-700 dark:text-red-300" : "text-foreground")}>
+                {rule.label}
+              </div>
+              <div className="mt-0.5 text-xs text-muted-foreground">{rule.description}</div>
+            </div>
+          </button>
+        );
+      })}
     </div>
   );
 }
 
 // ─── Playthrough Detail ───────────────────────────────────────────────────────
 
-type DetailTab = "badges" | "pokedex" | "encounters";
+type DetailTab = "badges" | "pokedex" | "encounters" | "team" | "rules";
 
 function PlaythroughDetail({
   playthrough,
@@ -583,29 +637,29 @@ function PlaythroughDetail({
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-base font-semibold truncate sm:text-lg">{playthrough.name}</h2>
-            {playthrough.status === "completed" && (
-              <span className="shrink-0 rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">Completed</span>
-            )}
-            {playthrough.status === "abandoned" && (
-              <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">Archived</span>
-            )}
-          </div>
-          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
             {playthrough.nuzlocke.enabled && (
-              <span className="flex items-center gap-1 text-red-500 dark:text-red-400"><Skull className="h-3 w-3" />Nuzlocke</span>
+              <span className="shrink-0 flex items-center gap-1 text-xs text-red-500 dark:text-red-400">
+                <Skull className="h-3 w-3" />Nuzlocke
+              </span>
             )}
             {(() => {
               const cap = currentLevelCap(playthrough);
               if (!cap) return null;
               return (
                 <span
-                  className="flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 font-medium text-amber-700 dark:text-amber-300"
+                  className="shrink-0 flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-300"
                   title={`Next: ${cap.nextBadge.leader ?? cap.nextBadge.name} — ace Lv ${cap.cap}`}
                 >
-                  Lv cap {cap.cap}
+                  Lvl cap {cap.cap}
                 </span>
               );
             })()}
+            {playthrough.status === "completed" && (
+              <span className="shrink-0 rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">Completed</span>
+            )}
+            {playthrough.status === "abandoned" && (
+              <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">Archived</span>
+            )}
           </div>
         </div>
 
@@ -654,30 +708,7 @@ function PlaythroughDetail({
       {/* Tabs + tab content */}
       {!isEditing && (
         <>
-          {/* Nuzlocke active rules */}
-          {playthrough.nuzlocke.enabled && (() => {
-            const activeRules = [
-              playthrough.nuzlocke.firstEncounterOnly && "First encounter per route",
-              playthrough.nuzlocke.releaseOnFaint     && "Release on faint",
-              playthrough.nuzlocke.speciesClause      && "Species clause",
-              playthrough.nuzlocke.nicknameClause     && "Nicknames required",
-              playthrough.nuzlocke.setMode            && "Set mode",
-            ].filter(Boolean) as string[];
-            return activeRules.length > 0 ? (
-              <div className="shrink-0 flex flex-wrap gap-1.5">
-                {activeRules.map((rule) => (
-                  <span
-                    key={rule}
-                    className="rounded-full border border-red-500/30 bg-red-500/10 px-2.5 py-0.5 text-xs font-medium text-red-600 dark:text-red-400"
-                  >
-                    {rule}
-                  </span>
-                ))}
-              </div>
-            ) : null;
-          })()}
-
-          <div className="flex gap-1 shrink-0">
+          <div className="flex gap-1 shrink-0 flex-wrap">
             <button className={tabCls("pokedex")} onClick={() => setTab("pokedex")}>
               Pokédex
               {playthrough.caught.length > 0 && game && (
@@ -704,6 +735,33 @@ function PlaythroughDetail({
                 )}
               </button>
             )}
+            <button className={tabCls("team")} onClick={() => setTab("team")}>
+              Team
+              {(playthrough.team?.length ?? 0) > 0 && (
+                <span className="ml-1.5 rounded-full bg-muted px-1.5 text-xs">
+                  {playthrough.team?.length}/6
+                </span>
+              )}
+            </button>
+            {playthrough.nuzlocke.enabled && (() => {
+              const activeRulesCount = [
+                playthrough.nuzlocke.firstEncounterOnly,
+                playthrough.nuzlocke.releaseOnFaint,
+                playthrough.nuzlocke.speciesClause,
+                playthrough.nuzlocke.nicknameClause,
+                playthrough.nuzlocke.setMode,
+              ].filter(Boolean).length;
+              return (
+                <button className={tabCls("rules")} onClick={() => setTab("rules")}>
+                  Rules
+                  {activeRulesCount > 0 && (
+                    <span className="ml-1.5 rounded-full bg-muted px-1.5 text-xs">
+                      {activeRulesCount}
+                    </span>
+                  )}
+                </button>
+              );
+            })()}
           </div>
 
           {tab === "badges" && (
@@ -731,6 +789,16 @@ function PlaythroughDetail({
               routeDataKey={group}
               onUpdate={onUpdate}
             />
+          )}
+          {tab === "team" && (
+            <PlaythroughTeamTab
+              playthrough={playthrough}
+              game={game}
+              onUpdate={onUpdate}
+            />
+          )}
+          {tab === "rules" && (
+            <RulesTab playthrough={playthrough} onUpdate={onUpdate} />
           )}
         </>
       )}
