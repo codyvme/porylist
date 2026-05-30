@@ -29,6 +29,7 @@ import type { User, UserProfile } from "@/lib/supabase";
 import { AccountSettingsModal, UserAvatar } from "@/components/AccountSettingsModal";
 import { CommandPalette } from "@/components/CommandPalette";
 import { WelcomeModal, shouldShowWelcome, markWelcomed } from "@/components/WelcomeModal";
+import { PWAStatus } from "@/components/PWAStatus";
 import { GameProvider } from "@/lib/game-context";
 
 type ThemeMode = "light" | "dark" | "system";
@@ -735,6 +736,7 @@ export function App() {
         {welcomeOpen && (
           <WelcomeModal onClose={dismissWelcome} onOpenPalette={() => setPaletteOpen(true)} />
         )}
+        <PWAStatus />
         {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
         {showSignIn && <SignInModal onClose={() => setShowSignIn(false)} />}
         {showAccountSettings && user && (
