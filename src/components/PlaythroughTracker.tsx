@@ -18,6 +18,7 @@ import {
   VERSION_DISPLAY_LABEL,
   DEFAULT_NUZLOCKE,
   TRIAL_GAME_GROUPS,
+  currentLevelCap,
   loadPlaythroughs,
   savePlaythroughs,
   newPlaythroughId,
@@ -25,6 +26,7 @@ import {
   type Badge,
   type NuzlockeOptions,
 } from "@/lib/playthroughs";
+import { EncountersTab } from "@/components/EncountersTab";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -502,7 +504,7 @@ function PokedexTab({
 
 // ─── Playthrough Detail ───────────────────────────────────────────────────────
 
-type DetailTab = "badges" | "pokedex";
+type DetailTab = "badges" | "pokedex" | "encounters";
 
 function PlaythroughDetail({
   playthrough,
@@ -588,11 +590,23 @@ function PlaythroughDetail({
               <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">Archived</span>
             )}
           </div>
-          {playthrough.nuzlocke.enabled && (
-            <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+            {playthrough.nuzlocke.enabled && (
               <span className="flex items-center gap-1 text-red-500 dark:text-red-400"><Skull className="h-3 w-3" />Nuzlocke</span>
-            </div>
-          )}
+            )}
+            {(() => {
+              const cap = currentLevelCap(playthrough);
+              if (!cap) return null;
+              return (
+                <span
+                  className="flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 font-medium text-amber-700 dark:text-amber-300"
+                  title={`Next: ${cap.nextBadge.leader ?? cap.nextBadge.name} — ace Lv ${cap.cap}`}
+                >
+                  Lv cap {cap.cap}
+                </span>
+              );
+            })()}
+          </div>
         </div>
 
         {/* Gear menu — all screen sizes */}
@@ -680,6 +694,16 @@ function PlaythroughDetail({
                 </span>
               )}
             </button>
+            {playthrough.nuzlocke.enabled && (
+              <button className={tabCls("encounters")} onClick={() => setTab("encounters")}>
+                Encounters
+                {(playthrough.encounters?.length ?? 0) > 0 && (
+                  <span className="ml-1.5 rounded-full bg-muted px-1.5 text-xs">
+                    {playthrough.encounters?.length}
+                  </span>
+                )}
+              </button>
+            )}
           </div>
 
           {tab === "badges" && (
@@ -699,6 +723,14 @@ function PlaythroughDetail({
             <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
               Unknown game.
             </div>
+          )}
+          {tab === "encounters" && game && (
+            <EncountersTab
+              playthrough={playthrough}
+              game={game}
+              routeDataKey={group}
+              onUpdate={onUpdate}
+            />
           )}
         </>
       )}

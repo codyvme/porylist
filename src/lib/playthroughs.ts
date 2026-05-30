@@ -9,6 +9,13 @@ export interface Badge {
   location?: string;
   /** Bulbapedia CDN image URL */
   image?: string;
+  /**
+   * Level of the leader's strongest Pokémon ("ace"). Used to compute the
+   * Nuzlocke level cap — typically the cap is the next un-defeated boss's
+   * ace. Left undefined for badges where the canonical ace level isn't
+   * well-defined (e.g. open-world Scarlet/Violet, Legends games, Trials).
+   */
+  aceLevel?: number;
 }
 
 export interface NuzlockeOptions {
@@ -34,6 +41,34 @@ export const DEFAULT_NUZLOCKE: NuzlockeOptions = {
   setMode: false,
 };
 
+/**
+ * One Pokémon encounter in a Nuzlocke run — typically the first encounter on
+ * a given route. Status transitions: caught → boxed/team → fainted.
+ * "missed" covers fleeing/KO'd-by-mistake encounters so the route still gets
+ * "burned" under first-encounter-only rules.
+ */
+export interface EncounterRecord {
+  id: string;
+  /** Route/area key (matches the keys used in route-data files) */
+  locationKey: string;
+  /** Display name for the route — denormalized so we don't need route-data to render history */
+  locationName: string;
+  /** PokéAPI species slug (e.g. "pikachu"). Empty for missed encounters. */
+  species: string;
+  status: "team" | "boxed" | "fainted" | "missed";
+  nickname?: string;
+  /** Level when caught */
+  level?: number;
+  /** Level when it fainted (for the cemetery view) */
+  faintedAtLevel?: number;
+  /** What KO'd it (e.g. "Whitney's Miltank") */
+  faintedTo?: string;
+  notes?: string;
+  /** Timestamps */
+  createdAt: number;
+  updatedAt: number;
+}
+
 export interface Playthrough {
   id: string;
   name: string;
@@ -44,8 +79,34 @@ export interface Playthrough {
   /** PokéAPI slugs of caught Pokémon for this specific run */
   caught: string[];
   nuzlocke: NuzlockeOptions;
+  /** Per-route Nuzlocke encounter log (optional; absent on non-Nuzlocke runs) */
+  encounters?: EncounterRecord[];
   createdAt: number;
   updatedAt: number;
+}
+
+/**
+ * Returns the active level cap for a playthrough: the ace level of the next
+ * un-defeated badge in the GAME_BADGES list. Returns null when caps aren't
+ * known for this game, or when the run is already complete.
+ */
+export function currentLevelCap(playthrough: Playthrough): { cap: number; nextBadge: Badge } | null {
+  // Resolve via group key — playthrough.gameValue is a version slug like
+  // "crystal" but GAME_BADGES is keyed by group ("gold-silver-crystal").
+  const group = VERSION_TO_GAME_GROUP[playthrough.gameValue] ?? playthrough.gameValue;
+  const badges = GAME_BADGES[group];
+  if (!badges) return null;
+  const earned = new Set(playthrough.earnedBadges);
+  for (const badge of badges) {
+    if (earned.has(badge.id)) continue;
+    if (badge.aceLevel == null) return null;
+    return { cap: badge.aceLevel, nextBadge: badge };
+  }
+  return null;
+}
+
+export function newEncounterId(): string {
+  return `enc_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
 // ─── Badge data per game ──────────────────────────────────────────────────────
@@ -139,133 +200,133 @@ const PALDEA: Record<string, string> = {
 
 export const GAME_BADGES: Record<string, Badge[]> = {
   "red-blue-yellow": [
-    { id: "boulder", name: "Boulder",  leader: "Brock",    location: "Pewter City",      image: KANTO.boulder },
-    { id: "cascade", name: "Cascade",  leader: "Misty",    location: "Cerulean City",    image: KANTO.cascade },
-    { id: "thunder", name: "Thunder",  leader: "Lt. Surge", location: "Vermilion City",  image: KANTO.thunder },
-    { id: "rainbow", name: "Rainbow",  leader: "Erika",    location: "Celadon City",     image: KANTO.rainbow },
-    { id: "soul",    name: "Soul",     leader: "Koga",     location: "Fuchsia City",     image: KANTO.soul },
-    { id: "marsh",   name: "Marsh",    leader: "Sabrina",  location: "Saffron City",     image: KANTO.marsh },
-    { id: "volcano", name: "Volcano",  leader: "Blaine",   location: "Cinnabar Island",  image: KANTO.volcano },
-    { id: "earth",   name: "Earth",    leader: "Giovanni", location: "Viridian City",    image: KANTO.earth },
+    { id: "boulder", name: "Boulder",  leader: "Brock",    location: "Pewter City",      image: KANTO.boulder, aceLevel: 14 },
+    { id: "cascade", name: "Cascade",  leader: "Misty",    location: "Cerulean City",    image: KANTO.cascade, aceLevel: 21 },
+    { id: "thunder", name: "Thunder",  leader: "Lt. Surge", location: "Vermilion City",  image: KANTO.thunder, aceLevel: 24 },
+    { id: "rainbow", name: "Rainbow",  leader: "Erika",    location: "Celadon City",     image: KANTO.rainbow, aceLevel: 29 },
+    { id: "soul",    name: "Soul",     leader: "Koga",     location: "Fuchsia City",     image: KANTO.soul,    aceLevel: 43 },
+    { id: "marsh",   name: "Marsh",    leader: "Sabrina",  location: "Saffron City",     image: KANTO.marsh,   aceLevel: 50 },
+    { id: "volcano", name: "Volcano",  leader: "Blaine",   location: "Cinnabar Island",  image: KANTO.volcano, aceLevel: 47 },
+    { id: "earth",   name: "Earth",    leader: "Giovanni", location: "Viridian City",    image: KANTO.earth,   aceLevel: 50 },
   ],
 
   "gold-silver-crystal": [
     // Johto
-    { id: "zephyr",   name: "Zephyr",   leader: "Falkner", location: "Violet City",      image: JOHTO.zephyr },
-    { id: "hive",     name: "Hive",     leader: "Bugsy",   location: "Azalea Town",      image: JOHTO.hive },
-    { id: "plain",    name: "Plain",    leader: "Whitney",  location: "Goldenrod City",  image: JOHTO.plain },
-    { id: "fog",      name: "Fog",      leader: "Morty",   location: "Ecruteak City",    image: JOHTO.fog },
-    { id: "storm",    name: "Storm",    leader: "Chuck",   location: "Cianwood City",    image: JOHTO.storm },
-    { id: "mineral",  name: "Mineral",  leader: "Jasmine", location: "Olivine City",     image: JOHTO.mineral },
-    { id: "glacier",  name: "Glacier",  leader: "Pryce",   location: "Mahogany Town",    image: JOHTO.glacier },
-    { id: "rising",   name: "Rising",   leader: "Clair",   location: "Blackthorn City",  image: JOHTO.rising },
+    { id: "zephyr",   name: "Zephyr",   leader: "Falkner", location: "Violet City",      image: JOHTO.zephyr,  aceLevel: 9  },
+    { id: "hive",     name: "Hive",     leader: "Bugsy",   location: "Azalea Town",      image: JOHTO.hive,    aceLevel: 16 },
+    { id: "plain",    name: "Plain",    leader: "Whitney",  location: "Goldenrod City",  image: JOHTO.plain,   aceLevel: 20 },
+    { id: "fog",      name: "Fog",      leader: "Morty",   location: "Ecruteak City",    image: JOHTO.fog,     aceLevel: 25 },
+    { id: "storm",    name: "Storm",    leader: "Chuck",   location: "Cianwood City",    image: JOHTO.storm,   aceLevel: 30 },
+    { id: "mineral",  name: "Mineral",  leader: "Jasmine", location: "Olivine City",     image: JOHTO.mineral, aceLevel: 35 },
+    { id: "glacier",  name: "Glacier",  leader: "Pryce",   location: "Mahogany Town",    image: JOHTO.glacier, aceLevel: 34 },
+    { id: "rising",   name: "Rising",   leader: "Clair",   location: "Blackthorn City",  image: JOHTO.rising,  aceLevel: 41 },
     // Kanto
-    { id: "boulder",  name: "Boulder",  leader: "Brock",   location: "Pewter City",      image: KANTO.boulder },
-    { id: "cascade",  name: "Cascade",  leader: "Misty",   location: "Cerulean City",    image: KANTO.cascade },
-    { id: "thunder",  name: "Thunder",  leader: "Lt. Surge", location: "Vermilion City", image: KANTO.thunder },
-    { id: "rainbow",  name: "Rainbow",  leader: "Erika",   location: "Celadon City",     image: KANTO.rainbow },
-    { id: "soul",     name: "Soul",     leader: "Koga",    location: "Fuchsia City",     image: KANTO.soul },
-    { id: "marsh",    name: "Marsh",    leader: "Sabrina", location: "Saffron City",     image: KANTO.marsh },
-    { id: "volcano",  name: "Volcano",  leader: "Blaine",  location: "Cinnabar Island",  image: KANTO.volcano },
-    { id: "earth",    name: "Earth",    leader: "Blue",    location: "Viridian City",    image: KANTO.earth },
+    { id: "boulder",  name: "Boulder",  leader: "Brock",   location: "Pewter City",      image: KANTO.boulder, aceLevel: 50 },
+    { id: "cascade",  name: "Cascade",  leader: "Misty",   location: "Cerulean City",    image: KANTO.cascade, aceLevel: 54 },
+    { id: "thunder",  name: "Thunder",  leader: "Lt. Surge", location: "Vermilion City", image: KANTO.thunder, aceLevel: 53 },
+    { id: "rainbow",  name: "Rainbow",  leader: "Erika",   location: "Celadon City",     image: KANTO.rainbow, aceLevel: 56 },
+    { id: "soul",     name: "Soul",     leader: "Koga",    location: "Fuchsia City",     image: KANTO.soul,    aceLevel: 58 },
+    { id: "marsh",    name: "Marsh",    leader: "Sabrina", location: "Saffron City",     image: KANTO.marsh,   aceLevel: 60 },
+    { id: "volcano",  name: "Volcano",  leader: "Blaine",  location: "Cinnabar Island",  image: KANTO.volcano, aceLevel: 58 },
+    { id: "earth",    name: "Earth",    leader: "Blue",    location: "Viridian City",    image: KANTO.earth,   aceLevel: 61 },
   ],
 
   "ruby-sapphire-emerald": [
-    { id: "stone",   name: "Stone",   leader: "Roxanne", location: "Rustboro City",    image: HOENN.stone },
-    { id: "knuckle", name: "Knuckle", leader: "Brawly",  location: "Dewford Town",     image: HOENN.knuckle },
-    { id: "dynamo",  name: "Dynamo",  leader: "Wattson", location: "Mauville City",    image: HOENN.dynamo },
-    { id: "heat",    name: "Heat",    leader: "Flannery", location: "Lavaridge Town",  image: HOENN.heat },
-    { id: "balance", name: "Balance", leader: "Norman",  location: "Petalburg City",   image: HOENN.balance },
-    { id: "feather", name: "Feather", leader: "Winona",  location: "Fortree City",     image: HOENN.feather },
-    { id: "mind",    name: "Mind",    leader: "Tate & Liza", location: "Mossdeep City", image: HOENN.mind },
-    { id: "rain",    name: "Rain",    leader: "Wallace", location: "Sootopolis City",  image: HOENN.rain },
+    { id: "stone",   name: "Stone",   leader: "Roxanne", location: "Rustboro City",       image: HOENN.stone,   aceLevel: 15 },
+    { id: "knuckle", name: "Knuckle", leader: "Brawly",  location: "Dewford Town",        image: HOENN.knuckle, aceLevel: 19 },
+    { id: "dynamo",  name: "Dynamo",  leader: "Wattson", location: "Mauville City",       image: HOENN.dynamo,  aceLevel: 24 },
+    { id: "heat",    name: "Heat",    leader: "Flannery", location: "Lavaridge Town",     image: HOENN.heat,    aceLevel: 29 },
+    { id: "balance", name: "Balance", leader: "Norman",  location: "Petalburg City",      image: HOENN.balance, aceLevel: 31 },
+    { id: "feather", name: "Feather", leader: "Winona",  location: "Fortree City",        image: HOENN.feather, aceLevel: 33 },
+    { id: "mind",    name: "Mind",    leader: "Tate & Liza", location: "Mossdeep City",   image: HOENN.mind,    aceLevel: 42 },
+    { id: "rain",    name: "Rain",    leader: "Wallace", location: "Sootopolis City",     image: HOENN.rain,    aceLevel: 43 },
   ],
 
   "firered-leafgreen": [
-    { id: "boulder", name: "Boulder",  leader: "Brock",    location: "Pewter City",      image: KANTO.boulder },
-    { id: "cascade", name: "Cascade",  leader: "Misty",    location: "Cerulean City",    image: KANTO.cascade },
-    { id: "thunder", name: "Thunder",  leader: "Lt. Surge", location: "Vermilion City",  image: KANTO.thunder },
-    { id: "rainbow", name: "Rainbow",  leader: "Erika",    location: "Celadon City",     image: KANTO.rainbow },
-    { id: "soul",    name: "Soul",     leader: "Koga",     location: "Fuchsia City",     image: KANTO.soul },
-    { id: "marsh",   name: "Marsh",    leader: "Sabrina",  location: "Saffron City",     image: KANTO.marsh },
-    { id: "volcano", name: "Volcano",  leader: "Blaine",   location: "Cinnabar Island",  image: KANTO.volcano },
-    { id: "earth",   name: "Earth",    leader: "Giovanni", location: "Viridian City",    image: KANTO.earth },
+    { id: "boulder", name: "Boulder",  leader: "Brock",    location: "Pewter City",     image: KANTO.boulder, aceLevel: 14 },
+    { id: "cascade", name: "Cascade",  leader: "Misty",    location: "Cerulean City",   image: KANTO.cascade, aceLevel: 21 },
+    { id: "thunder", name: "Thunder",  leader: "Lt. Surge", location: "Vermilion City", image: KANTO.thunder, aceLevel: 28 },
+    { id: "rainbow", name: "Rainbow",  leader: "Erika",    location: "Celadon City",    image: KANTO.rainbow, aceLevel: 32 },
+    { id: "soul",    name: "Soul",     leader: "Koga",     location: "Fuchsia City",    image: KANTO.soul,    aceLevel: 43 },
+    { id: "marsh",   name: "Marsh",    leader: "Sabrina",  location: "Saffron City",    image: KANTO.marsh,   aceLevel: 50 },
+    { id: "volcano", name: "Volcano",  leader: "Blaine",   location: "Cinnabar Island", image: KANTO.volcano, aceLevel: 48 },
+    { id: "earth",   name: "Earth",    leader: "Giovanni", location: "Viridian City",   image: KANTO.earth,   aceLevel: 50 },
   ],
 
   "diamond-pearl-platinum": [
-    { id: "coal",    name: "Coal",    leader: "Roark",        location: "Oreburgh City",  image: SINNOH.coal },
-    { id: "forest",  name: "Forest",  leader: "Gardenia",     location: "Eterna City",    image: SINNOH.forest },
-    { id: "cobble",  name: "Cobble",  leader: "Maylene",      location: "Veilstone City", image: SINNOH.cobble },
-    { id: "fen",     name: "Fen",     leader: "Crasher Wake", location: "Pastoria City",  image: SINNOH.fen },
-    { id: "relic",   name: "Relic",   leader: "Fantina",      location: "Hearthome City", image: SINNOH.relic },
-    { id: "mine",    name: "Mine",    leader: "Byron",        location: "Canalave City",  image: SINNOH.mine },
-    { id: "icicle",  name: "Icicle",  leader: "Candice",      location: "Snowpoint City", image: SINNOH.icicle },
-    { id: "beacon",  name: "Beacon",  leader: "Volkner",      location: "Sunyshore City", image: SINNOH.beacon },
+    { id: "coal",    name: "Coal",    leader: "Roark",        location: "Oreburgh City",  image: SINNOH.coal,   aceLevel: 14 },
+    { id: "forest",  name: "Forest",  leader: "Gardenia",     location: "Eterna City",    image: SINNOH.forest, aceLevel: 22 },
+    { id: "cobble",  name: "Cobble",  leader: "Maylene",      location: "Veilstone City", image: SINNOH.cobble, aceLevel: 32 },
+    { id: "fen",     name: "Fen",     leader: "Crasher Wake", location: "Pastoria City",  image: SINNOH.fen,    aceLevel: 37 },
+    { id: "relic",   name: "Relic",   leader: "Fantina",      location: "Hearthome City", image: SINNOH.relic,  aceLevel: 36 },
+    { id: "mine",    name: "Mine",    leader: "Byron",        location: "Canalave City",  image: SINNOH.mine,   aceLevel: 41 },
+    { id: "icicle",  name: "Icicle",  leader: "Candice",      location: "Snowpoint City", image: SINNOH.icicle, aceLevel: 42 },
+    { id: "beacon",  name: "Beacon",  leader: "Volkner",      location: "Sunyshore City", image: SINNOH.beacon, aceLevel: 49 },
   ],
 
   "heartgold-soulsilver": [
     // Johto
-    { id: "zephyr",   name: "Zephyr",   leader: "Falkner", location: "Violet City",      image: JOHTO.zephyr },
-    { id: "hive",     name: "Hive",     leader: "Bugsy",   location: "Azalea Town",      image: JOHTO.hive },
-    { id: "plain",    name: "Plain",    leader: "Whitney",  location: "Goldenrod City",  image: JOHTO.plain },
-    { id: "fog",      name: "Fog",      leader: "Morty",   location: "Ecruteak City",    image: JOHTO.fog },
-    { id: "storm",    name: "Storm",    leader: "Chuck",   location: "Cianwood City",    image: JOHTO.storm },
-    { id: "mineral",  name: "Mineral",  leader: "Jasmine", location: "Olivine City",     image: JOHTO.mineral },
-    { id: "glacier",  name: "Glacier",  leader: "Pryce",   location: "Mahogany Town",    image: JOHTO.glacier },
-    { id: "rising",   name: "Rising",   leader: "Clair",   location: "Blackthorn City",  image: JOHTO.rising },
+    { id: "zephyr",   name: "Zephyr",   leader: "Falkner", location: "Violet City",      image: JOHTO.zephyr,  aceLevel: 9  },
+    { id: "hive",     name: "Hive",     leader: "Bugsy",   location: "Azalea Town",      image: JOHTO.hive,    aceLevel: 17 },
+    { id: "plain",    name: "Plain",    leader: "Whitney",  location: "Goldenrod City",  image: JOHTO.plain,   aceLevel: 19 },
+    { id: "fog",      name: "Fog",      leader: "Morty",   location: "Ecruteak City",    image: JOHTO.fog,     aceLevel: 24 },
+    { id: "storm",    name: "Storm",    leader: "Chuck",   location: "Cianwood City",    image: JOHTO.storm,   aceLevel: 30 },
+    { id: "mineral",  name: "Mineral",  leader: "Jasmine", location: "Olivine City",     image: JOHTO.mineral, aceLevel: 35 },
+    { id: "glacier",  name: "Glacier",  leader: "Pryce",   location: "Mahogany Town",    image: JOHTO.glacier, aceLevel: 34 },
+    { id: "rising",   name: "Rising",   leader: "Clair",   location: "Blackthorn City",  image: JOHTO.rising,  aceLevel: 41 },
     // Kanto
-    { id: "boulder",  name: "Boulder",  leader: "Brock",   location: "Pewter City",      image: KANTO.boulder },
-    { id: "cascade",  name: "Cascade",  leader: "Misty",   location: "Cerulean City",    image: KANTO.cascade },
-    { id: "thunder",  name: "Thunder",  leader: "Lt. Surge", location: "Vermilion City", image: KANTO.thunder },
-    { id: "rainbow",  name: "Rainbow",  leader: "Erika",   location: "Celadon City",     image: KANTO.rainbow },
-    { id: "soul",     name: "Soul",     leader: "Koga",    location: "Fuchsia City",     image: KANTO.soul },
-    { id: "marsh",    name: "Marsh",    leader: "Sabrina", location: "Saffron City",     image: KANTO.marsh },
-    { id: "volcano",  name: "Volcano",  leader: "Blaine",  location: "Cinnabar Island",  image: KANTO.volcano },
-    { id: "earth",    name: "Earth",    leader: "Blue",    location: "Viridian City",    image: KANTO.earth },
+    { id: "boulder",  name: "Boulder",  leader: "Brock",   location: "Pewter City",      image: KANTO.boulder, aceLevel: 51 },
+    { id: "cascade",  name: "Cascade",  leader: "Misty",   location: "Cerulean City",    image: KANTO.cascade, aceLevel: 56 },
+    { id: "thunder",  name: "Thunder",  leader: "Lt. Surge", location: "Vermilion City", image: KANTO.thunder, aceLevel: 58 },
+    { id: "rainbow",  name: "Rainbow",  leader: "Erika",   location: "Celadon City",     image: KANTO.rainbow, aceLevel: 61 },
+    { id: "soul",     name: "Soul",     leader: "Koga",    location: "Fuchsia City",     image: KANTO.soul,    aceLevel: 50 },
+    { id: "marsh",    name: "Marsh",    leader: "Sabrina", location: "Saffron City",     image: KANTO.marsh,   aceLevel: 65 },
+    { id: "volcano",  name: "Volcano",  leader: "Blaine",  location: "Cinnabar Island",  image: KANTO.volcano, aceLevel: 63 },
+    { id: "earth",    name: "Earth",    leader: "Blue",    location: "Viridian City",    image: KANTO.earth,   aceLevel: 64 },
   ],
 
   "black-white": [
-    { id: "trio",   name: "Trio",   leader: "Cilan / Chili / Cress", location: "Striaton City",  image: UNOVA.trio },
-    { id: "basic",  name: "Basic",  leader: "Lenora",  location: "Nacrene City",                  image: UNOVA.basic },
-    { id: "insect", name: "Insect", leader: "Burgh",   location: "Castelia City",                 image: UNOVA.insect },
-    { id: "bolt",   name: "Bolt",   leader: "Elesa",   location: "Nimbasa City",                  image: UNOVA.bolt },
-    { id: "quake",  name: "Quake",  leader: "Clay",    location: "Driftveil City",                image: UNOVA.quake },
-    { id: "jet",    name: "Jet",    leader: "Skyla",   location: "Mistralton City",               image: UNOVA.jet },
-    { id: "freeze", name: "Freeze", leader: "Brycen",  location: "Icirrus City",                  image: UNOVA.freeze },
-    { id: "legend", name: "Legend", leader: "Drayden / Iris", location: "Opelucid City",          image: UNOVA.legend },
+    { id: "trio",   name: "Trio",   leader: "Cilan / Chili / Cress", location: "Striaton City",  image: UNOVA.trio,   aceLevel: 14 },
+    { id: "basic",  name: "Basic",  leader: "Lenora",  location: "Nacrene City",                  image: UNOVA.basic,  aceLevel: 20 },
+    { id: "insect", name: "Insect", leader: "Burgh",   location: "Castelia City",                 image: UNOVA.insect, aceLevel: 24 },
+    { id: "bolt",   name: "Bolt",   leader: "Elesa",   location: "Nimbasa City",                  image: UNOVA.bolt,   aceLevel: 27 },
+    { id: "quake",  name: "Quake",  leader: "Clay",    location: "Driftveil City",                image: UNOVA.quake,  aceLevel: 31 },
+    { id: "jet",    name: "Jet",    leader: "Skyla",   location: "Mistralton City",               image: UNOVA.jet,    aceLevel: 39 },
+    { id: "freeze", name: "Freeze", leader: "Brycen",  location: "Icirrus City",                  image: UNOVA.freeze, aceLevel: 43 },
+    { id: "legend", name: "Legend", leader: "Drayden / Iris", location: "Opelucid City",          image: UNOVA.legend, aceLevel: 48 },
   ],
 
   "black2-white2": [
-    { id: "basic",  name: "Basic",  leader: "Cheren",  location: "Aspertia City",  image: UNOVA.basic },
-    { id: "toxic",  name: "Toxic",  leader: "Roxie",   location: "Virbank City",   image: UNOVA.toxic },
-    { id: "insect", name: "Insect", leader: "Burgh",   location: "Castelia City",  image: UNOVA.insect },
-    { id: "bolt",   name: "Bolt",   leader: "Elesa",   location: "Nimbasa City",   image: UNOVA.bolt },
-    { id: "quake",  name: "Quake",  leader: "Clay",    location: "Driftveil City", image: UNOVA.quake },
-    { id: "jet",    name: "Jet",    leader: "Skyla",   location: "Mistralton City", image: UNOVA.jet },
-    { id: "legend", name: "Legend", leader: "Drayden", location: "Opelucid City",  image: UNOVA.legend },
-    { id: "wave",   name: "Wave",   leader: "Marlon",  location: "Humilau City",   image: UNOVA.wave },
+    { id: "basic",  name: "Basic",  leader: "Cheren",  location: "Aspertia City",   image: UNOVA.basic,  aceLevel: 13 },
+    { id: "toxic",  name: "Toxic",  leader: "Roxie",   location: "Virbank City",    image: UNOVA.toxic,  aceLevel: 18 },
+    { id: "insect", name: "Insect", leader: "Burgh",   location: "Castelia City",   image: UNOVA.insect, aceLevel: 22 },
+    { id: "bolt",   name: "Bolt",   leader: "Elesa",   location: "Nimbasa City",    image: UNOVA.bolt,   aceLevel: 26 },
+    { id: "quake",  name: "Quake",  leader: "Clay",    location: "Driftveil City",  image: UNOVA.quake,  aceLevel: 31 },
+    { id: "jet",    name: "Jet",    leader: "Skyla",   location: "Mistralton City", image: UNOVA.jet,    aceLevel: 37 },
+    { id: "legend", name: "Legend", leader: "Drayden", location: "Opelucid City",   image: UNOVA.legend, aceLevel: 46 },
+    { id: "wave",   name: "Wave",   leader: "Marlon",  location: "Humilau City",    image: UNOVA.wave,   aceLevel: 49 },
   ],
 
   "x-y": [
-    { id: "bug",     name: "Bug",     leader: "Viola",   location: "Santalune City", image: KALOS.bug },
-    { id: "cliff",   name: "Cliff",   leader: "Grant",   location: "Cyllage City",   image: KALOS.cliff },
-    { id: "rumble",  name: "Rumble",  leader: "Korrina", location: "Shalour City",   image: KALOS.rumble },
-    { id: "plant",   name: "Plant",   leader: "Ramos",   location: "Coumarine City", image: KALOS.plant },
-    { id: "voltage", name: "Voltage", leader: "Clemont", location: "Lumiose City",   image: KALOS.voltage },
-    { id: "fairy",   name: "Fairy",   leader: "Valerie", location: "Laverre City",   image: KALOS.fairy },
-    { id: "psychic", name: "Psychic", leader: "Olympia", location: "Anistar City",   image: KALOS.psychic },
-    { id: "iceberg", name: "Iceberg", leader: "Wulfric", location: "Snowbelle City", image: KALOS.iceberg },
+    { id: "bug",     name: "Bug",     leader: "Viola",   location: "Santalune City", image: KALOS.bug,     aceLevel: 12 },
+    { id: "cliff",   name: "Cliff",   leader: "Grant",   location: "Cyllage City",   image: KALOS.cliff,   aceLevel: 25 },
+    { id: "rumble",  name: "Rumble",  leader: "Korrina", location: "Shalour City",   image: KALOS.rumble,  aceLevel: 32 },
+    { id: "plant",   name: "Plant",   leader: "Ramos",   location: "Coumarine City", image: KALOS.plant,   aceLevel: 38 },
+    { id: "voltage", name: "Voltage", leader: "Clemont", location: "Lumiose City",   image: KALOS.voltage, aceLevel: 37 },
+    { id: "fairy",   name: "Fairy",   leader: "Valerie", location: "Laverre City",   image: KALOS.fairy,   aceLevel: 42 },
+    { id: "psychic", name: "Psychic", leader: "Olympia", location: "Anistar City",   image: KALOS.psychic, aceLevel: 48 },
+    { id: "iceberg", name: "Iceberg", leader: "Wulfric", location: "Snowbelle City", image: KALOS.iceberg, aceLevel: 59 },
   ],
 
   "omega-ruby-alpha-sapphire": [
-    { id: "stone",   name: "Stone",   leader: "Roxanne", location: "Rustboro City",    image: HOENN.stone },
-    { id: "knuckle", name: "Knuckle", leader: "Brawly",  location: "Dewford Town",     image: HOENN.knuckle },
-    { id: "dynamo",  name: "Dynamo",  leader: "Wattson", location: "Mauville City",    image: HOENN.dynamo },
-    { id: "heat",    name: "Heat",    leader: "Flannery", location: "Lavaridge Town",  image: HOENN.heat },
-    { id: "balance", name: "Balance", leader: "Norman",  location: "Petalburg City",   image: HOENN.balance },
-    { id: "feather", name: "Feather", leader: "Winona",  location: "Fortree City",     image: HOENN.feather },
-    { id: "mind",    name: "Mind",    leader: "Tate & Liza", location: "Mossdeep City", image: HOENN.mind },
-    { id: "rain",    name: "Rain",    leader: "Wallace", location: "Sootopolis City",  image: HOENN.rain },
+    { id: "stone",   name: "Stone",   leader: "Roxanne", location: "Rustboro City",       image: HOENN.stone,   aceLevel: 14 },
+    { id: "knuckle", name: "Knuckle", leader: "Brawly",  location: "Dewford Town",        image: HOENN.knuckle, aceLevel: 18 },
+    { id: "dynamo",  name: "Dynamo",  leader: "Wattson", location: "Mauville City",       image: HOENN.dynamo,  aceLevel: 22 },
+    { id: "heat",    name: "Heat",    leader: "Flannery", location: "Lavaridge Town",     image: HOENN.heat,    aceLevel: 28 },
+    { id: "balance", name: "Balance", leader: "Norman",  location: "Petalburg City",      image: HOENN.balance, aceLevel: 30 },
+    { id: "feather", name: "Feather", leader: "Winona",  location: "Fortree City",        image: HOENN.feather, aceLevel: 33 },
+    { id: "mind",    name: "Mind",    leader: "Tate & Liza", location: "Mossdeep City",   image: HOENN.mind,    aceLevel: 42 },
+    { id: "rain",    name: "Rain",    leader: "Wallace", location: "Sootopolis City",     image: HOENN.rain,    aceLevel: 44 },
   ],
 
   "sun-moon": [
@@ -296,36 +357,36 @@ export const GAME_BADGES: Record<string, Badge[]> = {
   ],
 
   "lets-go": [
-    { id: "boulder", name: "Boulder",  leader: "Brock",    location: "Pewter City",      image: KANTO.boulder },
-    { id: "cascade", name: "Cascade",  leader: "Misty",    location: "Cerulean City",    image: KANTO.cascade },
-    { id: "thunder", name: "Thunder",  leader: "Lt. Surge", location: "Vermilion City",  image: KANTO.thunder },
-    { id: "rainbow", name: "Rainbow",  leader: "Erika",    location: "Celadon City",     image: KANTO.rainbow },
-    { id: "soul",    name: "Soul",     leader: "Koga",     location: "Fuchsia City",     image: KANTO.soul },
-    { id: "marsh",   name: "Marsh",    leader: "Sabrina",  location: "Saffron City",     image: KANTO.marsh },
-    { id: "volcano", name: "Volcano",  leader: "Blaine",   location: "Cinnabar Island",  image: KANTO.volcano },
-    { id: "earth",   name: "Earth",    leader: "Giovanni", location: "Viridian City",    image: KANTO.earth },
+    { id: "boulder", name: "Boulder",  leader: "Brock",    location: "Pewter City",     image: KANTO.boulder, aceLevel: 12 },
+    { id: "cascade", name: "Cascade",  leader: "Misty",    location: "Cerulean City",   image: KANTO.cascade, aceLevel: 21 },
+    { id: "thunder", name: "Thunder",  leader: "Lt. Surge", location: "Vermilion City", image: KANTO.thunder, aceLevel: 28 },
+    { id: "rainbow", name: "Rainbow",  leader: "Erika",    location: "Celadon City",    image: KANTO.rainbow, aceLevel: 32 },
+    { id: "soul",    name: "Soul",     leader: "Koga",     location: "Fuchsia City",    image: KANTO.soul,    aceLevel: 37 },
+    { id: "marsh",   name: "Marsh",    leader: "Sabrina",  location: "Saffron City",    image: KANTO.marsh,   aceLevel: 45 },
+    { id: "volcano", name: "Volcano",  leader: "Blaine",   location: "Cinnabar Island", image: KANTO.volcano, aceLevel: 50 },
+    { id: "earth",   name: "Earth",    leader: "Giovanni", location: "Viridian City",   image: KANTO.earth,   aceLevel: 55 },
   ],
 
   "sword-shield": [
-    { id: "grass",    name: "Grass",    leader: "Milo",    location: "Turffield",     image: GALAR.grass },
-    { id: "water",    name: "Water",    leader: "Nessa",   location: "Hulbury",       image: GALAR.water },
-    { id: "fire",     name: "Fire",     leader: "Kabu",    location: "Motostoke",     image: GALAR.fire },
-    { id: "ghost",    name: "Ghost / Fighting", leader: "Allister / Bea", location: "Stow-on-Side", image: GALAR.ghost },
-    { id: "fairy",    name: "Fairy",    leader: "Opal",    location: "Ballonlea",     image: GALAR.fairy },
-    { id: "rock",     name: "Rock / Ice", leader: "Gordie / Melony", location: "Circhester", image: GALAR.rock },
-    { id: "dark",     name: "Dark",     leader: "Piers",   location: "Spikemuth",     image: GALAR.dark },
-    { id: "dragon",   name: "Dragon",   leader: "Raihan",  location: "Hammerlocke",   image: GALAR.dragon },
+    { id: "grass",    name: "Grass",    leader: "Milo",    location: "Turffield",     image: GALAR.grass,  aceLevel: 20 },
+    { id: "water",    name: "Water",    leader: "Nessa",   location: "Hulbury",       image: GALAR.water,  aceLevel: 24 },
+    { id: "fire",     name: "Fire",     leader: "Kabu",    location: "Motostoke",     image: GALAR.fire,   aceLevel: 29 },
+    { id: "ghost",    name: "Ghost / Fighting", leader: "Allister / Bea", location: "Stow-on-Side", image: GALAR.ghost, aceLevel: 36 },
+    { id: "fairy",    name: "Fairy",    leader: "Opal",    location: "Ballonlea",     image: GALAR.fairy,  aceLevel: 39 },
+    { id: "rock",     name: "Rock / Ice", leader: "Gordie / Melony", location: "Circhester", image: GALAR.rock, aceLevel: 42 },
+    { id: "dark",     name: "Dark",     leader: "Piers",   location: "Spikemuth",     image: GALAR.dark,   aceLevel: 45 },
+    { id: "dragon",   name: "Dragon",   leader: "Raihan",  location: "Hammerlocke",   image: GALAR.dragon, aceLevel: 50 },
   ],
 
   "brilliant-diamond-shining-pearl": [
-    { id: "coal",    name: "Coal",    leader: "Roark",        location: "Oreburgh City",  image: SINNOH.coal },
-    { id: "forest",  name: "Forest",  leader: "Gardenia",     location: "Eterna City",    image: SINNOH.forest },
-    { id: "cobble",  name: "Cobble",  leader: "Maylene",      location: "Veilstone City", image: SINNOH.cobble },
-    { id: "fen",     name: "Fen",     leader: "Crasher Wake", location: "Pastoria City",  image: SINNOH.fen },
-    { id: "relic",   name: "Relic",   leader: "Fantina",      location: "Hearthome City", image: SINNOH.relic },
-    { id: "mine",    name: "Mine",    leader: "Byron",        location: "Canalave City",  image: SINNOH.mine },
-    { id: "icicle",  name: "Icicle",  leader: "Candice",      location: "Snowpoint City", image: SINNOH.icicle },
-    { id: "beacon",  name: "Beacon",  leader: "Volkner",      location: "Sunyshore City", image: SINNOH.beacon },
+    { id: "coal",    name: "Coal",    leader: "Roark",        location: "Oreburgh City",  image: SINNOH.coal,   aceLevel: 14 },
+    { id: "forest",  name: "Forest",  leader: "Gardenia",     location: "Eterna City",    image: SINNOH.forest, aceLevel: 22 },
+    { id: "cobble",  name: "Cobble",  leader: "Maylene",      location: "Veilstone City", image: SINNOH.cobble, aceLevel: 30 },
+    { id: "fen",     name: "Fen",     leader: "Crasher Wake", location: "Pastoria City",  image: SINNOH.fen,    aceLevel: 39 },
+    { id: "relic",   name: "Relic",   leader: "Fantina",      location: "Hearthome City", image: SINNOH.relic,  aceLevel: 39 },
+    { id: "mine",    name: "Mine",    leader: "Byron",        location: "Canalave City",  image: SINNOH.mine,   aceLevel: 39 },
+    { id: "icicle",  name: "Icicle",  leader: "Candice",      location: "Snowpoint City", image: SINNOH.icicle, aceLevel: 44 },
+    { id: "beacon",  name: "Beacon",  leader: "Volkner",      location: "Sunyshore City", image: SINNOH.beacon, aceLevel: 49 },
   ],
 
   "legends-arceus": [
@@ -338,14 +399,16 @@ export const GAME_BADGES: Record<string, Badge[]> = {
   ],
 
   "scarlet-violet": [
-    { id: "bug",      name: "Bug",      leader: "Katy",    location: "Cortondo" },
-    { id: "grass",    name: "Grass",    leader: "Brassius", location: "Artazon" },
-    { id: "electric", name: "Electric", leader: "Iono",    location: "Levincia",   image: PALDEA.electric },
-    { id: "water",    name: "Water",    leader: "Kofu",    location: "Cascarrafa" },
-    { id: "normal",   name: "Normal",   leader: "Larry",   location: "Medali",     image: PALDEA.normal },
-    { id: "ghost",    name: "Ghost",    leader: "Ryme",    location: "Montenevera" },
-    { id: "psychic",  name: "Psychic",  leader: "Tulip",   location: "Alfornada" },
-    { id: "ice",      name: "Ice",      leader: "Grusha",  location: "Glaseado" },
+    // SV is open-world, so cap order is fuzzy — these are based on the
+    // official recommended Victory Road order.
+    { id: "bug",      name: "Bug",      leader: "Katy",    location: "Cortondo",   aceLevel: 15 },
+    { id: "grass",    name: "Grass",    leader: "Brassius", location: "Artazon",   aceLevel: 17 },
+    { id: "electric", name: "Electric", leader: "Iono",    location: "Levincia",   image: PALDEA.electric, aceLevel: 24 },
+    { id: "water",    name: "Water",    leader: "Kofu",    location: "Cascarrafa", aceLevel: 30 },
+    { id: "normal",   name: "Normal",   leader: "Larry",   location: "Medali",     image: PALDEA.normal, aceLevel: 36 },
+    { id: "ghost",    name: "Ghost",    leader: "Ryme",    location: "Montenevera", aceLevel: 42 },
+    { id: "psychic",  name: "Psychic",  leader: "Tulip",   location: "Alfornada",  aceLevel: 45 },
+    { id: "ice",      name: "Ice",      leader: "Grusha",  location: "Glaseado",   aceLevel: 48 },
   ],
 };
 
@@ -453,6 +516,7 @@ export function loadPlaythroughs(): Playthrough[] {
       ...p,
       gameValue: GROUP_TO_FIRST_VERSION[p.gameValue] ?? p.gameValue,
       nuzlocke: (p.nuzlocke as NuzlockeOptions | undefined) ?? { ...DEFAULT_NUZLOCKE },
+      encounters: Array.isArray(p.encounters) ? p.encounters : undefined,
     }));
   } catch {
     return [];
