@@ -7,6 +7,7 @@ import { spriteUrl } from "@/lib/games";
 import { PokemonModal } from "@/components/PokemonModal";
 import { Tooltip } from "@/components/ui/tooltip";
 import { cn, formatPokemonName } from "@/lib/utils";
+import { RouteTeamSuggestions } from "@/components/RouteTeamSuggestions";
 
 const VERSION_LABELS: Record<string, string> = {
   "red": "Red", "blue": "Blue", "yellow": "Yellow",
@@ -387,8 +388,19 @@ function LocationDetail({ location, selectedVersion, spriteVersion, game, caught
     encounters.every((enc) => (caught[caughtKey] ?? []).includes(enc.name))
   );
 
+  const allRoutePokemon = useMemo(
+    () => [...new Set(filtered.map((e) => e.name))],
+    [filtered],
+  );
+  const gameOption = GAMES_BY_VALUE[game] ?? null;
+
   return (
     <div>
+      <RouteTeamSuggestions
+        routePokemonNames={allRoutePokemon}
+        game={gameOption}
+        onOpen={onOpen}
+      />
       {allCaught ? (
         <p className="py-8 text-center text-sm text-muted-foreground">
           You've caught everything here! 🎉
