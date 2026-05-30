@@ -280,7 +280,7 @@ function IconRail() {
   }, []);
 
   return (
-    <aside className="hidden sm:flex flex-col w-14 lg:w-44 shrink-0 border-r border-border bg-background dark:border-[hsl(193_60%_18%/0.6)] dark:bg-[hsl(193_90%_9%)] py-2">
+    <aside className="hidden sm:flex flex-col w-14 lg:w-44 shrink-0 border-r border-border bg-background dark:border-[hsl(193_60%_18%/0.6)] dark:bg-[hsl(193_90%_9%)] py-2 overflow-y-auto">
       {NAV_ITEMS.map((item, i) =>
         item === null ? (
           <div key={`sep-${i}`} className="my-1.5 border-t border-border dark:border-[hsl(193_60%_18%/0.6)]" />
