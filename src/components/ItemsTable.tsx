@@ -113,7 +113,7 @@ export function ItemsTable({ game: selectedGame }: { game: GameOption | null }) 
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 pt-2">
 
         <Select
           value={categoryFilter}
@@ -153,11 +153,6 @@ export function ItemsTable({ game: selectedGame }: { game: GameOption | null }) 
         </p>
       )}
 
-      <p className="text-sm text-muted-foreground">
-        {sorted.length.toLocaleString()} item{sorted.length !== 1 ? "s" : ""}
-        {selectedGame ? ` in ${selectedGame.label}` : ""}
-        {categoryFilter ? ` · ${categories.find(([s]) => s === categoryFilter)?.[1] ?? categoryFilter}` : ""}
-      </p>
 
       <div className="flex-1 overflow-auto">
         <table className="w-full text-sm">

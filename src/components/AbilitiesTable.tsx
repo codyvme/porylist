@@ -85,7 +85,7 @@ export function AbilitiesTable({ game: selectedGame }: { game: GameOption | null
         <h1 className="flex-1 text-xl font-semibold">Abilities</h1>
       </div>
       {/* Filters */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 pt-2">
 
         <div className="relative min-w-48 flex-1">
           <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -116,10 +116,6 @@ export function AbilitiesTable({ game: selectedGame }: { game: GameOption | null
         </div>
       ) : (
         <>
-          <p className="text-sm text-muted-foreground">
-            {sorted.length.toLocaleString()} abilit{sorted.length !== 1 ? "ies" : "y"}
-            {selectedGame ? ` in ${selectedGame.label}` : ""}
-          </p>
 
           <div className="flex-1 overflow-auto">
             <table className="w-full text-sm">

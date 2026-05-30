@@ -125,7 +125,7 @@ export function MovesTable({ game: selectedGame }: { game: GameOption | null }) 
         <h1 className="flex-1 text-xl font-semibold">Moves</h1>
       </div>
       {/* Filters */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 pt-2">
 
         <div className="relative min-w-48 flex-1">
           <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -167,10 +167,6 @@ export function MovesTable({ game: selectedGame }: { game: GameOption | null }) 
         </Select>
       </div>
 
-      <p className="text-sm text-muted-foreground">
-        {sorted.length.toLocaleString()} move{sorted.length !== 1 ? "s" : ""}
-        {selectedGame ? ` in ${selectedGame.label}` : ""}
-      </p>
 
       {/* Table */}
       <div className="flex-1 overflow-auto">

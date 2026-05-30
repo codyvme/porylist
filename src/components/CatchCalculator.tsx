@@ -277,7 +277,7 @@ export function CatchCalculator({ game }: { game: GameOption | null }) {
 
   return (
     <div className="flex flex-col px-4 sm:px-6 pb-8">
-      <h1 className="shrink-0 text-xl font-semibold border-b border-border py-3 -mx-4 sm:-mx-6 px-4 sm:px-6 mb-6">
+      <h1 className="shrink-0 text-xl font-semibold border-b border-border py-3 -mx-4 sm:-mx-6 px-4 sm:px-6 mb-5">
         Catch Calculator
       </h1>
 

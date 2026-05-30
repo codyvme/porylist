@@ -395,7 +395,7 @@ export function CompareView({ game }: { game: GameOption | null }) {
       </div>
 
       {/* ── Scrollable content ── */}
-      <div className="flex-1 overflow-auto pt-3 pb-8">
+      <div className="flex-1 overflow-auto pt-5 pb-8">
         {/* Horizontal scroll wrapper for narrow viewports */}
         <div className="overflow-x-auto">
           <div className="min-w-[540px]">

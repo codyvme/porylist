@@ -88,7 +88,7 @@ export function NaturesTable() {
         <h1 className="text-xl font-semibold">Natures</h1>
       </div>
 
-      <div className="flex-1 overflow-auto pt-3 pb-8">
+      <div className="flex-1 overflow-auto pt-5 pb-8">
 
         {/* ── Matrix ── */}
         {(

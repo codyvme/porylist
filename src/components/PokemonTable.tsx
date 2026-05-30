@@ -832,7 +832,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
       <div className="shrink-0 flex items-center gap-3 border-b border-border py-3 -mx-6 px-6">
         <h1 className="flex-1 text-xl font-semibold">Pokédex</h1>
       </div>
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2 pt-2">
 
         {/* Search */}
         <div className="relative min-w-48 flex-1">

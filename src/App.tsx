@@ -29,20 +29,88 @@ import {
 import type { User, UserProfile } from "@/lib/supabase";
 import { AccountSettingsModal, UserAvatar } from "@/components/AccountSettingsModal";
 
+type ThemeMode = "light" | "dark" | "system";
+
 function useTheme() {
-  const [isDark, setIsDark] = useState(() => {
+  const [mode, setMode] = useState<ThemeMode>(() => {
     const saved = localStorage.getItem("theme");
-    if (saved) return saved === "dark";
-    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+    if (saved === "light" || saved === "dark" || saved === "system") return saved;
+    return "system";
   });
+
+  const systemDark = useCallback(
+    () => window.matchMedia("(prefers-color-scheme: dark)").matches,
+    [],
+  );
+
+  const isDark = mode === "dark" || (mode === "system" && systemDark());
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", isDark);
-    localStorage.setItem("theme", isDark ? "dark" : "light");
-  }, [isDark]);
+    localStorage.setItem("theme", mode);
+  }, [isDark, mode]);
 
-  const toggle = useCallback(() => setIsDark((d) => !d), []);
-  return { isDark, toggle };
+  // Keep "system" in sync with OS changes
+  useEffect(() => {
+    if (mode !== "system") return;
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const handler = () => {
+      document.documentElement.classList.toggle("dark", mq.matches);
+    };
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, [mode]);
+
+  return { isDark, mode, setMode };
+}
+
+function ThemeMenu({ isDark, mode, setMode }: { isDark: boolean; mode: ThemeMode; setMode: (m: ThemeMode) => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  const options: { value: ThemeMode; label: string; Icon: React.ElementType }[] = [
+    { value: "light",  label: "Light",  Icon: Sun  },
+    { value: "dark",   label: "Dark",   Icon: Moon },
+    { value: "system", label: "System", Icon: isDark ? Moon : Sun },
+  ];
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="rounded-full p-2 text-slate-400 hover:bg-slate-700 hover:text-white"
+        aria-label="Theme"
+      >
+        {isDark ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full z-50 mt-1 w-32 overflow-hidden rounded-lg border border-white/10 bg-[hsl(193_90%_9%)] shadow-lg">
+          {options.map(({ value, label, Icon }) => (
+            <button
+              key={value}
+              onClick={() => { setMode(value); setOpen(false); }}
+              className={cn(
+                "flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors hover:bg-white/10",
+                mode === value ? "text-white font-medium" : "text-slate-400",
+              )}
+            >
+              <Icon className="h-3.5 w-3.5" />
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 function AboutModal({ onClose }: { onClose: () => void }) {
@@ -379,7 +447,7 @@ function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void })
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 export function App() {
-  const { isDark, toggle } = useTheme();
+  const { isDark, mode, setMode } = useTheme();
   const [showAbout, setShowAbout] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
   const [showAccountSettings, setShowAccountSettings] = useState(false);
@@ -533,13 +601,7 @@ export function App() {
               >
                 <CircleHelp className="h-5 w-5" />
               </button>
-              <button
-                onClick={toggle}
-                className="rounded-full p-2 text-slate-400 hover:bg-slate-700 hover:text-white"
-                aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-              >
-                {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-              </button>
+              <ThemeMenu isDark={isDark} mode={mode} setMode={setMode} />
               {user ? (
                 <UserMenu user={user} profile={userProfile} onSignOut={handleSignOut} onOpenSettings={() => setShowAccountSettings(true)} />
               ) : (
