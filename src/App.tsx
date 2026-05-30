@@ -356,7 +356,7 @@ function IconRail() {
     <aside className={cn(
       "hidden sm:flex flex-col shrink-0 border-r border-border bg-background py-2 overflow-y-auto transition-all duration-200",
       "dark:border-[hsl(193_60%_18%/0.6)] dark:bg-[hsl(193_90%_9%)]",
-      navExpanded ? "w-48" : "w-14",
+      navExpanded ? "w-52" : "w-14",
       "overflow-hidden",
     )}>
       {NAV_ITEMS.map((item, i) =>
