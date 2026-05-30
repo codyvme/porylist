@@ -102,9 +102,14 @@ export interface TeamMember {
 /**
  * Returns the active level cap for a playthrough: the ace level of the next
  * un-defeated badge in the GAME_BADGES list. Returns null when caps aren't
- * known for this game, or when the run is already complete.
+ * known for this game, or when the run is already complete. Also returns the
+ * leader's known type specialty (when defined) for downstream display.
  */
-export function currentLevelCap(playthrough: Playthrough): { cap: number; nextBadge: Badge } | null {
+export function currentLevelCap(playthrough: Playthrough): {
+  cap: number;
+  nextBadge: Badge;
+  typeSpecialty: string | null;
+} | null {
   // Resolve via group key — playthrough.gameValue is a version slug like
   // "crystal" but GAME_BADGES is keyed by group ("gold-silver-crystal").
   const group = VERSION_TO_GAME_GROUP[playthrough.gameValue] ?? playthrough.gameValue;
@@ -114,10 +119,86 @@ export function currentLevelCap(playthrough: Playthrough): { cap: number; nextBa
   for (const badge of badges) {
     if (earned.has(badge.id)) continue;
     if (badge.aceLevel == null) return null;
-    return { cap: badge.aceLevel, nextBadge: badge };
+    return {
+      cap: badge.aceLevel,
+      nextBadge: badge,
+      typeSpecialty: BADGE_TYPE_SPECIALTY[group]?.[badge.id] ?? null,
+    };
   }
   return null;
 }
+
+/**
+ * The "type" each gym leader / kahuna specializes in, keyed by (group,
+ * badgeId). Mixed-type leaders (e.g. the Striaton trio, Blue in GSC/HGSS,
+ * the version-paired SwSh leaders) are deliberately omitted — they have no
+ * single specialty to call out.
+ */
+export const BADGE_TYPE_SPECIALTY: Record<string, Record<string, string>> = {
+  "red-blue-yellow": {
+    boulder: "rock", cascade: "water", thunder: "electric", rainbow: "grass",
+    soul: "poison", marsh: "psychic", volcano: "fire", earth: "ground",
+  },
+  "firered-leafgreen": {
+    boulder: "rock", cascade: "water", thunder: "electric", rainbow: "grass",
+    soul: "poison", marsh: "psychic", volcano: "fire", earth: "ground",
+  },
+  "lets-go": {
+    boulder: "rock", cascade: "water", thunder: "electric", rainbow: "grass",
+    soul: "poison", marsh: "psychic", volcano: "fire", earth: "ground",
+  },
+  "gold-silver-crystal": {
+    zephyr: "flying", hive: "bug", plain: "normal", fog: "ghost",
+    storm: "fighting", mineral: "steel", glacier: "ice", rising: "dragon",
+    boulder: "rock", cascade: "water", thunder: "electric", rainbow: "grass",
+    soul: "poison", marsh: "psychic", volcano: "fire",
+    // Blue uses a mixed team — omit.
+  },
+  "heartgold-soulsilver": {
+    zephyr: "flying", hive: "bug", plain: "normal", fog: "ghost",
+    storm: "fighting", mineral: "steel", glacier: "ice", rising: "dragon",
+    boulder: "rock", cascade: "water", thunder: "electric", rainbow: "grass",
+    soul: "poison", marsh: "psychic", volcano: "fire",
+  },
+  "ruby-sapphire-emerald": {
+    stone: "rock", knuckle: "fighting", dynamo: "electric", heat: "fire",
+    balance: "normal", feather: "flying", mind: "psychic", rain: "water",
+  },
+  "omega-ruby-alpha-sapphire": {
+    stone: "rock", knuckle: "fighting", dynamo: "electric", heat: "fire",
+    balance: "normal", feather: "flying", mind: "psychic", rain: "water",
+  },
+  "diamond-pearl-platinum": {
+    coal: "rock", forest: "grass", cobble: "fighting", fen: "water",
+    relic: "ghost", mine: "steel", icicle: "ice", beacon: "electric",
+  },
+  "brilliant-diamond-shining-pearl": {
+    coal: "rock", forest: "grass", cobble: "fighting", fen: "water",
+    relic: "ghost", mine: "steel", icicle: "ice", beacon: "electric",
+  },
+  "black-white": {
+    // Striaton trio is mixed — omit "trio"
+    basic: "normal", insect: "bug", bolt: "electric", quake: "ground",
+    jet: "flying", freeze: "ice", legend: "dragon",
+  },
+  "black2-white2": {
+    basic: "normal", toxic: "poison", insect: "bug", bolt: "electric",
+    quake: "ground", jet: "flying", legend: "dragon", wave: "water",
+  },
+  "x-y": {
+    bug: "bug", cliff: "rock", rumble: "fighting", plant: "grass",
+    voltage: "electric", fairy: "fairy", psychic: "psychic", iceberg: "ice",
+  },
+  "sword-shield": {
+    grass: "grass", water: "water", fire: "fire", fairy: "fairy",
+    dark: "dark", dragon: "dragon",
+    // ghost/fighting and rock/ice slots vary by version — omit
+  },
+  "scarlet-violet": {
+    bug: "bug", grass: "grass", electric: "electric", water: "water",
+    normal: "normal", ghost: "ghost", psychic: "psychic", ice: "ice",
+  },
+};
 
 export function newEncounterId(): string {
   return `enc_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;

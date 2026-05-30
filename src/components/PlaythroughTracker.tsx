@@ -8,10 +8,14 @@ import {
 import { Archive, ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Circle, Pencil, Plus, RotateCcw, Settings, Skull, Trash2, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GAMES_BY_VALUE, type GameOption } from "@/lib/games";
+import { typeStyle } from "@/lib/types";
+import { computeTypeEffectiveness, ALL_TYPES } from "@/lib/type-chart";
 import { Select } from "@/components/ui/select";
+import { Tooltip } from "@/components/ui/tooltip";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { RouteBrowser } from "@/components/RouteBrowser";
 import {
+  BADGE_TYPE_SPECIALTY,
   GAME_BADGES,
   PLAYTHROUGH_VERSIONS,
   VERSION_TO_GAME_GROUP,
@@ -413,13 +417,14 @@ function BadgesTab({
       )}>
         {badges.map((badge) => {
           const isEarned = earned.has(badge.id);
+          const specialty = BADGE_TYPE_SPECIALTY[group]?.[badge.id];
           return (
             <button
               key={badge.id}
               onClick={() => toggle(badge)}
-              title={badge.leader ? `${badge.name} Badge · ${badge.leader}${badge.location ? ` · ${badge.location}` : ""}` : badge.name}
+              title={badge.leader ? `${badge.name} Badge · ${badge.leader}${badge.location ? ` · ${badge.location}` : ""}${specialty ? ` · ${specialty} specialist` : ""}${badge.aceLevel ? ` · ace Lv ${badge.aceLevel}` : ""}` : badge.name}
               className={cn(
-                "flex flex-col items-center gap-1.5 rounded-xl border p-3 text-center transition-all",
+                "relative flex flex-col items-center gap-1.5 rounded-xl border p-3 text-center transition-all",
                 isEarned
                   ? "border-primary bg-primary/10 text-primary"
                   : "border-border text-muted-foreground hover:border-primary/40 hover:bg-muted/50",
@@ -448,6 +453,20 @@ function BadgesTab({
               <span className="text-xs font-medium leading-tight">{badge.name}</span>
               {badge.leader && (
                 <span className="text-[10px] leading-tight opacity-60 line-clamp-1">{badge.leader}</span>
+              )}
+              {specialty ? (
+                <span
+                  className="rounded-full px-1.5 py-0.5 text-[9px] font-semibold capitalize text-white"
+                  style={typeStyle(specialty)}
+                >
+                  {specialty}
+                </span>
+              ) : (
+                <Tooltip content="Mixed team — no single type specialty">
+                  <span className="rounded-full bg-muted px-1.5 py-0.5 text-[9px] font-semibold text-muted-foreground">
+                    ?
+                  </span>
+                </Tooltip>
               )}
             </button>
           );
@@ -645,10 +664,20 @@ function PlaythroughDetail({
             {(() => {
               const cap = currentLevelCap(playthrough);
               if (!cap) return null;
+              const recommended = cap.typeSpecialty
+                ? (() => {
+                    const eff = computeTypeEffectiveness([cap.typeSpecialty!], game?.generation ?? 9);
+                    return ALL_TYPES.filter((t) => (eff[t] ?? 1) >= 2);
+                  })()
+                : [];
+              const baseTitle = `Next: ${cap.nextBadge.leader ?? cap.nextBadge.name} — ace Lv ${cap.cap}`;
+              const fullTitle = recommended.length > 0 && cap.typeSpecialty
+                ? `${baseTitle}\n${cap.typeSpecialty} specialist — strong against ${cap.typeSpecialty} with: ${recommended.join(", ")}`
+                : baseTitle;
               return (
                 <span
                   className="shrink-0 flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-300"
-                  title={`Next: ${cap.nextBadge.leader ?? cap.nextBadge.name} — ace Lv ${cap.cap}`}
+                  title={fullTitle}
                 >
                   Lvl cap {cap.cap}
                 </span>
