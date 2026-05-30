@@ -13,7 +13,7 @@ import { NaturesTable } from "@/components/NaturesTable";
 import { ItemsTable } from "@/components/ItemsTable";
 import { CatchCalculator } from "@/components/CatchCalculator";
 import { HomePage } from "@/components/HomePage";
-import { CircleHelp, Crosshair, Dna, House, Leaf, List, LogOut, Menu, Moon, Backpack, Scale, Settings, Sparkles, Sun, Swords, Trophy, Users, X } from "lucide-react";
+import { CircleHelp, Crosshair, Dna, House, Leaf, List, LogOut, Menu, Moon, Backpack, PanelLeftClose, PanelLeftOpen, Scale, Settings, Sparkles, Sun, Swords, Trophy, Users, X } from "lucide-react";
 import { GAMES, SPRITES_ROOT, type GameOption } from "@/lib/games";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -348,7 +348,12 @@ function IconRail() {
   }, []);
 
   return (
-    <aside className="hidden sm:flex flex-col w-14 lg:w-44 shrink-0 border-r border-border bg-background dark:border-[hsl(193_60%_18%/0.6)] dark:bg-[hsl(193_90%_9%)] py-2 overflow-y-auto">
+    <aside className={cn(
+      "hidden sm:flex flex-col shrink-0 border-r border-border bg-background py-2 overflow-y-auto transition-all duration-200",
+      "dark:border-[hsl(193_60%_18%/0.6)] dark:bg-[hsl(193_90%_9%)]",
+      navExpanded ? "w-48" : "w-14",
+      "overflow-hidden",
+    )}>
       {NAV_ITEMS.map((item, i) =>
         item === null ? (
           <div key={`sep-${i}`} className="my-1.5 border-t border-border dark:border-[hsl(193_60%_18%/0.6)]" />
@@ -358,20 +363,37 @@ function IconRail() {
               to={item.to}
               end={item.to === "/"}
               className={({ isActive }) => cn(
-                "flex h-11 w-full items-center border-l-2 px-3 text-sm transition-colors",
-                "justify-center lg:justify-start gap-0 lg:gap-3 lg:px-4",
+                "flex h-11 w-full items-center border-l-2 text-sm transition-colors",
                 isActive
                   ? "border-[hsl(var(--porygon-red))] bg-primary/10 font-semibold text-primary dark:bg-white/10 dark:text-white"
                   : "border-transparent font-medium text-muted-foreground hover:bg-muted hover:text-foreground dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-slate-200",
               )}
               aria-label={item.label}
             >
-              <item.Icon className="h-4 w-4 shrink-0" />
-              <span className="hidden lg:block whitespace-nowrap">{item.label}</span>
+              <span className="flex w-14 shrink-0 items-center justify-center">
+                <item.Icon className="h-4 w-4" />
+              </span>
+              <span className={cn("whitespace-nowrap pr-4 transition-opacity duration-200", navExpanded ? "opacity-100" : "opacity-0")}>{item.label}</span>
             </NavLink>
           </Tooltip>
         )
       )}
+
+      {/* Expand / collapse toggle at bottom */}
+      <div className="mt-auto pt-2 border-t border-border dark:border-[hsl(193_60%_18%/0.6)]">
+        <Tooltip content={navExpanded ? "Collapse" : "Expand"} side="right" disabled={navExpanded}>
+          <button
+            onClick={() => setNavExpanded((v) => !v)}
+            className="flex h-11 w-full items-center border-l-2 border-transparent text-sm transition-colors text-muted-foreground hover:bg-muted hover:text-foreground dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-slate-200"
+            aria-label={navExpanded ? "Collapse navigation" : "Expand navigation"}
+          >
+            <span className="flex w-14 shrink-0 items-center justify-center">
+              {navExpanded ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
+            </span>
+            <span className={cn("whitespace-nowrap pr-4 transition-opacity duration-200", navExpanded ? "opacity-100" : "opacity-0")}>Collapse</span>
+          </button>
+        </Tooltip>
+      </div>
     </aside>
   );
 }
@@ -427,7 +449,7 @@ function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void })
                 end={item.to === "/"}
                 onClick={onClose}
                 className={({ isActive }) => cn(
-                  "flex items-center gap-3 border-l-2 px-5 py-3 text-sm transition-colors whitespace-nowrap",
+                  "flex items-center gap-3 border-l-2 pl-5 pr-4 py-3 text-sm transition-colors whitespace-nowrap",
                   isActive
                     ? "border-[hsl(var(--porygon-red))] bg-primary/10 font-semibold text-primary dark:bg-white/10 dark:text-white"
                     : "border-transparent font-medium text-muted-foreground hover:bg-muted hover:text-foreground dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-slate-200",
