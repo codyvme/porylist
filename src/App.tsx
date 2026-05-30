@@ -13,7 +13,7 @@ import { NaturesTable } from "@/components/NaturesTable";
 import { ItemsTable } from "@/components/ItemsTable";
 import { CatchCalculator } from "@/components/CatchCalculator";
 import { HomePage } from "@/components/HomePage";
-import { CircleHelp, Crosshair, Dna, House, Leaf, List, LogOut, Menu, Moon, Backpack, PanelLeftClose, PanelLeftOpen, Scale, Search, Settings, Sparkles, Sun, Swords, Trophy, Users, X } from "lucide-react";
+import { CircleHelp, Crosshair, Dna, House, Leaf, List, LogOut, Menu, Moon, MoreHorizontal, Backpack, PanelLeftClose, PanelLeftOpen, Scale, Search, Settings, Sparkles, Sun, Swords, Trophy, Users, X } from "lucide-react";
 import { GAMES, SPRITES_ROOT, type GameOption } from "@/lib/games";
 import { Input } from "@/components/ui/input";
 import { Tooltip } from "@/components/ui/tooltip";
@@ -28,6 +28,7 @@ import {
 import type { User, UserProfile } from "@/lib/supabase";
 import { AccountSettingsModal, UserAvatar } from "@/components/AccountSettingsModal";
 import { CommandPalette } from "@/components/CommandPalette";
+import { WelcomeModal, shouldShowWelcome, markWelcomed } from "@/components/WelcomeModal";
 import { GameProvider } from "@/lib/game-context";
 
 type ThemeMode = "light" | "dark" | "system";
@@ -467,6 +468,48 @@ function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void })
   );
 }
 
+// ─── Mobile Bottom Tab Bar ────────────────────────────────────────────────────
+
+const BOTTOM_NAV_ITEMS = [
+  { to: "/",         label: "Home",     Icon: House  },
+  { to: "/pokedex",  label: "Pokédex",  Icon: List   },
+  { to: "/routes",   label: "Routes",   Icon: Trophy },
+  { to: "/team",     label: "Team",     Icon: Users  },
+] as const;
+
+function MobileTabBar({ onOpenMore }: { onOpenMore: () => void }) {
+  return (
+    <nav
+      className="fixed bottom-0 inset-x-0 z-30 sm:hidden flex border-t border-border bg-background pb-[env(safe-area-inset-bottom)]"
+    >
+      {BOTTOM_NAV_ITEMS.map((item) => (
+        <NavLink
+          key={item.to}
+          to={item.to}
+          end={item.to === "/"}
+          className={({ isActive }) => cn(
+            "flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-colors",
+            isActive
+              ? "text-primary"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          <item.Icon className="h-5 w-5" />
+          {item.label}
+        </NavLink>
+      ))}
+      <button
+        onClick={onOpenMore}
+        className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+        aria-label="More"
+      >
+        <MoreHorizontal className="h-5 w-5" />
+        More
+      </button>
+    </nav>
+  );
+}
+
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 export function App() {
@@ -480,6 +523,12 @@ export function App() {
   const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [welcomeOpen, setWelcomeOpen] = useState(() => shouldShowWelcome());
+
+  const dismissWelcome = useCallback(() => {
+    markWelcomed();
+    setWelcomeOpen(false);
+  }, []);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -681,7 +730,11 @@ export function App() {
 
         {/* ── Overlays ── */}
         <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+        <MobileTabBar onOpenMore={() => setDrawerOpen(true)} />
         <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} game={selectedGame} />
+        {welcomeOpen && (
+          <WelcomeModal onClose={dismissWelcome} onOpenPalette={() => setPaletteOpen(true)} />
+        )}
         {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
         {showSignIn && <SignInModal onClose={() => setShowSignIn(false)} />}
         {showAccountSettings && user && (
