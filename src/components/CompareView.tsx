@@ -11,6 +11,7 @@ import { type GameOption, spriteUrl } from "@/lib/games";
 import { computeTypeEffectiveness } from "@/lib/type-chart";
 import { TYPE_COLORS } from "@/lib/types";
 import { formatPokemonName, cn } from "@/lib/utils";
+import { GameFilter } from "@/components/GameFilter";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -392,6 +393,7 @@ export function CompareView({ game }: { game: GameOption | null }) {
       {/* ── Page header ── */}
       <div className="shrink-0 flex items-center gap-3 border-b border-border py-3 -mx-6 px-6">
         <h1 className="flex-1 text-xl font-semibold">Compare</h1>
+        <GameFilter />
       </div>
 
       {/* ── Scrollable content ── */}

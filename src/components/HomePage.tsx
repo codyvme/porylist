@@ -1,10 +1,10 @@
 import { useMemo, useState, useEffect, useRef } from "react";
-import { PokemonModal } from "@/components/PokemonModal";
+import { PokemonModal, CryButton } from "@/components/PokemonModal";
 import { Link } from "react-router-dom";
 import {
   Backpack, Crosshair, Dna, Leaf, List, Scale,
   Sparkles, Swords, Trophy, Users, ArrowRight, Skull,
-  ExternalLink, Settings,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatPokemonName } from "@/lib/utils";
@@ -14,6 +14,7 @@ import { TYPE_COLORS, typeStyle } from "@/lib/types";
 import { loadPlaythroughs, VERSION_TO_GAME_GROUP, VERSION_DISPLAY_LABEL } from "@/lib/playthroughs";
 import { loadProjects } from "@/lib/breeding";
 import { fetchDashboardConfig, upsertDashboardConfig, type User } from "@/lib/supabase";
+import { GameFilter } from "@/components/GameFilter";
 
 // ─── Module config ────────────────────────────────────────────────────────────
 
@@ -184,7 +185,10 @@ function PokemonOfTheDay({ game }: { game: GameOption | null }) {
         <div className="flex flex-col sm:flex-row gap-4 p-5">
           <div className="flex shrink-0 items-center justify-center sm:items-start">
             <img
-              src={spriteUrl(pokemon.id, game?.spriteVersion)}
+              src={spriteUrl(
+                pokemon.id,
+                game && pokemon.id <= game.genMax ? game.spriteVersion : undefined,
+              )}
               alt={formatPokemonName(pokemon.name)}
               className="h-36 w-36 object-contain drop-shadow-sm"
             />
@@ -194,15 +198,17 @@ function PokemonOfTheDay({ game }: { game: GameOption | null }) {
               <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
                 Pokémon of the Day
               </p>
-              <button
-                onClick={() => setModalOpen(true)}
-                className="group mt-0.5 inline-flex items-center gap-1.5"
-              >
-                <h2 className="text-2xl font-bold text-primary group-hover:underline underline-offset-2">
-                  {formatPokemonName(pokemon.name)}
-                </h2>
-                <ExternalLink className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-              </button>
+              <div className="mt-0.5 flex items-center gap-2">
+                <button onClick={() => setModalOpen(true)} className="group inline-flex items-center">
+                  <h2 className="text-2xl font-bold text-primary group-hover:underline underline-offset-2">
+                    {formatPokemonName(pokemon.name)}
+                  </h2>
+                </button>
+                <CryButton
+                  id={pokemon.id}
+                  className="text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                />
+              </div>
               <div className="mt-1.5 flex flex-wrap gap-1.5">
                 {pokemon.types.map((t) => (
                   <span
@@ -467,8 +473,9 @@ export function HomePage({ game, user }: { game: GameOption | null; user: User |
     <div className="flex flex-col gap-5 px-4 sm:px-6 pt-4 pb-6">
 
       {/* Header */}
-      <div className="flex items-center justify-between shrink-0 border-b border-border py-3 -mx-4 sm:-mx-6 px-4 sm:px-6 -mt-4">
-        <h1 className="text-xl font-semibold">Dashboard</h1>
+      <div className="flex items-center gap-3 shrink-0 border-b border-border py-3 -mx-4 sm:-mx-6 px-4 sm:px-6 -mt-4">
+        <h1 className="flex-1 text-xl font-semibold">Dashboard</h1>
+        <GameFilter />
         <ModuleToggle config={moduleConfig} onChange={toggleModule} />
       </div>
 

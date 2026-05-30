@@ -2,7 +2,7 @@ import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronLeft, ChevronRight, Loader2, Sparkles, Volume2, X } from "lucide-react";
 
-function CryButton({ id, generation, className, title: titleProp }: { id: number; generation?: number; className?: string; title?: string }) {
+export function CryButton({ id, generation, className, title: titleProp }: { id: number; generation?: number; className?: string; title?: string }) {
   const [loading, setLoading] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   function handleClick() {

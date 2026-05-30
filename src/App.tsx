@@ -13,10 +13,9 @@ import { NaturesTable } from "@/components/NaturesTable";
 import { ItemsTable } from "@/components/ItemsTable";
 import { CatchCalculator } from "@/components/CatchCalculator";
 import { HomePage } from "@/components/HomePage";
-import { CircleHelp, Crosshair, Dna, House, Leaf, List, LogOut, Menu, Moon, Backpack, PanelLeftClose, PanelLeftOpen, Scale, Settings, Sparkles, Sun, Swords, Trophy, Users, X } from "lucide-react";
+import { CircleHelp, Crosshair, Dna, House, Leaf, List, LogOut, Menu, Moon, Backpack, PanelLeftClose, PanelLeftOpen, Scale, Search, Settings, Sparkles, Sun, Swords, Trophy, Users, X } from "lucide-react";
 import { GAMES, SPRITES_ROOT, type GameOption } from "@/lib/games";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { Tooltip } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
@@ -28,6 +27,8 @@ import {
 } from "@/lib/supabase";
 import type { User, UserProfile } from "@/lib/supabase";
 import { AccountSettingsModal, UserAvatar } from "@/components/AccountSettingsModal";
+import { CommandPalette } from "@/components/CommandPalette";
+import { GameProvider } from "@/lib/game-context";
 
 type ThemeMode = "light" | "dark" | "system";
 
@@ -478,6 +479,18 @@ export function App() {
   const navigate = useNavigate();
   const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && (e.key === "k" || e.key === "K")) {
+        e.preventDefault();
+        setPaletteOpen((o) => !o);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
 
   const [caught, setCaught] = useState<Record<string, string[]>>(() => {
     try { return JSON.parse(localStorage.getItem("porylist-caught") ?? "{}"); }
@@ -567,6 +580,7 @@ export function App() {
       client={queryClient}
       persistOptions={{ persister, maxAge: 1000 * 60 * 60 * 24 * 30 }}
     >
+      <GameProvider value={{ selectedGame, setSelectedGame }}>
       <div className="h-screen flex flex-col overflow-hidden bg-background">
 
         {/* ── Header ── */}
@@ -599,23 +613,20 @@ export function App() {
               <h1 className="text-2xl font-bold tracking-tight text-white">Porylist</h1>
             </NavLink>
 
-            {/* Global game filter — always dark since the header is always dark */}
-            <div className="dark hidden sm:flex items-center gap-1.5 ml-6">
-              <Select
-                value={selectedGame?.value ?? ""}
-                onChange={(e) => setSelectedGame(GAMES.find((g) => g.value === e.target.value) ?? null)}
-                className="w-64 bg-white/10 border-white/20 text-white"
-              >
-                <option value="">All Games</option>
-                {GAMES.map((g) => <option key={g.value} value={g.value}>{g.label}</option>)}
-              </Select>
-              <Tooltip content="Filters the Pokédex, moves, abilities, items, and more to only show what's available in the selected game." side="bottom">
-                <CircleHelp className="h-4 w-4 text-slate-400 hover:text-slate-200 transition-colors cursor-default" />
-              </Tooltip>
-            </div>
-
             {/* Right-side actions */}
             <div className="ml-auto flex items-center gap-1">
+              <Tooltip
+                content={`Search (${navigator.platform.toLowerCase().includes("mac") ? "⌘K" : "Ctrl K"})`}
+                side="bottom"
+              >
+                <button
+                  onClick={() => setPaletteOpen(true)}
+                  className="rounded-full p-2 text-slate-400 hover:bg-slate-700 hover:text-white"
+                  aria-label="Search"
+                >
+                  <Search className="h-5 w-5" />
+                </button>
+              </Tooltip>
               <button
                 onClick={() => setShowAbout(true)}
                 className="rounded-full p-2 text-slate-400 hover:bg-slate-700 hover:text-white"
@@ -670,6 +681,7 @@ export function App() {
 
         {/* ── Overlays ── */}
         <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+        <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} game={selectedGame} />
         {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
         {showSignIn && <SignInModal onClose={() => setShowSignIn(false)} />}
         {showAccountSettings && user && (
@@ -682,6 +694,7 @@ export function App() {
           />
         )}
       </div>
+      </GameProvider>
     </PersistQueryClientProvider>
   );
 }

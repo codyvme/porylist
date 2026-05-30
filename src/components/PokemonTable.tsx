@@ -38,6 +38,7 @@ import {
 import { typeStyle } from "@/lib/types";
 import { ALL_TYPES } from "@/lib/type-chart";
 import { cn, formatPokemonName } from "@/lib/utils";
+import { GameFilter } from "@/components/GameFilter";
 
 function CryButton({ id, generation, className }: { id: number; generation?: number; className?: string }) {
   const [loading, setLoading] = useState(false);
@@ -831,6 +832,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
     <div className="flex h-full flex-col gap-3 px-6">
       <div className="shrink-0 flex items-center gap-3 border-b border-border py-3 -mx-6 px-6">
         <h1 className="flex-1 text-xl font-semibold">Pokédex</h1>
+        <GameFilter />
       </div>
       <div className="flex flex-wrap items-center gap-2 pt-2">
 

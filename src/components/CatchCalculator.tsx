@@ -5,6 +5,7 @@ import { formatPokemonName } from "@/lib/utils";
 import { spriteUrl } from "@/lib/games";
 import { usePokemonSummaryList, usePokemonSpecies } from "@/lib/pokeapi";
 import type { GameOption } from "@/lib/games";
+import { GameFilter } from "@/components/GameFilter";
 import {
   calculateCatch,
   ballsForGeneration,
@@ -277,9 +278,10 @@ export function CatchCalculator({ game }: { game: GameOption | null }) {
 
   return (
     <div className="flex flex-col px-4 sm:px-6 pb-8">
-      <h1 className="shrink-0 text-xl font-semibold border-b border-border py-3 -mx-4 sm:-mx-6 px-4 sm:px-6 mb-5">
-        Catch Calculator
-      </h1>
+      <div className="shrink-0 flex items-center gap-3 border-b border-border py-3 -mx-4 sm:-mx-6 px-4 sm:px-6 mb-5">
+        <h1 className="flex-1 text-xl font-semibold">Catch Calculator</h1>
+        <GameFilter />
+      </div>
 
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 max-w-3xl">
 

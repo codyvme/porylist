@@ -5,6 +5,7 @@ import { type GameOption } from "@/lib/games";
 import { Select } from "@/components/ui/select";
 import { ItemModal } from "@/components/ItemModal";
 import { cn } from "@/lib/utils";
+import { GameFilter } from "@/components/GameFilter";
 
 const SPRITES_BASE = "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/items";
 
@@ -110,6 +111,7 @@ export function ItemsTable({ game: selectedGame }: { game: GameOption | null }) 
     <div className="flex min-h-0 flex-1 flex-col gap-3 px-6">
       <div className="shrink-0 flex items-center gap-3 border-b border-border py-3 -mx-6 px-6">
         <h1 className="flex-1 text-xl font-semibold">Items</h1>
+        <GameFilter />
       </div>
 
       {/* Filters */}
