@@ -8,13 +8,12 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatPokemonName } from "@/lib/utils";
-import { spriteUrl, type GameOption, GAMES_BY_VALUE } from "@/lib/games";
+import { spriteUrl, SPRITES_ROOT, type GameOption, GAMES_BY_VALUE } from "@/lib/games";
 import { usePokemonSummaryList, usePokemonSpecies } from "@/lib/pokeapi";
 import { TYPE_COLORS, typeStyle } from "@/lib/types";
 import { loadPlaythroughs, VERSION_TO_GAME_GROUP, VERSION_DISPLAY_LABEL } from "@/lib/playthroughs";
 import { loadProjects } from "@/lib/breeding";
 import { fetchDashboardConfig, upsertDashboardConfig, type User } from "@/lib/supabase";
-import { GameFilter } from "@/components/GameFilter";
 
 // ─── Module config ────────────────────────────────────────────────────────────
 
@@ -139,6 +138,7 @@ function statColor(val: number): string {
 function PokemonOfTheDay({ game }: { game: GameOption | null }) {
   const { data: pokemonList = [] } = usePokemonSummaryList();
   const [modalOpen, setModalOpen] = useState(false);
+  const [showShiny, setShowShiny] = useState(false);
 
   const pokemon = useMemo(() => {
     if (pokemonList.length === 0) return null;
@@ -183,15 +183,43 @@ function PokemonOfTheDay({ game }: { game: GameOption | null }) {
         style={{ background: `linear-gradient(135deg, ${typeColor}18 0%, transparent 60%)` }}
       >
         <div className="flex flex-col sm:flex-row gap-4 p-5">
-          <div className="flex shrink-0 items-center justify-center sm:items-start">
-            <img
-              src={spriteUrl(
-                pokemon.id,
-                game && pokemon.id <= game.genMax ? game.spriteVersion : undefined,
+          <div className="flex shrink-0 flex-col items-center gap-3">
+            {(() => {
+              const useGameSprite = game && pokemon.id <= game.genMax && game.spriteVersion;
+              const normalSrc = useGameSprite
+                ? `${SPRITES_ROOT}/versions/${game!.spriteVersion}/${pokemon.id}.png`
+                : `${SPRITES_ROOT}/other/home/${pokemon.id}.png`;
+              const shinySrc = useGameSprite
+                ? `${SPRITES_ROOT}/versions/${game!.spriteVersion}/shiny/${pokemon.id}.png`
+                : `${SPRITES_ROOT}/other/home/shiny/${pokemon.id}.png`;
+              return (
+                <div className="relative h-36 w-36">
+                  <img
+                    src={normalSrc}
+                    alt={formatPokemonName(pokemon.name)}
+                    className={cn("absolute inset-0 h-36 w-36 object-contain drop-shadow-sm transition-opacity", showShiny ? "opacity-0" : "opacity-100")}
+                  />
+                  <img
+                    src={shinySrc}
+                    alt={`${formatPokemonName(pokemon.name)} shiny`}
+                    className={cn("absolute inset-0 h-36 w-36 object-contain drop-shadow-sm transition-opacity", showShiny ? "opacity-100" : "opacity-0")}
+                  />
+                </div>
+              );
+            })()}
+            <button
+              onClick={() => setShowShiny((s) => !s)}
+              className={cn(
+                "flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                showShiny
+                  ? "border-yellow-400 bg-yellow-400/10 text-yellow-500"
+                  : "border-muted-foreground/30 text-muted-foreground hover:border-yellow-400 hover:text-yellow-500",
               )}
-              alt={formatPokemonName(pokemon.name)}
-              className="h-36 w-36 object-contain drop-shadow-sm"
-            />
+              aria-pressed={showShiny}
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              Shiny
+            </button>
           </div>
           <div className="flex flex-1 flex-col gap-3 min-w-0">
             <div>
@@ -473,9 +501,8 @@ export function HomePage({ game, user }: { game: GameOption | null; user: User |
     <div className="flex flex-col gap-5 px-4 sm:px-6 pt-4 pb-6">
 
       {/* Header */}
-      <div className="flex items-center gap-3 shrink-0 border-b border-border py-3 -mx-4 sm:-mx-6 px-4 sm:px-6 -mt-4">
-        <h1 className="flex-1 text-xl font-semibold">Dashboard</h1>
-        <GameFilter />
+      <div className="flex items-center justify-between shrink-0 border-b border-border py-3 -mx-4 sm:-mx-6 px-4 sm:px-6 -mt-4">
+        <h1 className="text-xl font-semibold">Dashboard</h1>
         <ModuleToggle config={moduleConfig} onChange={toggleModule} />
       </div>
 
