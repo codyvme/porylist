@@ -92,7 +92,7 @@ function PokemonPicker({
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search Pokémon…"
                 autoFocus
-                className="h-11 flex-1 bg-transparent text-sm outline-none"
+                className="h-11 flex-1 bg-transparent text-base sm:text-sm outline-none"
               />
               <button onClick={() => setOpen(false)} aria-label="Close" className="p-1 text-muted-foreground hover:text-foreground">
                 <X className="h-4 w-4" />
@@ -186,7 +186,7 @@ function MovePicker({
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search moves…"
                 autoFocus
-                className="h-11 flex-1 bg-transparent text-sm outline-none"
+                className="h-11 flex-1 bg-transparent text-base sm:text-sm outline-none"
               />
               <button onClick={() => setOpen(false)} aria-label="Close" className="p-1 text-muted-foreground hover:text-foreground">
                 <X className="h-4 w-4" />
