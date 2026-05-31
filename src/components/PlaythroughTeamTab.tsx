@@ -205,7 +205,7 @@ export function PlaythroughTeamTab({ playthrough, game, onUpdate }: Props) {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search Pokémon…"
-                  className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                  className="min-w-0 flex-1 bg-transparent text-base sm:text-sm outline-none placeholder:text-muted-foreground"
                   onKeyDown={(e) => {
                     if (e.key === "Escape") { setActiveSlot(null); setQuery(""); }
                   }}

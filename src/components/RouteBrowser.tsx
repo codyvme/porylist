@@ -474,7 +474,7 @@ function CaughtModal({ caughtList, spriteVersion, onOpen, onToggleCaught, caught
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search…"
-              className="w-full rounded-md border bg-background py-1 pl-8 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded-md border bg-background py-1 pl-8 pr-3 text-base sm:text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
               autoFocus
             />
           </div>
@@ -573,7 +573,7 @@ function MissingModal({ title, missing, spriteVersion, onOpen, onToggleCaught, c
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search…"
-              className="w-full rounded-md border bg-background py-1 pl-8 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded-md border bg-background py-1 pl-8 pr-3 text-base sm:text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
               autoFocus
             />
           </div>
@@ -1005,7 +1005,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
                   <select
                     value={locationKey ?? ""}
                     onChange={(e) => setLocationKey(e.target.value || null)}
-                    className="flex-1 min-w-0 rounded-md border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="flex-1 min-w-0 rounded-md border bg-background px-2 py-1.5 text-base sm:text-sm focus:outline-none focus:ring-1 focus:ring-primary"
                   >
                     <option value="">Select a location…</option>
                     {filteredLocations.map((loc) => (
@@ -1047,7 +1047,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
                         }
                       }}
                       placeholder="e.g. Ralts, Pikachu…"
-                      className="w-full rounded-md border bg-background py-1.5 pl-8 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="w-full rounded-md border bg-background py-1.5 pl-8 pr-3 text-base sm:text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                       autoComplete="off"
                     />
                     {showSuggestions && suggestions.length > 0 && (
@@ -1208,7 +1208,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
                         value={locationSearch}
                         onChange={(e) => setLocationSearch(e.target.value)}
                         placeholder="Search locations…"
-                        className="w-full rounded-md border bg-background py-1.5 pl-8 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="w-full rounded-md border bg-background py-1.5 pl-8 pr-3 text-base sm:text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                       />
                     ) : (
                       <div ref={pokemonSearchRef} className="relative">
@@ -1243,7 +1243,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
                             }
                           }}
                           placeholder="e.g. Ralts, Pikachu…"
-                          className="w-full rounded-md border bg-background py-1.5 pl-8 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                          className="w-full rounded-md border bg-background py-1.5 pl-8 pr-3 text-base sm:text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                           autoFocus
                           autoComplete="off"
                         />

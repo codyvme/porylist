@@ -1517,7 +1517,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                     <select
                       value={resolvedLocationsGameValue ?? ""}
                       onChange={(e) => setLocationsGameValue(e.target.value)}
-                      className="rounded-md border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="rounded-md border bg-background px-2 py-1 text-base sm:text-xs focus:outline-none focus:ring-1 focus:ring-primary"
                     >
                       {allGamesLocations.map(({ game: g }) => (
                         <option key={g.value} value={g.value}>{g.label}</option>
@@ -1613,7 +1613,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                   <select
                     value={activeTab}
                     onChange={(e) => setActiveTab(e.target.value as MoveTab)}
-                    className="w-full rounded-md border bg-background px-3 py-2 text-sm font-medium text-foreground"
+                    className="w-full rounded-md border bg-background px-3 py-2 text-base sm:text-sm font-medium text-foreground"
                   >
                     {tabs.map((tab) => (
                       <option key={tab.id} value={tab.id}>
