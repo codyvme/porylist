@@ -282,7 +282,7 @@ function PokemonPicker({
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search Pokémon…"
-              className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+              className="flex-1 bg-transparent text-base sm:text-sm outline-none placeholder:text-muted-foreground"
             />
             {q && (
               <button

@@ -168,7 +168,7 @@ export function PlaythroughTeamTab({ playthrough, game, onUpdate }: Props) {
                   }}
                   placeholder={speciesLabel}
                   maxLength={24}
-                  className="min-w-0 flex-1 rounded-md border border-input bg-background px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="min-w-0 flex-1 rounded-md border border-input bg-background px-2 py-1 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 />
                 <div className="flex shrink-0 gap-1">
                   <button

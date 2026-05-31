@@ -458,7 +458,7 @@ function NumberField({ label, value, onChange, min, max }: { label: string; valu
         max={max}
         value={value}
         onChange={(e) => onChange(Math.max(min, Math.min(max, Number(e.target.value) || min)))}
-        className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+        className="h-9 rounded-md border border-input bg-background px-2 text-base sm:text-sm"
       />
     </label>
   );
@@ -482,7 +482,7 @@ function SelectField<T extends string | number>({
           const next = typeof value === "number" ? Number(e.target.value) : e.target.value;
           onChange(next as T);
         }}
-        className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+        className="h-9 rounded-md border border-input bg-background px-2 text-base sm:text-sm"
       >
         {options.map((opt) => (
           <option key={String(opt)} value={String(opt)}>{formatOption ? formatOption(opt) : String(opt)}</option>

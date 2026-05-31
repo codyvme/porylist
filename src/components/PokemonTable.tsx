@@ -918,7 +918,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
                   value={moveFilter}
                   onChange={(e) => setMoveFilter(e.target.value)}
                   placeholder={selectedGame ? `e.g. Surf (${selectedGame.label})` : "e.g. Surf (any game)"}
-                  className="w-full rounded-md border bg-background px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full rounded-md border bg-background px-2.5 py-1.5 text-base sm:text-sm focus:outline-none focus:ring-1 focus:ring-primary"
                 />
                 {moveFilter && (
                   <button

@@ -242,7 +242,7 @@ export function AccountSettingsModal({
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder={user.email?.split("@")[0] ?? "Your name"}
                   maxLength={32}
-                  className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="h-9 w-full rounded-md border border-input bg-background px-3 text-base sm:text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
             </div>
@@ -296,7 +296,7 @@ export function AccountSettingsModal({
                   value={pokemonSearch}
                   onChange={(e) => setPokemonSearch(e.target.value)}
                   placeholder="Search Pokémon…"
-                  className="mb-3 h-8 w-full rounded-md border border-input bg-background px-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="mb-3 h-8 w-full rounded-md border border-input bg-background px-3 text-base sm:text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                 />
                 <div className="grid grid-cols-6 gap-1.5 max-h-44 overflow-y-auto p-0.5">
                   {/* Clear selection */}

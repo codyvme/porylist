@@ -257,7 +257,7 @@ function EncounterForm({
             value={locationKey}
             onChange={(e) => setLocationKey(e.target.value)}
             required
-            className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+            className="h-9 rounded-md border border-input bg-background px-2 text-base sm:text-sm"
           >
             <option value="">Select a route…</option>
             {locations.map((l) => (
@@ -273,7 +273,7 @@ function EncounterForm({
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value as Status)}
-            className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+            className="h-9 rounded-md border border-input bg-background px-2 text-base sm:text-sm"
           >
             <option value="team">Team</option>
             <option value="boxed">Boxed</option>
@@ -290,7 +290,7 @@ function EncounterForm({
             value={species ? formatPokemonName(species) : speciesQuery}
             onChange={(e) => { setSpecies(""); setSpeciesQuery(e.target.value); }}
             placeholder="Type to search…"
-            className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+            className="h-9 rounded-md border border-input bg-background px-2 text-base sm:text-sm"
           />
           {!species && speciesSuggestions.length > 0 && (
             <div className="absolute left-0 right-0 top-full z-20 mt-1 max-h-56 overflow-y-auto rounded-md border bg-background shadow-lg">
@@ -314,7 +314,7 @@ function EncounterForm({
           <input
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
-            className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+            className="h-9 rounded-md border border-input bg-background px-2 text-base sm:text-sm"
           />
         </label>
 
@@ -326,7 +326,7 @@ function EncounterForm({
             max="100"
             value={level}
             onChange={(e) => setLevel(e.target.value)}
-            className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+            className="h-9 rounded-md border border-input bg-background px-2 text-base sm:text-sm"
           />
         </label>
 
@@ -336,7 +336,7 @@ function EncounterForm({
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="e.g. died to Whitney's Miltank rollout"
-            className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+            className="h-9 rounded-md border border-input bg-background px-2 text-base sm:text-sm"
           />
         </label>
       </div>
@@ -404,11 +404,11 @@ function EncounterRow({
         <div className="grid gap-2 sm:grid-cols-2">
           <label className="flex flex-col gap-1 text-xs">
             <span className="font-medium text-muted-foreground">Nickname</span>
-            <input value={nickname} onChange={(e) => setNickname(e.target.value)} className="h-9 rounded-md border border-input bg-background px-2 text-sm" />
+            <input value={nickname} onChange={(e) => setNickname(e.target.value)} className="h-9 rounded-md border border-input bg-background px-2 text-base sm:text-sm" />
           </label>
           <label className="flex flex-col gap-1 text-xs">
             <span className="font-medium text-muted-foreground">Status</span>
-            <select value={status} onChange={(e) => setStatus(e.target.value as Status)} className="h-9 rounded-md border border-input bg-background px-2 text-sm">
+            <select value={status} onChange={(e) => setStatus(e.target.value as Status)} className="h-9 rounded-md border border-input bg-background px-2 text-base sm:text-sm">
               <option value="team">Team</option>
               <option value="boxed">Boxed</option>
               <option value="fainted">Fainted</option>
@@ -417,23 +417,23 @@ function EncounterRow({
           </label>
           <label className="flex flex-col gap-1 text-xs">
             <span className="font-medium text-muted-foreground">Level (when caught)</span>
-            <input type="number" min="1" max="100" value={level} onChange={(e) => setLevel(e.target.value)} className="h-9 rounded-md border border-input bg-background px-2 text-sm" />
+            <input type="number" min="1" max="100" value={level} onChange={(e) => setLevel(e.target.value)} className="h-9 rounded-md border border-input bg-background px-2 text-base sm:text-sm" />
           </label>
           {status === "fainted" && (
             <>
               <label className="flex flex-col gap-1 text-xs">
                 <span className="font-medium text-muted-foreground">Level when fainted</span>
-                <input type="number" min="1" max="100" value={faintedAtLevel} onChange={(e) => setFaintedAtLevel(e.target.value)} className="h-9 rounded-md border border-input bg-background px-2 text-sm" />
+                <input type="number" min="1" max="100" value={faintedAtLevel} onChange={(e) => setFaintedAtLevel(e.target.value)} className="h-9 rounded-md border border-input bg-background px-2 text-base sm:text-sm" />
               </label>
               <label className="flex flex-col gap-1 text-xs sm:col-span-2">
                 <span className="font-medium text-muted-foreground">Killed by</span>
-                <input value={faintedTo} onChange={(e) => setFaintedTo(e.target.value)} placeholder="e.g. Whitney's Miltank" className="h-9 rounded-md border border-input bg-background px-2 text-sm" />
+                <input value={faintedTo} onChange={(e) => setFaintedTo(e.target.value)} placeholder="e.g. Whitney's Miltank" className="h-9 rounded-md border border-input bg-background px-2 text-base sm:text-sm" />
               </label>
             </>
           )}
           <label className="flex flex-col gap-1 text-xs sm:col-span-2">
             <span className="font-medium text-muted-foreground">Notes</span>
-            <input value={notes} onChange={(e) => setNotes(e.target.value)} className="h-9 rounded-md border border-input bg-background px-2 text-sm" />
+            <input value={notes} onChange={(e) => setNotes(e.target.value)} className="h-9 rounded-md border border-input bg-background px-2 text-base sm:text-sm" />
           </label>
         </div>
         <div className="mt-3 flex justify-between gap-2">

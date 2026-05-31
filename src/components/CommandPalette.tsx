@@ -334,7 +334,7 @@ export function CommandPalette({ open, onClose, game }: CommandPaletteProps) {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search Pokémon, moves, abilities, items…"
-                className="flex-1 bg-transparent py-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+                className="flex-1 bg-transparent py-4 text-base sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
                 autoFocus
               />
               <kbd className="hidden sm:inline-block rounded border border-border px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">

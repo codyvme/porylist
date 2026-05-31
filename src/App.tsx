@@ -405,7 +405,7 @@ function IconRail() {
 
 // ─── Mobile Drawer ────────────────────────────────────────────────────────────
 
-function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+function MobileDrawer({ open, onClose, onOpenAbout }: { open: boolean; onClose: () => void; onOpenAbout: () => void }) {
   // Close on Escape
   useEffect(() => {
     if (!open) return;
@@ -443,7 +443,7 @@ function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void })
           </button>
         </div>
         {/* Nav items */}
-        <nav className="flex flex-col py-2">
+        <nav className="flex flex-1 flex-col py-2">
           {NAV_ITEMS.map((item, i) =>
             item === null ? (
               <div key={`sep-${i}`} className="my-1.5 border-t border-border dark:border-[hsl(193_60%_18%/0.6)]" />
@@ -466,6 +466,16 @@ function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void })
             )
           )}
         </nav>
+        {/* Footer — About moved here on mobile since it no longer fits in the header */}
+        <div className="border-t border-border dark:border-[hsl(193_60%_18%/0.6)] py-2">
+          <button
+            onClick={() => { onClose(); onOpenAbout(); }}
+            className="flex w-full items-center gap-3 border-l-2 border-transparent pl-5 pr-4 py-3 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-slate-200"
+          >
+            <CircleHelp className="h-4 w-4 shrink-0" />
+            About
+          </button>
+        </div>
       </div>
     </>
   );
@@ -476,8 +486,8 @@ function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void })
 const BOTTOM_NAV_ITEMS = [
   { to: "/",         label: "Home",     Icon: House  },
   { to: "/pokedex",  label: "Pokédex",  Icon: List   },
-  { to: "/routes",   label: "Routes",   Icon: Trophy },
-  { to: "/team",     label: "Team",     Icon: Users  },
+  { to: "/moves",    label: "Moves",    Icon: Swords },
+  { to: "/routes",   label: "Runs",     Icon: Trophy },
 ] as const;
 
 function MobileTabBar({ onOpenMore }: { onOpenMore: () => void }) {
@@ -681,7 +691,7 @@ export function App() {
               </Tooltip>
               <button
                 onClick={() => setShowAbout(true)}
-                className="rounded-full p-2 text-slate-400 hover:bg-slate-700 hover:text-white"
+                className="hidden sm:inline-flex rounded-full p-2 text-slate-400 hover:bg-slate-700 hover:text-white"
                 aria-label="About"
               >
                 <CircleHelp className="h-5 w-5" />
@@ -733,7 +743,11 @@ export function App() {
         </div>
 
         {/* ── Overlays ── */}
-        <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+        <MobileDrawer
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          onOpenAbout={() => setShowAbout(true)}
+        />
         <MobileTabBar onOpenMore={() => setDrawerOpen(true)} />
         <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} game={selectedGame} />
         {welcomeOpen && (
