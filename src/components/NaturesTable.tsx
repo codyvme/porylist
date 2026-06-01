@@ -85,7 +85,7 @@ export function NaturesTable() {
     <div className="flex h-full flex-col px-6">
       {/* ── Header ── */}
       <div className="shrink-0 flex items-center border-b border-border py-3 -mx-6 px-6">
-        <h1 className="font-display text-xl font-extrabold">Natures</h1>
+        <h1 className="text-xl font-semibold">Natures</h1>
       </div>
 
       <div className="flex-1 overflow-auto pt-5 pb-8">

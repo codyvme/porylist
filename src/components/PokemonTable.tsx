@@ -888,7 +888,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
   return (
     <div className="flex h-full flex-col gap-3 px-6">
       <div className="shrink-0 flex items-center gap-3 border-b border-border py-3 -mx-6 px-6">
-        <h1 className="flex-1 font-display text-xl font-extrabold">Pokédex</h1>
+        <h1 className="flex-1 text-xl font-semibold">Pokédex</h1>
         <GameFilter />
       </div>
       <div className="flex flex-wrap items-center gap-2 pt-2">
@@ -1135,7 +1135,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
                     style={{ transform: `translateY(${vRow.start}px)`, height: 36 }}
                   >
                     <div className="h-px flex-1 bg-border" />
-                    <span className="font-display text-[10px] font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap">
                       {dRow.label}
                     </span>
                     <div className="h-px flex-1 bg-border" />

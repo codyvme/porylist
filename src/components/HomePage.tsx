@@ -244,7 +244,7 @@ function PokemonOfTheDay({ game }: { game: GameOption | null }) {
               </p>
               <div className="mt-0.5 flex items-center gap-2">
                 <button onClick={() => setModalOpen(true)} className="group inline-flex items-center">
-                  <h2 className="font-display text-2xl font-extrabold text-primary group-hover:underline underline-offset-2">
+                  <h2 className="text-2xl font-bold text-primary group-hover:underline underline-offset-2">
                     {formatPokemonName(pokemon.name)}
                   </h2>
                 </button>
@@ -518,7 +518,7 @@ export function HomePage({ game, user }: { game: GameOption | null; user: User |
 
       {/* Header */}
       <div className="flex items-center justify-between shrink-0 border-b border-border py-3 -mx-4 sm:-mx-6 px-4 sm:px-6 -mt-4">
-        <h1 className="font-display text-xl font-extrabold">Dashboard</h1>
+        <h1 className="text-xl font-semibold">Dashboard</h1>
         <ModuleToggle config={moduleConfig} onChange={toggleModule} />
       </div>
 

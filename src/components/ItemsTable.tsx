@@ -110,7 +110,7 @@ export function ItemsTable({ game: selectedGame }: { game: GameOption | null }) 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3 px-6">
       <div className="shrink-0 flex items-center gap-3 border-b border-border py-3 -mx-6 px-6">
-        <h1 className="flex-1 font-display text-xl font-extrabold">Items</h1>
+        <h1 className="flex-1 text-xl font-semibold">Items</h1>
         <GameFilter />
       </div>
 
