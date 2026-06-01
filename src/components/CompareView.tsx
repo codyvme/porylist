@@ -639,7 +639,7 @@ export function CompareView({ game }: { game: GameOption | null }) {
                           {p === null ? (
                             <span className="text-muted-foreground">—</span>
                           ) : loading ? (
-                            <span className="inline-block h-3 w-8 animate-pulse rounded bg-muted" />
+                            <span className="inline-block h-3 w-8 skeleton-shimmer rounded" />
                           ) : s ? (
                             s.capture_rate
                           ) : (
@@ -660,7 +660,7 @@ export function CompareView({ game }: { game: GameOption | null }) {
                           {p === null ? (
                             <span className="text-sm text-muted-foreground">—</span>
                           ) : loading ? (
-                            <span className="inline-block h-3 w-24 animate-pulse rounded bg-muted" />
+                            <span className="inline-block h-3 w-24 skeleton-shimmer rounded" />
                           ) : s ? (
                             <GenderBar rate={s.gender_rate} />
                           ) : (
@@ -681,7 +681,7 @@ export function CompareView({ game }: { game: GameOption | null }) {
                           {p === null ? (
                             <span className="text-muted-foreground">—</span>
                           ) : loading ? (
-                            <span className="inline-block h-3 w-20 animate-pulse rounded bg-muted" />
+                            <span className="inline-block h-3 w-20 skeleton-shimmer rounded" />
                           ) : s ? (
                             s.egg_groups.map((g) => formatPokemonName(g.name)).join(", ")
                           ) : (
@@ -702,7 +702,7 @@ export function CompareView({ game }: { game: GameOption | null }) {
                           {p === null ? (
                             <span className="text-muted-foreground">—</span>
                           ) : loading ? (
-                            <span className="inline-block h-3 w-20 animate-pulse rounded bg-muted" />
+                            <span className="inline-block h-3 w-20 skeleton-shimmer rounded" />
                           ) : s ? (
                             GROWTH_LABELS[s.growth_rate.name] ??
                             formatPokemonName(s.growth_rate.name)

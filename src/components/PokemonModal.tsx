@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { SparkleBurst } from "@/components/SparkleBurst";
 import { useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronLeft, ChevronRight, Loader2, Sparkles, Volume2, X } from "lucide-react";
 
@@ -498,7 +499,7 @@ function MoveTable({ moves, moveDetailsMap, showLevel, machineNumberMap, eggPare
                   {showMachineNum && (
                     <td className="py-1.5 pr-4 font-mono tabular-nums text-muted-foreground">
                       {machineNum ?? (
-                        <div className="h-4 w-10 animate-pulse rounded bg-muted" />
+                        <div className="h-4 w-10 skeleton-shimmer rounded" />
                       )}
                     </td>
                   )}
@@ -515,35 +516,35 @@ function MoveTable({ moves, moveDetailsMap, showLevel, machineNumberMap, eggPare
                         {detail.type.name}
                       </Badge>
                     ) : (
-                      <div className="h-5 w-16 animate-pulse rounded bg-muted" />
+                      <div className="h-5 w-16 skeleton-shimmer rounded" />
                     )}
                   </td>
                   <td className="py-1.5 pr-4">
                     {detail ? (
                       <DamageCategoryBadge category={detail.damage_class.name} />
                     ) : (
-                      <div className="h-5 w-14 animate-pulse rounded bg-muted" />
+                      <div className="h-5 w-14 skeleton-shimmer rounded" />
                     )}
                   </td>
                   <td className="hidden py-1.5 pr-4 text-right font-mono tabular-nums sm:table-cell">
                     {detail ? (
                       detail.power ?? "—"
                     ) : (
-                      <div className="ml-auto h-4 w-6 animate-pulse rounded bg-muted" />
+                      <div className="ml-auto h-4 w-6 skeleton-shimmer rounded" />
                     )}
                   </td>
                   <td className="hidden py-1.5 pr-4 text-right font-mono tabular-nums sm:table-cell">
                     {detail ? (
                       detail.accuracy != null ? `${detail.accuracy}%` : "—"
                     ) : (
-                      <div className="ml-auto h-4 w-8 animate-pulse rounded bg-muted" />
+                      <div className="ml-auto h-4 w-8 skeleton-shimmer rounded" />
                     )}
                   </td>
                   <td className="hidden py-1.5 text-right font-mono tabular-nums sm:table-cell">
                     {detail ? (
                       detail.pp ?? "—"
                     ) : (
-                      <div className="ml-auto h-4 w-6 animate-pulse rounded bg-muted" />
+                      <div className="ml-auto h-4 w-6 skeleton-shimmer rounded" />
                     )}
                   </td>
                 </tr>
@@ -556,14 +557,14 @@ function MoveTable({ moves, moveDetailsMap, showLevel, machineNumberMap, eggPare
                         {effect ? (
                           <p>{effect}</p>
                         ) : (
-                          <div className="h-3 w-48 animate-pulse rounded bg-muted" />
+                          <div className="h-3 w-48 skeleton-shimmer rounded" />
                         )}
                         {eggParentMap !== undefined && (
                           <div>
                             {!hasGeneration ? (
                               <p className="italic">Select a game to see breeding parents.</p>
                             ) : !eggDataLoaded ? (
-                              <div className="h-3 w-32 animate-pulse rounded bg-muted" />
+                              <div className="h-3 w-32 skeleton-shimmer rounded" />
                             ) : eggParentMap === null ? null : (
                               (() => {
                                 const parents = eggParentMap[move.name] ?? [];
@@ -711,6 +712,8 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<MoveTab>("level-up");
   const [showShiny, setShowShiny] = useState(false);
+  const [sparkleKey, setSparkleKey] = useState(0);
+  const [spriteLoaded, setSpriteLoaded] = useState(false);
   const [expandedMove, setExpandedMove] = useState<string | null>(null);
   const [locationsGameValue, setLocationsGameValue] = useState<string | null>(game?.value ?? null);
 
@@ -734,6 +737,10 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
   useEffect(() => {
     setExpandedMove(null);
   }, [activeTab]);
+
+  useEffect(() => {
+    setSpriteLoaded(false);
+  }, [pokemonName]);
 
   const { data: pokemon, isLoading } = useSinglePokemon(pokemonName);
   const { data: formDataMap } = usePokemonFormData([pokemonName]);
@@ -1164,9 +1171,15 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                       shiny image is already cached when the button is clicked */}
                   {homeSpriteNormal && homeSpriteShiny && (
                     <div className="relative h-36 w-36 sm:h-48 sm:w-48">
+                      {/* Shimmer shown until the normal sprite has loaded */}
+                      <div className={cn(
+                        "absolute inset-4 skeleton-shimmer rounded-lg transition-opacity duration-300",
+                        spriteLoaded ? "opacity-0 pointer-events-none" : "opacity-100",
+                      )} />
                       <img
                         src={homeSpriteNormal}
                         alt={displayName}
+                        onLoad={() => setSpriteLoaded(true)}
                         className={cn(
                           "absolute inset-0 h-full w-full object-contain transition-opacity duration-200",
                           showShiny ? "opacity-0" : "opacity-100",
@@ -1190,19 +1203,26 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                       />
                     </div>
                   )}
-                  <button
-                    onClick={() => setShowShiny((s) => !s)}
-                    className={cn(
-                      "flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-                      showShiny
-                        ? "border-yellow-400 bg-yellow-400/10 text-yellow-500"
-                        : "border-muted-foreground/30 text-muted-foreground hover:border-yellow-400 hover:text-yellow-500",
-                    )}
-                    aria-pressed={showShiny}
-                  >
-                    <Sparkles className="h-3.5 w-3.5" />
-                    Shiny
-                  </button>
+                  <div className="relative">
+                    <button
+                      onClick={() => {
+                        const activating = !showShiny;
+                        setShowShiny((s) => !s);
+                        if (activating) setSparkleKey((k) => k + 1);
+                      }}
+                      className={cn(
+                        "flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                        showShiny
+                          ? "border-yellow-400 bg-yellow-400/10 text-yellow-500"
+                          : "border-muted-foreground/30 text-muted-foreground hover:border-yellow-400 hover:text-yellow-500",
+                      )}
+                      aria-pressed={showShiny}
+                    >
+                      <Sparkles className="h-3.5 w-3.5" />
+                      Shiny
+                    </button>
+                    {sparkleKey > 0 && <SparkleBurst key={sparkleKey} />}
+                  </div>
                   {showGameSprite && (
                     <GameSpriteThumb key={gameSprite} src={gameSprite} alt={`${displayName} in-game`} />
                   )}
@@ -1252,7 +1272,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                                   </p>
                                 )
                               ) : (
-                                <div className="mt-1 h-3 w-32 animate-pulse rounded bg-muted" />
+                                <div className="mt-1 h-3 w-32 skeleton-shimmer rounded" />
                               )}
                             </li>
                           );
@@ -1266,8 +1286,8 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                     <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                       Base Stats
                     </h3>
-                    <div className="space-y-1.5">
-                      {stats.map((s) => (
+                    <div key={pokemonName} className="space-y-1.5">
+                      {stats.map((s, i) => (
                         <div key={s.name} className="flex items-center gap-2">
                           <span className="w-16 text-right text-xs text-muted-foreground">
                             {s.label}
@@ -1278,11 +1298,12 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                           <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
                             <div
                               className={cn(
-                                "h-full rounded-full transition-all",
+                                "h-full rounded-full animate-stat-fill",
                                 statBarColor(s.value),
                               )}
                               style={{
                                 width: `${Math.min(100, (s.value / 255) * 100)}%`,
+                                animationDelay: `${i * 60}ms`,
                               }}
                             />
                           </div>
@@ -1527,7 +1548,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                 </div>
                 {encountersLoading ? (
                   <div className="space-y-2">
-                    {[1, 2, 3].map((i) => <div key={i} className="h-8 animate-pulse rounded bg-muted" />)}
+                    {[1, 2, 3].map((i) => <div key={i} className="h-8 skeleton-shimmer rounded" />)}
                   </div>
                 ) : allGamesLocations.length === 0 ? (
                   <p className="text-sm italic text-muted-foreground">

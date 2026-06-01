@@ -137,9 +137,9 @@ export function MoveModal({ name, entry, game, onClose }: MoveModalProps) {
           {/* Effect */}
           {isLoading ? (
             <div className="space-y-1.5">
-              <div className="h-3.5 w-1/4 animate-pulse rounded bg-muted" />
-              <div className="h-4 w-full animate-pulse rounded bg-muted" />
-              <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
+              <div className="h-3.5 w-1/4 skeleton-shimmer rounded" />
+              <div className="h-4 w-full skeleton-shimmer rounded" />
+              <div className="h-4 w-3/4 skeleton-shimmer rounded" />
             </div>
           ) : shortEffect ? (
             <div>

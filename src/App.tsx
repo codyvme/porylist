@@ -342,9 +342,13 @@ const NAV_ITEMS = [
 // ─── Icon Rail (desktop) ──────────────────────────────────────────────────────
 
 function IconRail() {
+  const location = useLocation();
   const [navExpanded, setNavExpanded] = useState(
     () => window.matchMedia("(min-width: 1024px)").matches,
   );
+  const navListRef = useRef<HTMLDivElement>(null);
+  const [indicatorTop, setIndicatorTop] = useState<number | null>(null);
+
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 1024px)");
     const handler = (e: MediaQueryListEvent) => setNavExpanded(e.matches);
@@ -352,36 +356,55 @@ function IconRail() {
     return () => mq.removeEventListener("change", handler);
   }, []);
 
+  useEffect(() => {
+    const container = navListRef.current;
+    if (!container) return;
+    const id = setTimeout(() => {
+      const active = container.querySelector<HTMLElement>('[aria-current="page"]');
+      if (active) setIndicatorTop(active.offsetTop);
+    }, 0);
+    return () => clearTimeout(id);
+  }, [location.pathname]);
+
   return (
     <aside className={cn(
       "hidden sm:flex flex-col shrink-0 border-r border-border bg-background py-2 overflow-x-hidden overflow-y-auto transition-all duration-200",
       "dark:border-[hsl(193_60%_18%/0.6)] dark:bg-[hsl(193_90%_9%)]",
       navExpanded ? "w-52" : "w-14",
     )}>
-      {NAV_ITEMS.map((item, i) =>
-        item === null ? (
-          <div key={`sep-${i}`} className="my-1.5 border-t border-border dark:border-[hsl(193_60%_18%/0.6)]" />
-        ) : (
-          <Tooltip key={item.to} content={item.label} side="right" className="block w-full" disabled={navExpanded}>
-            <NavLink
-              to={item.to}
-              end={item.to === "/"}
-              className={({ isActive }) => cn(
-                "flex h-11 w-full items-center border-l-2 text-sm transition-colors",
-                isActive
-                  ? "border-primary bg-primary/10 font-semibold text-primary dark:bg-white/10 dark:text-white"
-                  : "border-transparent font-medium text-muted-foreground hover:bg-muted hover:text-foreground dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-slate-200",
-              )}
-              aria-label={item.label}
-            >
-              <span className="flex w-14 shrink-0 items-center justify-center">
-                <item.Icon className="h-4 w-4" />
-              </span>
-              <span className={cn("whitespace-nowrap pr-4 transition-opacity duration-200", navExpanded ? "opacity-100" : "opacity-0")}>{item.label}</span>
-            </NavLink>
-          </Tooltip>
-        )
-      )}
+      <div ref={navListRef} className="relative flex flex-col">
+        {/* Sliding active indicator */}
+        {indicatorTop !== null && (
+          <div
+            className="absolute left-0 w-0.5 h-11 bg-primary rounded-r pointer-events-none"
+            style={{ top: indicatorTop, transition: "top 0.25s cubic-bezier(0.4, 0, 0.2, 1)" }}
+          />
+        )}
+        {NAV_ITEMS.map((item, i) =>
+          item === null ? (
+            <div key={`sep-${i}`} className="my-1.5 border-t border-border dark:border-[hsl(193_60%_18%/0.6)]" />
+          ) : (
+            <Tooltip key={item.to} content={item.label} side="right" className="block w-full" disabled={navExpanded}>
+              <NavLink
+                to={item.to}
+                end={item.to === "/"}
+                className={({ isActive }) => cn(
+                  "flex h-11 w-full items-center border-l-2 border-transparent text-sm transition-colors",
+                  isActive
+                    ? "bg-primary/10 font-semibold text-primary dark:bg-white/10 dark:text-white"
+                    : "font-medium text-muted-foreground hover:bg-muted hover:text-foreground dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-slate-200",
+                )}
+                aria-label={item.label}
+              >
+                <span className="flex w-14 shrink-0 items-center justify-center">
+                  <item.Icon className="h-4 w-4" />
+                </span>
+                <span className={cn("whitespace-nowrap pr-4 transition-opacity duration-200", navExpanded ? "opacity-100" : "opacity-0")}>{item.label}</span>
+              </NavLink>
+            </Tooltip>
+          )
+        )}
+      </div>
 
       {/* Expand / collapse toggle at bottom */}
       <div className="mt-auto pt-2 border-t border-border dark:border-[hsl(193_60%_18%/0.6)]">

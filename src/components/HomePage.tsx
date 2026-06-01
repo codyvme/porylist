@@ -14,6 +14,7 @@ import { TYPE_COLORS, typeStyle } from "@/lib/types";
 import { loadPlaythroughs, VERSION_TO_GAME_GROUP, VERSION_DISPLAY_LABEL } from "@/lib/playthroughs";
 import { loadProjects } from "@/lib/breeding";
 import { fetchDashboardConfig, upsertDashboardConfig, type User } from "@/lib/supabase";
+import { SparkleBurst } from "@/components/SparkleBurst";
 
 // ─── Module config ────────────────────────────────────────────────────────────
 
@@ -139,6 +140,7 @@ function PokemonOfTheDay({ game }: { game: GameOption | null }) {
   const { data: pokemonList = [] } = usePokemonSummaryList();
   const [modalOpen, setModalOpen] = useState(false);
   const [showShiny, setShowShiny] = useState(false);
+  const [sparkleKey, setSparkleKey] = useState(0);
   // Allow the modal to navigate to another species (e.g. via the evolution
   // chain) — when the user clicks a sibling Pokémon, swap the modal target.
   const [overrideName, setOverrideName] = useState<string | null>(null);
@@ -200,7 +202,7 @@ function PokemonOfTheDay({ game }: { game: GameOption | null }) {
                 ? `${SPRITES_ROOT}/versions/${game!.spriteVersion}/shiny/${pokemon.id}.png`
                 : `${SPRITES_ROOT}/other/home/shiny/${pokemon.id}.png`;
               return (
-                <div className="relative h-36 w-36">
+                <div key={pokemon.id} className="relative h-36 w-36 animate-bounce-in">
                   <img
                     src={normalSrc}
                     alt={formatPokemonName(pokemon.name)}
@@ -214,19 +216,26 @@ function PokemonOfTheDay({ game }: { game: GameOption | null }) {
                 </div>
               );
             })()}
-            <button
-              onClick={() => setShowShiny((s) => !s)}
-              className={cn(
-                "flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-                showShiny
-                  ? "border-yellow-400 bg-yellow-400/10 text-yellow-500"
-                  : "border-muted-foreground/30 text-muted-foreground hover:border-yellow-400 hover:text-yellow-500",
-              )}
-              aria-pressed={showShiny}
-            >
-              <Sparkles className="h-3.5 w-3.5" />
-              Shiny
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => {
+                  const activating = !showShiny;
+                  setShowShiny((s) => !s);
+                  if (activating) setSparkleKey((k) => k + 1);
+                }}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                  showShiny
+                    ? "border-yellow-400 bg-yellow-400/10 text-yellow-500"
+                    : "border-muted-foreground/30 text-muted-foreground hover:border-yellow-400 hover:text-yellow-500",
+                )}
+                aria-pressed={showShiny}
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                Shiny
+              </button>
+              {sparkleKey > 0 && <SparkleBurst key={sparkleKey} />}
+            </div>
           </div>
           <div className="flex flex-1 flex-col gap-3 min-w-0">
             <div>
@@ -257,15 +266,15 @@ function PokemonOfTheDay({ game }: { game: GameOption | null }) {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-              {pokemon.stats.map((s) => (
+              {pokemon.stats.map((s, i) => (
                 <div key={s.stat.name} className="flex items-center gap-2">
                   <span className="w-8 shrink-0 text-[11px] font-semibold text-muted-foreground">
                     {STAT_LABELS[s.stat.name] ?? s.stat.name}
                   </span>
                   <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
                     <div
-                      className={cn("h-full rounded-full", statColor(s.base_stat))}
-                      style={{ width: `${Math.min(100, (s.base_stat / 255) * 100)}%` }}
+                      className={cn("h-full rounded-full animate-stat-fill", statColor(s.base_stat))}
+                      style={{ width: `${Math.min(100, (s.base_stat / 255) * 100)}%`, animationDelay: `${i * 60}ms` }}
                     />
                   </div>
                   <span className="w-6 shrink-0 text-right text-[11px] tabular-nums text-muted-foreground">

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { SparkleBurst } from "@/components/SparkleBurst";
 import { ArrowLeft, ChevronDown, ChevronLeft, ChevronRight, Dna, Pencil, Plus, RotateCcw, Search, Settings, Archive, Star, Trash2, Trophy, X } from "lucide-react";
 import { Select } from "@/components/ui/select";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
@@ -633,6 +634,7 @@ function QuickEntry({
   const [gender, setGender] = useState<"male" | "female" | null>(null);
   const [moves, setMoves] = useState<Set<string>>(new Set());
   const [isShiny, setIsShiny] = useState(false);
+  const [sparkleKey, setSparkleKey] = useState(0);
 
   const reset = () => {
     setIvs(new Set());
@@ -749,16 +751,23 @@ function QuickEntry({
 
       {/* Shiny */}
       {project.shinyHunting && (
-        <button
-          onClick={() => setIsShiny((s) => !s)}
-          className={cn(
-            "rounded px-2 py-0.5 text-xs font-medium transition-colors",
-            isShiny ? "bg-amber-400 text-white" : "bg-background text-muted-foreground hover:bg-muted",
-          )}
-          title="Shiny?"
-        >
-          ✦ Shiny
-        </button>
+        <div className="relative">
+          <button
+            onClick={() => {
+              const activating = !isShiny;
+              setIsShiny((s) => !s);
+              if (activating) setSparkleKey((k) => k + 1);
+            }}
+            className={cn(
+              "rounded px-2 py-0.5 text-xs font-medium transition-colors",
+              isShiny ? "bg-amber-400 text-white" : "bg-background text-muted-foreground hover:bg-muted",
+            )}
+            title="Shiny?"
+          >
+            ✦ Shiny
+          </button>
+          {sparkleKey > 0 && <SparkleBurst key={sparkleKey} />}
+        </div>
       )}
 
       <button

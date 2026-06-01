@@ -60,3 +60,84 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ─── Animation keyframes ─────────────────────────────────────────────────── */
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes bounce-in {
+  0%   { transform: scale(0.35) translateY(10px); opacity: 0; }
+  55%  { transform: scale(1.06); opacity: 1; }
+  75%  { transform: scale(0.96); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes stat-fill {
+  from { width: 0; }
+}
+
+@keyframes fade-slide-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Opacity-only fade for elements that already use transform for positioning (e.g. virtual rows) */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes sparkle-pop {
+  0%   { transform: translate(-50%, -50%) rotate(var(--angle)) translateX(0px) scale(1.2); opacity: 1; }
+  100% { transform: translate(-50%, -50%) rotate(var(--angle)) translateX(var(--dist)) scale(0); opacity: 0; }
+}
+
+@layer utilities {
+  .animate-bounce-in {
+    animation: bounce-in 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  .animate-stat-fill {
+    animation: stat-fill 0.8s ease-out both;
+  }
+  .animate-fade-up {
+    animation: fade-slide-up 0.25s ease-out both;
+  }
+  /* For virtualized rows that use transform for positioning — only fade opacity */
+  .animate-fade-in {
+    animation: fade-in 0.2s ease-out both;
+  }
+
+  /* Skeleton shimmer — replaces animate-pulse for loading placeholders */
+  .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 25%,
+      hsl(var(--muted-foreground) / 0.12) 50%,
+      hsl(var(--muted)) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+
+  /* Type badge hover scale + brighten */
+  .type-badge {
+    display: inline-block;
+    transition: transform 0.15s ease, filter 0.15s ease;
+  }
+  .type-badge:hover {
+    transform: scale(1.1);
+    filter: brightness(1.2) saturate(1.15);
+  }
+}
+
+.sparkle-particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: sparkle-pop 0.55s ease-out forwards;
+}

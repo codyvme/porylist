@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ArrowLeft, Search, X } from "lucide-react";
 import { GAMES_BY_VALUE, type GameOption } from "@/lib/games";
@@ -145,6 +145,57 @@ function PokeballIcon({ caught, size = 14 }: { caught: boolean; size?: number })
   );
 }
 
+const CONFETTI_COLORS = ["#facc15", "#f97316", "#ec4899", "#22c55e", "#3b82f6", "#a855f7"];
+
+function CaughtButton({ isCaught, onToggle, label }: {
+  isCaught: boolean;
+  onToggle: () => void;
+  label: string;
+}) {
+  const [burstKey, setBurstKey] = useState(0);
+
+  const handleClick = () => {
+    onToggle();
+    if (!isCaught) setBurstKey((k) => k + 1);
+  };
+
+  return (
+    <div className="relative flex-shrink-0">
+      <button
+        onClick={handleClick}
+        className={cn(
+          "flex items-center justify-center rounded-full p-1.5 mt-0.5 sm:mt-0 transition-colors",
+          isCaught ? "text-red-500 hover:text-red-400" : "text-muted-foreground/30 hover:text-muted-foreground",
+        )}
+        aria-label={label}
+      >
+        <PokeballIcon caught={isCaught} size={15} />
+      </button>
+      {burstKey > 0 && (
+        <React.Fragment key={burstKey}>
+          {CONFETTI_COLORS.map((color, i) => {
+            const angle = (i / CONFETTI_COLORS.length) * 360;
+            return (
+              <span
+                key={i}
+                className="sparkle-particle"
+                style={{
+                  width: 5,
+                  height: 5,
+                  backgroundColor: color,
+                  "--angle": `${angle}deg`,
+                  "--dist": `${18 + (i % 2) * 6}px`,
+                  animationDelay: `${i * 30}ms`,
+                } as React.CSSProperties}
+              />
+            );
+          })}
+        </React.Fragment>
+      )}
+    </div>
+  );
+}
+
 interface MergedEncounter {
   id: number;
   name: string;
@@ -267,16 +318,11 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
           return (
             <div key={`${enc.id}-${method}`} className="flex items-start sm:items-center gap-2 rounded-md px-2 py-0.5 hover:bg-muted/50">
               {game && (
-                <button
-                  onClick={() => onToggleCaught(enc.name, caughtKey)}
-                  className={cn(
-                    "flex flex-shrink-0 items-center justify-center rounded-full p-1.5 mt-0.5 sm:mt-0 transition-colors",
-                    isCaught ? "text-red-500 hover:text-red-400" : "text-muted-foreground/30 hover:text-muted-foreground",
-                  )}
-                  aria-label={isCaught ? `Mark ${enc.name} as not caught` : `Mark ${enc.name} as caught`}
-                >
-                  <PokeballIcon caught={isCaught} size={15} />
-                </button>
+                <CaughtButton
+                  isCaught={isCaught}
+                  onToggle={() => onToggleCaught(enc.name, caughtKey)}
+                  label={isCaught ? `Mark ${enc.name} as not caught` : `Mark ${enc.name} as caught`}
+                />
               )}
               <img
                 src={spriteUrl(enc.id, spriteVersion)}
@@ -510,16 +556,11 @@ function CaughtModal({ caughtList, spriteVersion, onOpen, onToggleCaught, caught
                     >
                       {formatPokemonName(p.name)}
                     </button>
-                    <button
-                      onClick={() => onToggleCaught(p.name, caughtKey)}
-                      className={cn(
-                        "mt-0.5 rounded-full p-1 transition-colors",
-                        isCaught ? "text-red-500 hover:text-red-400" : "text-muted-foreground/30 hover:text-muted-foreground",
-                      )}
-                      aria-label={isCaught ? `Mark ${p.name} as not caught` : `Mark ${p.name} as caught`}
-                    >
-                      <PokeballIcon caught={isCaught} size={13} />
-                    </button>
+                    <CaughtButton
+                      isCaught={isCaught}
+                      onToggle={() => onToggleCaught(p.name, caughtKey)}
+                      label={isCaught ? `Mark ${p.name} as not caught` : `Mark ${p.name} as caught`}
+                    />
                   </div>
                 );
               })}
@@ -609,16 +650,11 @@ function MissingModal({ title, missing, spriteVersion, onOpen, onToggleCaught, c
                     >
                       {formatPokemonName(p.name)}
                     </button>
-                    <button
-                      onClick={() => onToggleCaught(p.name, caughtKey)}
-                      className={cn(
-                        "mt-0.5 rounded-full p-1 transition-colors",
-                        isCaught ? "text-red-500 hover:text-red-400" : "text-muted-foreground/30 hover:text-muted-foreground",
-                      )}
-                      aria-label={isCaught ? `Mark ${p.name} as not caught` : `Mark ${p.name} as caught`}
-                    >
-                      <PokeballIcon caught={isCaught} size={13} />
-                    </button>
+                    <CaughtButton
+                      isCaught={isCaught}
+                      onToggle={() => onToggleCaught(p.name, caughtKey)}
+                      label={isCaught ? `Mark ${p.name} as not caught` : `Mark ${p.name} as caught`}
+                    />
                   </div>
                 );
               })}
@@ -1118,7 +1154,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
               {routeDataQuery.isLoading && (
                 <div className="space-y-2 p-4">
                   {Array.from({ length: 6 }).map((_, i) => (
-                    <div key={i} className="h-10 animate-pulse rounded bg-muted" />
+                    <div key={i} className="h-10 skeleton-shimmer rounded" />
                   ))}
                 </div>
               )}
@@ -1284,7 +1320,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
                 {routeDataQuery.isLoading && (
                   <div className="space-y-1 p-2">
                     {Array.from({ length: 12 }).map((_, i) => (
-                      <div key={i} className="h-8 animate-pulse rounded bg-muted" />
+                      <div key={i} className="h-8 skeleton-shimmer rounded" />
                     ))}
                   </div>
                 )}

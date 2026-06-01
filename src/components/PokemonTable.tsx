@@ -119,6 +119,29 @@ function canonicalFormName(
   return formName.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+/** Shows a shimmer placeholder while the sprite image loads from the network. */
+function SpriteImg({ src, alt, className, onError }: {
+  src: string;
+  alt: string;
+  className?: string;
+  onError?: React.ReactEventHandler<HTMLImageElement>;
+}) {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <div className="relative h-full w-full flex items-center justify-center">
+      {!loaded && <div className="absolute h-10 w-10 skeleton-shimmer rounded" />}
+      <img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        onLoad={() => setLoaded(true)}
+        onError={onError}
+        className={cn("max-h-full w-auto transition-opacity duration-200", loaded ? "opacity-100" : "opacity-0", className)}
+      />
+    </div>
+  );
+}
+
 const columnHelper = createColumnHelper<Row>();
 
 const GEN1_GAME_VALUE = "red-blue-yellow";
@@ -156,7 +179,7 @@ function statColumn(
     ),
     cell: ({ getValue, row }) => {
       if (row.original.isLoading) {
-        return <div className="h-4 w-8 animate-pulse rounded bg-muted" />;
+        return <div className="h-4 w-8 skeleton-shimmer rounded" />;
       }
       const v = getValue();
       return (
@@ -176,7 +199,7 @@ const typesColumn = columnHelper.accessor("types", {
   cell: ({ getValue, row }) => {
     const types = getValue();
     if (row.original.isLoading) {
-      return <div className="h-5 w-24 animate-pulse rounded bg-muted" />;
+      return <div className="h-5 w-24 skeleton-shimmer rounded" />;
     }
     return (
       <div className="flex flex-wrap gap-1.5">
@@ -184,7 +207,7 @@ const typesColumn = columnHelper.accessor("types", {
           <Badge
             key={t}
             variant="default"
-            className="capitalize !px-2"
+            className="type-badge capitalize !px-2"
             style={typeStyle(t)}
           >
             {t}
@@ -514,9 +537,9 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
         return (
           <div className="relative flex h-14 w-14 items-center justify-center">
             {row.original.sprite ? (
-              <img key={row.original.sprite} src={row.original.sprite} alt={name} loading="lazy" />
+              <SpriteImg key={row.original.sprite} src={row.original.sprite} alt={name} />
             ) : (
-              <div className="h-10 w-10 animate-pulse rounded bg-muted" />
+              <div className="h-10 w-10 skeleton-shimmer rounded" />
             )}
           </div>
         );
@@ -624,7 +647,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
         ),
         cell: ({ getValue, row }) => {
           if (row.original.isLoading) {
-            return <div className="h-4 w-10 animate-pulse rounded bg-muted" />;
+            return <div className="h-4 w-10 skeleton-shimmer rounded" />;
           }
           const v = getValue();
           return (
@@ -640,7 +663,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
       id: "height",
       header: ({ column }) => <SortHeader label="Height" sorted={column.getIsSorted()} />,
       cell: ({ getValue, row }) => {
-        if (row.original.isLoading) return <div className="h-4 w-10 animate-pulse rounded bg-muted" />;
+        if (row.original.isLoading) return <div className="h-4 w-10 skeleton-shimmer rounded" />;
         const v = getValue();
         if (v <= 0) return <span className="font-mono tabular-nums text-sm">—</span>;
         const totalIn = v * 3.93701;
@@ -654,7 +677,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
       id: "weight",
       header: ({ column }) => <SortHeader label="Weight" sorted={column.getIsSorted()} />,
       cell: ({ getValue, row }) => {
-        if (row.original.isLoading) return <div className="h-4 w-12 animate-pulse rounded bg-muted" />;
+        if (row.original.isLoading) return <div className="h-4 w-12 skeleton-shimmer rounded" />;
         const v = getValue();
         if (v <= 0) return <span className="font-mono tabular-nums text-sm">—</span>;
         const lbs = (v * 0.220462).toFixed(1);
@@ -666,9 +689,9 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
       id: "captureRate",
       header: ({ column }) => <SortHeader label="Catch" sorted={column.getIsSorted()} />,
       cell: ({ getValue, row }) => {
-        if (row.original.isLoading) return <div className="h-4 w-8 animate-pulse rounded bg-muted" />;
+        if (row.original.isLoading) return <div className="h-4 w-8 skeleton-shimmer rounded" />;
         const v = getValue();
-        if (v === null) return <div className="h-4 w-8 animate-pulse rounded bg-muted" />;
+        if (v === null) return <div className="h-4 w-8 skeleton-shimmer rounded" />;
         return <span className="font-mono tabular-nums text-sm">{v}</span>;
       },
     });
@@ -678,9 +701,9 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
       enableSorting: false,
       header: () => <span className="select-none">Egg Group</span>,
       cell: ({ getValue, row }) => {
-        if (row.original.isLoading) return <div className="h-4 w-20 animate-pulse rounded bg-muted" />;
+        if (row.original.isLoading) return <div className="h-4 w-20 skeleton-shimmer rounded" />;
         const v = getValue();
-        if (v === null) return <div className="h-4 w-20 animate-pulse rounded bg-muted" />;
+        if (v === null) return <div className="h-4 w-20 skeleton-shimmer rounded" />;
         return (
           <span className="text-sm capitalize">
             {v.map((g) => g.replace(/\b\w/g, (c) => c.toUpperCase())).join(", ")}
@@ -1075,7 +1098,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
                 return (
                   <div
                     key={row.id}
-                    className="group absolute left-0 top-0 grid w-full border-b bg-background transition-colors hover:bg-muted/50"
+                    className="group absolute left-0 top-0 grid w-full border-b bg-background transition-colors hover:bg-muted/50 animate-fade-in"
                     style={{
                       gridTemplateColumns: gridTemplate,
                       transform: `translateY(${vRow.start}px)`,
@@ -1148,11 +1171,9 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
                   <div className="flex items-center px-3 py-3">
                     <div className="flex h-14 w-14 items-center justify-center">
                       {formSprite ? (
-                        <img
+                        <SpriteImg
                           src={formSprite}
                           alt={name}
-                          loading="lazy"
-                          className="max-h-full w-auto"
                           onError={(e) => {
                             const img = e.currentTarget;
                             img.onerror = null;
@@ -1160,7 +1181,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
                           }}
                         />
                       ) : (
-                        <div className="h-10 w-10 animate-pulse rounded bg-muted" />
+                        <div className="h-10 w-10 skeleton-shimmer rounded" />
                       )}
                     </div>
                   </div>
@@ -1169,7 +1190,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
                   {/* name */}
                   <div className="flex items-center px-3 py-3 text-sm">
                     {isLoadingDetail ? (
-                      <div className="h-4 w-32 animate-pulse rounded bg-muted" />
+                      <div className="h-4 w-32 skeleton-shimmer rounded" />
                     ) : (
                       <button
                         className="rounded-sm text-left font-medium text-muted-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
@@ -1182,14 +1203,14 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
                   {/* types */}
                   <div className="flex items-center px-3 py-3 text-sm">
                     {isLoadingDetail ? (
-                      <div className="h-5 w-24 animate-pulse rounded bg-muted" />
+                      <div className="h-5 w-24 skeleton-shimmer rounded" />
                     ) : (
                       <div className="flex flex-wrap gap-1.5">
                         {types.map((t) => (
                           <Badge
                             key={t}
                             variant="default"
-                            className="capitalize !px-2"
+                            className="type-badge capitalize !px-2"
                             style={typeStyle(t)}
                           >
                             {t}
@@ -1202,7 +1223,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
                   {visibleStats.map(({ id, val }) => (
                     <div key={id} className="flex items-center px-3 py-3 text-sm">
                       {isLoadingDetail ? (
-                        <div className="h-4 w-8 animate-pulse rounded bg-muted" />
+                        <div className="h-4 w-8 skeleton-shimmer rounded" />
                       ) : (
                         <span className="font-mono tabular-nums text-sm">
                           {val > 0 ? val : "—"}
@@ -1214,7 +1235,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
                   {columnVisibility["bst"] !== false && (
                     <div className="flex items-center px-3 py-3 text-sm">
                       {isLoadingDetail ? (
-                        <div className="h-4 w-10 animate-pulse rounded bg-muted" />
+                        <div className="h-4 w-10 skeleton-shimmer rounded" />
                       ) : (
                         <span className="font-mono tabular-nums text-sm font-semibold">
                           {bst > 0 ? bst : "—"}
@@ -1226,7 +1247,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
                   {columnVisibility["height"] !== false && (
                     <div className="flex items-center px-3 py-3 text-sm">
                       {isLoadingDetail ? (
-                        <div className="h-4 w-10 animate-pulse rounded bg-muted" />
+                        <div className="h-4 w-10 skeleton-shimmer rounded" />
                       ) : (() => {
                         const v = detail?.height ?? 0;
                         if (v <= 0) return <span className="font-mono tabular-nums text-sm">—</span>;
@@ -1241,7 +1262,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
                   {columnVisibility["weight"] !== false && (
                     <div className="flex items-center px-3 py-3 text-sm">
                       {isLoadingDetail ? (
-                        <div className="h-4 w-10 animate-pulse rounded bg-muted" />
+                        <div className="h-4 w-10 skeleton-shimmer rounded" />
                       ) : (() => {
                         const v = detail?.weight ?? 0;
                         if (v <= 0) return <span className="font-mono tabular-nums text-sm">—</span>;
