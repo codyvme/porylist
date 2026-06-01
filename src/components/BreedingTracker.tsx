@@ -1423,7 +1423,7 @@ export function BreedingTracker({ user }: { user: User | null }) {
 
         {active.length === 0 && !isCreating && (
           <div className="rounded-lg border border-dashed p-6 text-center">
-            <Dna className="mx-auto mb-2 h-8 w-8 text-muted-foreground/40" />
+            <Dna className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
             <p className="text-sm font-medium">No active projects</p>
             <p className="mt-1 text-xs text-muted-foreground">
               Create a project to start tracking your breeding sessions.
@@ -1516,7 +1516,7 @@ export function BreedingTracker({ user }: { user: User | null }) {
         )}
         {!isCreating && !selected && (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
-            <Dna className="h-12 w-12 text-muted-foreground/20" />
+            <Dna className="h-12 w-12 text-muted-foreground" />
             <div>
               <p className="font-medium text-muted-foreground">Select a project</p>
               <p className="mt-1 text-sm text-muted-foreground/60">

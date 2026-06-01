@@ -354,10 +354,9 @@ function IconRail() {
 
   return (
     <aside className={cn(
-      "hidden sm:flex flex-col shrink-0 border-r border-border bg-background py-2 overflow-y-auto transition-all duration-200",
+      "hidden sm:flex flex-col shrink-0 border-r border-border bg-background py-2 overflow-x-hidden overflow-y-auto transition-all duration-200",
       "dark:border-[hsl(193_60%_18%/0.6)] dark:bg-[hsl(193_90%_9%)]",
       navExpanded ? "w-52" : "w-14",
-      "overflow-hidden",
     )}>
       {NAV_ITEMS.map((item, i) =>
         item === null ? (
@@ -370,7 +369,7 @@ function IconRail() {
               className={({ isActive }) => cn(
                 "flex h-11 w-full items-center border-l-2 text-sm transition-colors",
                 isActive
-                  ? "border-[hsl(var(--porygon-red))] bg-primary/10 font-semibold text-primary dark:bg-white/10 dark:text-white"
+                  ? "border-primary bg-primary/10 font-semibold text-primary dark:bg-white/10 dark:text-white"
                   : "border-transparent font-medium text-muted-foreground hover:bg-muted hover:text-foreground dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-slate-200",
               )}
               aria-label={item.label}
@@ -456,7 +455,7 @@ function MobileDrawer({ open, onClose, onOpenAbout }: { open: boolean; onClose: 
                 className={({ isActive }) => cn(
                   "flex items-center gap-3 border-l-2 pl-5 pr-4 py-3 text-sm transition-colors whitespace-nowrap",
                   isActive
-                    ? "border-[hsl(var(--porygon-red))] bg-primary/10 font-semibold text-primary dark:bg-white/10 dark:text-white"
+                    ? "border-primary bg-primary/10 font-semibold text-primary dark:bg-white/10 dark:text-white"
                     : "border-transparent font-medium text-muted-foreground hover:bg-muted hover:text-foreground dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-slate-200",
                 )}
               >

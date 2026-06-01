@@ -185,7 +185,7 @@ export function ItemsTable({ game: selectedGame }: { game: GameOption | null }) 
                   {item.displayName}
                 </td>
                 <td className="py-1.5 pr-4 whitespace-nowrap">
-                  <span className="rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                  <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                     {item.categoryDisplay}
                   </span>
                 </td>

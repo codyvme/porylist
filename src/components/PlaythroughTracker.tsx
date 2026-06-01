@@ -965,7 +965,7 @@ export function PlaythroughTracker({
 
           {active.length === 0 && !isCreating && (
             <div className="rounded-lg border border-dashed p-6 text-center">
-              <Trophy className="mx-auto mb-2 h-8 w-8 text-muted-foreground/40" />
+              <Trophy className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
               <p className="text-sm font-medium">No active playthroughs</p>
               <p className="mt-1 text-xs text-muted-foreground">
                 Start a new run to track your progress.
@@ -1051,7 +1051,7 @@ export function PlaythroughTracker({
           )}
           {!isCreating && !selected && (
             <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
-              <Trophy className="h-12 w-12 text-muted-foreground/20" />
+              <Trophy className="h-12 w-12 text-muted-foreground" />
               <div>
                 <p className="font-medium text-muted-foreground">Select a playthrough</p>
                 <p className="mt-1 text-sm text-muted-foreground/60">or start a new run to get going</p>

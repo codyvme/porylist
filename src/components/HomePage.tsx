@@ -139,10 +139,17 @@ function PokemonOfTheDay({ game }: { game: GameOption | null }) {
   const { data: pokemonList = [] } = usePokemonSummaryList();
   const [modalOpen, setModalOpen] = useState(false);
   const [showShiny, setShowShiny] = useState(false);
+  // Allow the modal to navigate to another species (e.g. via the evolution
+  // chain) — when the user clicks a sibling Pokémon, swap the modal target.
+  const [overrideName, setOverrideName] = useState<string | null>(null);
 
   const pokemon = useMemo(() => {
     if (pokemonList.length === 0) return null;
-    const shuffled = seededShuffle(pokemonList, POTD_SEED);
+    // Pick from base species only — skip alt forms like "koraidon-limited-build",
+    // "deoxys-attack", or Mega/regional variants. Each PokemonSummary's
+    // canonical species entry has name === species.name.
+    const baseSpecies = pokemonList.filter((p) => p.name === p.species.name);
+    const shuffled = seededShuffle(baseSpecies, POTD_SEED);
     const day = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
     return shuffled[day % shuffled.length];
   }, [pokemonList]);
@@ -170,10 +177,10 @@ function PokemonOfTheDay({ game }: { game: GameOption | null }) {
     <>
       {modalOpen && (
         <PokemonModal
-          pokemonName={pokemon.name}
+          pokemonName={overrideName ?? pokemon.name}
           game={game ?? undefined}
-          onClose={() => setModalOpen(false)}
-          onNavigate={() => {}}
+          onClose={() => { setModalOpen(false); setOverrideName(null); }}
+          onNavigate={(name) => setOverrideName(name)}
           prevPokemon={null}
           nextPokemon={null}
         />
@@ -291,7 +298,7 @@ function PlaythroughsSection() {
 
   if (playthroughs.length === 0) return (
     <div className="rounded-xl border border-dashed p-6 text-center">
-      <Trophy className="mx-auto mb-2 h-8 w-8 text-muted-foreground/30" />
+      <Trophy className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
       <p className="text-sm font-medium text-muted-foreground">No active playthroughs</p>
       <p className="mt-1 text-xs text-muted-foreground/60">
         <Link to="/routes" className="underline underline-offset-2 hover:text-foreground">Start a run</Link> to track your progress.
@@ -353,7 +360,7 @@ function BreedingSection() {
 
   if (projects.length === 0) return (
     <div className="rounded-xl border border-dashed p-6 text-center">
-      <Dna className="mx-auto mb-2 h-8 w-8 text-muted-foreground/30" />
+      <Dna className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
       <p className="text-sm font-medium text-muted-foreground">No active breeding projects</p>
       <p className="mt-1 text-xs text-muted-foreground/60">
         <Link to="/breeding" className="underline underline-offset-2 hover:text-foreground">Start a project</Link> to track your breeding.

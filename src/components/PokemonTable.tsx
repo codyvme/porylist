@@ -532,7 +532,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
         return (
           <div className="flex items-center gap-2">
             <button
-              className="rounded-sm text-left font-medium hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="rounded-sm text-left font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               onClick={() => openModalRef.current(name)}
             >
               {formatPokemonName(getValue())}
