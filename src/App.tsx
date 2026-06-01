@@ -368,8 +368,9 @@ function IconRail() {
 
   return (
     <aside className={cn(
-      "hidden sm:flex flex-col shrink-0 border-r border-border bg-background py-2 overflow-x-hidden overflow-y-auto transition-all duration-200",
-      "dark:border-[hsl(193_60%_18%/0.6)] dark:bg-[hsl(193_90%_9%)]",
+      "hidden sm:flex flex-col shrink-0 border-r py-2 overflow-x-hidden overflow-y-auto transition-all duration-200",
+      "border-border bg-[hsl(193_20%_96%)]",
+      "dark:border-[hsl(193_60%_18%/0.6)] dark:bg-gradient-to-b dark:from-[hsl(193_55%_8%)] dark:to-[hsl(220_45%_8%)]",
       navExpanded ? "w-52" : "w-14",
     )}>
       <div ref={navListRef} className="relative flex flex-col">
@@ -668,7 +669,13 @@ export function App() {
       <div className="h-screen flex flex-col overflow-hidden bg-background">
 
         {/* ── Header ── */}
-        <header className="flex-shrink-0 border-b border-[hsl(193_60%_18%/0.6)] bg-[hsl(193_90%_9%)] pt-[env(safe-area-inset-top)]">
+        <header className="flex-shrink-0 border-b border-[hsl(193_60%_18%/0.6)] bg-[hsl(193_90%_9%)] pt-[env(safe-area-inset-top)] relative overflow-hidden">
+          {/* Pokéball-inspired decorative glows */}
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -top-8 left-4 h-20 w-20 rounded-full bg-red-500/10 blur-2xl" />
+            <div className="absolute -top-8 left-16 h-20 w-20 rounded-full bg-white/5 blur-xl" />
+            <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+          </div>
           <div className="flex items-center gap-3 px-4">
             {/* Hamburger — mobile only */}
             <button
@@ -694,7 +701,7 @@ export function App() {
                   className="absolute inset-0 h-10 w-10 object-contain opacity-0 group-hover:opacity-100"
                 />
               </div>
-              <h1 className="text-2xl font-bold tracking-tight text-white">Porylist</h1>
+              <h1 className="font-display text-2xl font-extrabold tracking-tight text-white">Porylist</h1>
             </NavLink>
 
             {/* Right-side actions */}

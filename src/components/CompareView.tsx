@@ -392,7 +392,7 @@ export function CompareView({ game }: { game: GameOption | null }) {
     <div className="flex h-full flex-col px-6">
       {/* ── Page header ── */}
       <div className="shrink-0 flex items-center gap-3 border-b border-border py-3 -mx-6 px-6">
-        <h1 className="flex-1 text-xl font-semibold">Compare</h1>
+        <h1 className="flex-1 font-display text-xl font-extrabold">Compare</h1>
         <GameFilter />
       </div>
 

@@ -152,7 +152,7 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
     <div className="flex flex-col gap-6 px-6 pb-6">
       {/* Page header */}
       <div className="shrink-0 flex items-center gap-3 border-b border-border py-3 -mx-6 px-6">
-        <h1 className="flex-1 text-xl font-semibold">Team Builder</h1>
+        <h1 className="flex-1 font-display text-xl font-extrabold">Team Builder</h1>
         {team.length > 0 && (
           <>
             <button

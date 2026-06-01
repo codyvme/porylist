@@ -1074,7 +1074,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                     </span>
                   );
                 })()}
-                <h2 className="text-xl font-bold">{displayName}</h2>
+                <h2 className="font-display text-xl font-extrabold">{displayName}</h2>
                 {pokemon && (
                   <CryButton
                     id={pokemon.id}
@@ -1152,14 +1152,16 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
               {/* Pokédex entry */}
               {flavorText && (
                 <div className="border-b px-6 py-4">
-                  <p className="text-sm italic text-muted-foreground">
-                    "{flavorText.text}"
-                  </p>
-                  {game && (
-                    <p className="mt-1 text-xs capitalize text-muted-foreground/60">
-                      {flavorText.version.name.replace(/-/g, " ")}
+                  <blockquote className="border-l-[3px] border-primary/50 pl-3">
+                    <p className="text-sm italic leading-relaxed text-foreground/75">
+                      {flavorText.text}
                     </p>
-                  )}
+                    {game && (
+                      <cite className="mt-1.5 block text-xs capitalize not-italic text-muted-foreground/60">
+                        — {flavorText.version.name.replace(/-/g, " ")}
+                      </cite>
+                    )}
+                  </blockquote>
                 </div>
               )}
 

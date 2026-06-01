@@ -35,7 +35,7 @@ import {
   spriteUrl,
   cryUrl,
 } from "@/lib/games";
-import { typeStyle } from "@/lib/types";
+import { TYPE_COLORS, typeStyle } from "@/lib/types";
 import { ALL_TYPES } from "@/lib/type-chart";
 import { cn, formatPokemonName } from "@/lib/utils";
 import { GameFilter } from "@/components/GameFilter";
@@ -89,7 +89,29 @@ interface Row {
 
 type DisplayRow =
   | { kind: "base"; row: TableRow<Row> }
-  | { kind: "variant"; formName: string; parentName: string };
+  | { kind: "variant"; formName: string; parentName: string }
+  | { kind: "gen-divider"; label: string };
+
+const GEN_STARTS: { minId: number; label: string }[] = [
+  { minId: 1,   label: "Generation I — Kanto"   },
+  { minId: 152, label: "Generation II — Johto"   },
+  { minId: 252, label: "Generation III — Hoenn"  },
+  { minId: 387, label: "Generation IV — Sinnoh"  },
+  { minId: 494, label: "Generation V — Unova"    },
+  { minId: 650, label: "Generation VI — Kalos"   },
+  { minId: 722, label: "Generation VII — Alola"  },
+  { minId: 810, label: "Generation VIII — Galar" },
+  { minId: 906, label: "Generation IX — Paldea"  },
+];
+
+function getGenLabel(id: number): string {
+  let label = GEN_STARTS[0].label;
+  for (const g of GEN_STARTS) {
+    if (id >= g.minId) label = g.label;
+    else break;
+  }
+  return label;
+}
 
 function getFormSuffixMinGen(suffix: string): number {
   const s = suffix.toLowerCase();
@@ -814,9 +836,21 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
 
   const tableRows = table.getRowModel().rows;
 
+  const showGenDividers =
+    sorting.length === 0 ||
+    (sorting.length === 1 && sorting[0].id === "id" && !sorting[0].desc);
+
   const displayRows = useMemo<DisplayRow[]>(() => {
     const result: DisplayRow[] = [];
+    let lastGenLabel: string | null = null;
     for (const row of tableRows) {
+      if (showGenDividers) {
+        const genLabel = getGenLabel(row.original.id);
+        if (genLabel !== lastGenLabel) {
+          result.push({ kind: "gen-divider", label: genLabel });
+          lastGenLabel = genLabel;
+        }
+      }
       result.push({ kind: "base", row });
       if (expandedRows.has(row.original.name)) {
         for (const formName of availableFormsMap[row.original.name] ?? []) {
@@ -825,13 +859,13 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
       }
     }
     return result;
-  }, [tableRows, expandedRows, availableFormsMap]);
+  }, [tableRows, expandedRows, availableFormsMap, showGenDividers]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const rowVirtualizer = useVirtualizer({
     count: displayRows.length,
     getScrollElement: () => scrollRef.current,
-    estimateSize: () => 81,
+    estimateSize: (i) => displayRows[i]?.kind === "gen-divider" ? 36 : 81,
     overscan: 8,
   });
 
@@ -854,7 +888,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
   return (
     <div className="flex h-full flex-col gap-3 px-6">
       <div className="shrink-0 flex items-center gap-3 border-b border-border py-3 -mx-6 px-6">
-        <h1 className="flex-1 text-xl font-semibold">Pokédex</h1>
+        <h1 className="flex-1 font-display text-xl font-extrabold">Pokédex</h1>
         <GameFilter />
       </div>
       <div className="flex flex-wrap items-center gap-2 pt-2">
@@ -1093,17 +1127,37 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
             {rowVirtualizer.getVirtualItems().map((vRow) => {
               const dRow = displayRows[vRow.index];
 
+              if (dRow.kind === "gen-divider") {
+                return (
+                  <div
+                    key={dRow.label}
+                    className="absolute left-0 top-0 w-full flex items-center gap-3 px-4 border-b bg-muted/20"
+                    style={{ transform: `translateY(${vRow.start}px)`, height: 36 }}
+                  >
+                    <div className="h-px flex-1 bg-border" />
+                    <span className="font-display text-[10px] font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap">
+                      {dRow.label}
+                    </span>
+                    <div className="h-px flex-1 bg-border" />
+                  </div>
+                );
+              }
+
               if (dRow.kind === "base") {
                 const row = dRow.row;
+                const typeColor = TYPE_COLORS[row.original.types[0]] ?? '#A8A8A8';
                 return (
                   <div
                     key={row.id}
-                    className="group absolute left-0 top-0 grid w-full border-b bg-background transition-colors hover:bg-muted/50 animate-fade-in"
+                    className="group absolute left-0 top-0 grid w-full border-b transition-colors animate-fade-in"
                     style={{
                       gridTemplateColumns: gridTemplate,
                       transform: `translateY(${vRow.start}px)`,
+                      backgroundColor: `${typeColor}0d`,
                     }}
                   >
+                    {/* Hover overlay — semi-transparent so type tint stays visible */}
+                    <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-black/5 dark:bg-white/5" />
                     {row.getVisibleCells().map((cell) => (
                       <div
                         key={cell.id}

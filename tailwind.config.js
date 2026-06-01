@@ -11,6 +11,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ["Onest", "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ["Nunito", "Onest", "ui-sans-serif", "sans-serif"],
         mono: ["Geist Mono", "ui-monospace", "SFMono-Regular", "monospace"],
       },
       colors: {
