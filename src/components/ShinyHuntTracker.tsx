@@ -103,7 +103,7 @@ function HuntListItem({
           <SpriteImg src={spriteUrl(entry.id, game?.spriteVersion)} alt={hunt.speciesName} size="h-10 w-10" fallbackSrc={spriteUrl(entry.id, undefined)} />
         ) : (
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
-            <Sparkles className="h-4 w-4 text-muted-foreground/40" />
+            <Sparkles className="h-4 w-4 text-muted-foreground" />
           </div>
         )}
         <div className="min-w-0 flex-1">
@@ -202,7 +202,7 @@ function HuntDetail({
             />
           ) : (
             <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-muted">
-              <Sparkles className="h-7 w-7 text-muted-foreground/40" />
+              <Sparkles className="h-7 w-7 text-muted-foreground" />
             </div>
           )}
           <div className="min-w-0 flex-1">
@@ -556,7 +556,7 @@ function HuntLogRow({ hunt, onDelete }: { hunt: ShinyHunt; onDelete: (id: string
           <SpriteImg src={spriteUrl(entry.id)} alt={hunt.speciesName} size="h-8 w-8" />
         ) : (
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
-            <Sparkles className="h-3.5 w-3.5 text-muted-foreground/40" />
+            <Sparkles className="h-3.5 w-3.5 text-muted-foreground" />
           </div>
         )}
         <div className="flex-1 min-w-0">
@@ -681,7 +681,7 @@ export function ShinyHuntTracker({ user }: { user: User | null }) {
 
           {activeHunts.length === 0 && !isCreating && (
             <div className="rounded-lg border border-dashed p-6 text-center">
-              <Sparkles className="mx-auto mb-2 h-8 w-8 text-muted-foreground/50" />
+              <Sparkles className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
               <p className="text-sm font-medium">No active hunts</p>
               <p className="mt-1 text-xs text-muted-foreground">Start a new hunt to begin tracking.</p>
             </div>
@@ -750,8 +750,18 @@ export function ShinyHuntTracker({ user }: { user: User | null }) {
           )}
           {!isCreating && !selected && (
             <div className="hidden sm:flex flex-1 flex-col items-center justify-center gap-3 text-center">
-              <Sparkles className="h-10 w-10 text-muted-foreground/30" />
-              <p className="text-sm text-muted-foreground">Select a hunt or start a new one</p>
+              <Sparkles className="h-12 w-12 text-muted-foreground" />
+              <div>
+                <p className="font-medium">Select a hunt</p>
+                <p className="mt-1 text-sm text-muted-foreground">or start a new one to get going</p>
+              </div>
+              <button
+                onClick={() => { setIsCreating(true); setSelectedId(null); }}
+                className="mt-1 flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+              >
+                <Plus className="h-4 w-4" />
+                New Hunt
+              </button>
             </div>
           )}
         </div>

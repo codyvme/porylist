@@ -16,6 +16,7 @@ import { loadProjects } from "@/lib/breeding";
 import { loadHunts, METHOD_LABELS, shinyRate, cumulativeProb } from "@/lib/shiny-hunts";
 import { fetchDashboardConfig, upsertDashboardConfig, type User } from "@/lib/supabase";
 import { SparkleBurst } from "@/components/SparkleBurst";
+import { SpriteImg } from "@/components/SpriteImg";
 
 // ─── Module config ────────────────────────────────────────────────────────────
 
@@ -56,51 +57,51 @@ const STORAGE_KEY = "porylist-dashboard-v1";
 
 function ShinySection() {
   const hunts = useMemo(() => loadHunts(), []);
+  const { data: summaryList = [] } = usePokemonSummaryList();
   const active = hunts.filter(h => h.status === "active");
 
-  if (active.length === 0) {
-    return (
-      <div className="flex items-center justify-between rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
-        <span>No active hunts</span>
-        <Link to="/shiny" className="flex items-center gap-1 text-xs text-primary hover:underline">
-          Start one <ArrowRight className="h-3 w-3" />
-        </Link>
-      </div>
-    );
-  }
+  if (active.length === 0) return (
+    <div className="rounded-xl border border-dashed p-6 text-center">
+      <Sparkles className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
+      <p className="text-sm font-medium text-muted-foreground">No active shiny hunts</p>
+      <p className="mt-1 text-xs text-muted-foreground/60">
+        <Link to="/shiny" className="underline underline-offset-2 hover:text-foreground">Start a hunt</Link> to track your encounters.
+      </p>
+    </div>
+  );
 
   return (
-    <div className="flex flex-col gap-2">
-      {active.slice(0, 3).map(hunt => {
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {active.slice(0, 6).map(hunt => {
         const game = GAMES_BY_VALUE[hunt.gameValue];
         const generation = game?.generation ?? 6;
         const p = shinyRate(hunt, generation);
         const cumPct = (cumulativeProb(p, hunt.count) * 100).toFixed(1);
+        const entry = summaryList.find(s => s.name === hunt.species);
         return (
           <Link
             key={hunt.id}
             to="/shiny"
-            className="flex items-center gap-3 rounded-xl border p-3 hover:border-primary/40 hover:bg-muted/50 transition-colors"
+            className="flex items-center gap-3 rounded-lg border p-3 hover:border-primary/40 hover:bg-muted/50 transition-colors"
           >
-            <Sparkles className="h-5 w-5 shrink-0 text-yellow-500" />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-muted overflow-hidden">
+              {entry
+                ? <SpriteImg src={spriteUrl(entry.id, game?.spriteVersion)} alt={hunt.speciesName} size="h-10 w-10" fallbackSrc={spriteUrl(entry.id, undefined)} />
+                : <Sparkles className="h-5 w-5 text-muted-foreground" />}
+            </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{hunt.speciesName}</p>
+              <p className="text-sm font-semibold truncate">{hunt.speciesName}</p>
               <p className="text-xs text-muted-foreground truncate">
-                {METHOD_LABELS[hunt.method]} · {hunt.count.toLocaleString()} encounters
+                {METHOD_LABELS[hunt.method]} · {hunt.count.toLocaleString()} enc.
+              </p>
+              <p className="mt-0.5 text-[10px] text-muted-foreground tabular-nums">
+                {cumPct}% cumulative
               </p>
             </div>
-            <div className="shrink-0 text-right">
-              <p className="text-xs font-semibold tabular-nums">{cumPct}%</p>
-              <p className="text-[10px] text-muted-foreground">cumulative</p>
-            </div>
+            <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground/50" />
           </Link>
         );
       })}
-      {active.length > 3 && (
-        <Link to="/shiny" className="text-xs text-muted-foreground hover:text-foreground text-center py-1">
-          +{active.length - 3} more active hunt{active.length - 3 !== 1 ? "s" : ""}
-        </Link>
-      )}
     </div>
   );
 }

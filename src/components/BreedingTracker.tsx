@@ -1516,10 +1516,8 @@ export function BreedingTracker({ user }: { user: User | null }) {
           <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
             <Dna className="h-12 w-12 text-muted-foreground" />
             <div>
-              <p className="font-medium text-muted-foreground">Select a project</p>
-              <p className="mt-1 text-sm text-muted-foreground/60">
-                or create a new one to get started
-              </p>
+              <p className="font-medium">Select a project</p>
+              <p className="mt-1 text-sm text-muted-foreground">or create a new one to get started</p>
             </div>
             <button
               onClick={() => { setIsCreating(true); setIsEditing(false); }}

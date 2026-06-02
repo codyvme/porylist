@@ -1364,8 +1364,8 @@ export function PlaythroughTracker({
             <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
               <Trophy className="h-12 w-12 text-muted-foreground" />
               <div>
-                <p className="font-medium text-muted-foreground">Select a playthrough</p>
-                <p className="mt-1 text-sm text-muted-foreground/60">or start a new run to get going</p>
+                <p className="font-medium">Select a playthrough</p>
+                <p className="mt-1 text-sm text-muted-foreground">or start a new run to get going</p>
               </div>
               <button
                 onClick={() => setIsCreating(true)}
