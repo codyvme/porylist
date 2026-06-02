@@ -12,6 +12,7 @@ import { computeTypeEffectiveness } from "@/lib/type-chart";
 import { TYPE_COLORS } from "@/lib/types";
 import { formatPokemonName, cn } from "@/lib/utils";
 import { GameFilter } from "@/components/GameFilter";
+import { SpriteImg } from "@/components/SpriteImg";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -238,11 +239,7 @@ function PokemonPicker({
       >
         {selected ? (
           <>
-            <img
-              src={spriteUrl(selected.id, game?.spriteVersion)}
-              alt={selected.name}
-              className="h-6 w-6 object-contain"
-            />
+            <SpriteImg src={spriteUrl(selected.id, game?.spriteVersion)} alt={selected.name} size="h-6 w-6" />
             <span className="flex-1 truncate text-left font-medium">
               {formatPokemonName(selected.name)}
             </span>
@@ -312,10 +309,10 @@ function PokemonPicker({
                     selected?.name === p.name && "bg-primary/10 font-medium text-primary",
                   )}
                 >
-                  <img
+                  <SpriteImg
                     src={spriteUrl(p.id, game?.spriteVersion)}
                     alt={p.name}
-                    className="h-7 w-7 object-contain"
+                    size="h-7 w-7"
                   />
                   <span className="flex-1 text-left">{formatPokemonName(p.name)}</span>
                 </button>
@@ -430,11 +427,7 @@ export function CompareView({ game }: { game: GameOption | null }) {
                   >
                     {p ? (
                       <>
-                        <img
-                          src={spriteUrl(p.id, game?.spriteVersion)}
-                          alt={p.name}
-                          className="h-20 w-20 object-contain"
-                        />
+                        <SpriteImg src={spriteUrl(p.id, game?.spriteVersion)} alt={p.name} size="h-20 w-20" />
                         <div className="text-center">
                           <p className="text-sm font-semibold leading-tight">
                             {formatPokemonName(p.name)}

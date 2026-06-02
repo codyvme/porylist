@@ -5,6 +5,7 @@ import { GAMES_BY_VALUE, type GameOption } from "@/lib/games";
 import { useRouteData, usePokemonList, type RouteEncounter, type RouteLocation } from "@/lib/pokeapi";
 import { spriteUrl } from "@/lib/games";
 import { PokemonModal } from "@/components/PokemonModal";
+import { SpriteImg } from "@/components/SpriteImg";
 import { Tooltip } from "@/components/ui/tooltip";
 import { cn, formatPokemonName } from "@/lib/utils";
 import { RouteTeamSuggestions } from "@/components/RouteTeamSuggestions";
@@ -330,16 +331,11 @@ function EncounterGroup({ method, methodLabel, encounters, spriteVersion, game, 
                   label={isCaught ? `Mark ${enc.name} as not caught` : `Mark ${enc.name} as caught`}
                 />
               )}
-              <img
+              <SpriteImg
                 src={spriteUrl(enc.id, spriteVersion)}
                 alt={enc.name}
-                className="h-8 w-8 flex-shrink-0 object-contain sm:h-14 sm:w-14"
-                loading="lazy"
-                onError={(e) => {
-                  const img = e.currentTarget;
-                  img.onerror = null;
-                  img.src = spriteUrl(enc.id, undefined);
-                }}
+                size="h-8 w-8 sm:h-14 sm:w-14"
+                fallbackSrc={spriteUrl(enc.id, undefined)}
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
@@ -549,12 +545,11 @@ function CaughtModal({ caughtList, spriteVersion, onOpen, onToggleCaught, caught
                 const isCaught = (caught[caughtKey] ?? []).includes(p.name);
                 return (
                   <div key={p.id} className="flex flex-col items-center gap-0.5 rounded-lg border bg-background px-2 py-2 text-center">
-                    <img
+                    <SpriteImg
                       src={spriteUrl(p.id, spriteVersion)}
                       alt={p.name}
-                      className="h-12 w-12 object-contain"
-                      loading="lazy"
-                      onError={(e) => { const img = e.currentTarget; img.onerror = null; img.src = spriteUrl(p.id, undefined); }}
+                      size="h-12 w-12"
+                      fallbackSrc={spriteUrl(p.id, undefined)}
                     />
                     <button
                       className="rounded-sm text-xs font-medium leading-tight hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
@@ -643,12 +638,11 @@ function MissingModal({ title, missing, spriteVersion, onOpen, onToggleCaught, c
                 const isCaught = (caught[caughtKey] ?? []).includes(p.name);
                 return (
                   <div key={p.id} className="flex flex-col items-center gap-0.5 rounded-lg border bg-background px-2 py-2 text-center">
-                    <img
+                    <SpriteImg
                       src={spriteUrl(p.id, spriteVersion)}
                       alt={p.name}
-                      className="h-12 w-12 object-contain"
-                      loading="lazy"
-                      onError={(e) => { const img = e.currentTarget; img.onerror = null; img.src = spriteUrl(p.id, undefined); }}
+                      size="h-12 w-12"
+                      fallbackSrc={spriteUrl(p.id, undefined)}
                     />
                     <button
                       className="rounded-sm text-xs font-medium leading-tight hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
@@ -1109,10 +1103,11 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
                             }}
                             onMouseEnter={() => setSuggestionIndex(i)}
                           >
-                            <img
+                            <SpriteImg
                               src={spriteUrl(p.id, spriteVersion)}
                               alt={p.name}
-                              className="h-6 w-6 flex-shrink-0 object-contain"
+                              size="h-6 w-6"
+                              fallbackSrc={spriteUrl(p.id, undefined)}
                             />
                             {formatPokemonName(p.name)}
                           </button>
@@ -1306,10 +1301,11 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
                                 }}
                                 onMouseEnter={() => setSuggestionIndex(i)}
                               >
-                                <img
+                                <SpriteImg
                                   src={spriteUrl(p.id, spriteVersion)}
                                   alt={p.name}
-                                  className="h-6 w-6 flex-shrink-0 object-contain"
+                                  size="h-6 w-6"
+                                  fallbackSrc={spriteUrl(p.id, undefined)}
                                 />
                                 {formatPokemonName(p.name)}
                               </button>

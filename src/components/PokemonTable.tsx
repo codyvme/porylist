@@ -1,6 +1,7 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { PokemonModal } from "@/components/PokemonModal";
+import { SpriteImg } from "@/components/SpriteImg";
 import {
   createColumnHelper,
   flexRender,
@@ -141,28 +142,6 @@ function canonicalFormName(
   return formName.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-/** Shows a shimmer placeholder while the sprite image loads from the network. */
-function SpriteImg({ src, alt, className, onError }: {
-  src: string;
-  alt: string;
-  className?: string;
-  onError?: React.ReactEventHandler<HTMLImageElement>;
-}) {
-  const [loaded, setLoaded] = useState(false);
-  return (
-    <div className="relative h-full w-full flex items-center justify-center">
-      {!loaded && <div className="absolute h-10 w-10 skeleton-shimmer rounded" />}
-      <img
-        src={src}
-        alt={alt}
-        loading="lazy"
-        onLoad={() => setLoaded(true)}
-        onError={onError}
-        className={cn("max-h-full w-auto transition-opacity duration-200", loaded ? "opacity-100" : "opacity-0", className)}
-      />
-    </div>
-  );
-}
 
 const columnHelper = createColumnHelper<Row>();
 
@@ -1228,11 +1207,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
                         <SpriteImg
                           src={formSprite}
                           alt={name}
-                          onError={(e) => {
-                            const img = e.currentTarget;
-                            img.onerror = null;
-                            img.src = `${SPRITES_ROOT}/${detail!.id}.png`;
-                          }}
+                          fallbackSrc={`${SPRITES_ROOT}/${detail!.id}.png`}
                         />
                       ) : (
                         <div className="h-10 w-10 skeleton-shimmer rounded" />

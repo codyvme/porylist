@@ -3,6 +3,7 @@ import { Check, Download, Trash2, UserRound, X } from "lucide-react";
 import { cn, formatPokemonName } from "@/lib/utils";
 import { usePokemonSummaryList } from "@/lib/pokeapi";
 import { spriteUrl } from "@/lib/games";
+import { SpriteImg } from "@/components/SpriteImg";
 import {
   upsertUserProfile,
   purgeUserData,
@@ -43,11 +44,7 @@ export function UserAvatar({
         style={{ width: size, height: size, backgroundColor: bgColor }}
       >
         {entry && (
-          <img
-            src={spriteUrl(entry.id, undefined)}
-            alt={profile.avatarPokemon}
-            className="h-full w-full object-contain"
-          />
+          <SpriteImg src={spriteUrl(entry.id, undefined)} alt={profile.avatarPokemon} size="h-full w-full" />
         )}
       </div>
     );
@@ -326,12 +323,7 @@ export function AccountSettingsModal({
                       )}
                       title={formatPokemonName(s.name)}
                     >
-                      <img
-                        src={spriteUrl(s.id, undefined)}
-                        alt={s.name}
-                        className="h-8 w-8 object-contain"
-                        loading="lazy"
-                      />
+                      <SpriteImg src={spriteUrl(s.id, undefined)} alt={s.name} size="h-8 w-8" />
                       <span className="line-clamp-1 text-[9px] text-muted-foreground leading-none">
                         {formatPokemonName(s.name)}
                       </span>

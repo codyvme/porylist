@@ -6,6 +6,7 @@ import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { cn, formatPokemonName } from "@/lib/utils";
 import { GAMES } from "@/lib/games";
 import { spriteUrl } from "@/lib/games";
+import { SpriteImg } from "@/components/SpriteImg";
 import { usePokemonSummaryList, useMoveList } from "@/lib/pokeapi";
 import {
   STATS,
@@ -179,11 +180,7 @@ function PokemonMiniSprite({ species }: { species: string }) {
   const entry = summaryList?.find((s) => s.name === species);
   if (!entry) return <Dna className="h-6 w-6 text-muted-foreground/40" />;
   return (
-    <img
-      src={spriteUrl(entry.id, undefined)}
-      alt={species}
-      className="h-10 w-10 object-contain"
-    />
+    <SpriteImg src={spriteUrl(entry.id, undefined)} alt={species} size="h-10 w-10" />
   );
 }
 
@@ -341,11 +338,7 @@ function NewProjectForm({
                       setShowSpeciesDrop(false);
                     }}
                   >
-                    <img
-                      src={spriteUrl(s.id, undefined)}
-                      alt={s.name}
-                      className="h-7 w-7 object-contain"
-                    />
+                    <SpriteImg src={spriteUrl(s.id, undefined)} alt={s.name} size="h-7 w-7" />
                     {formatPokemonName(s.name)}
                   </button>
                 ))}
@@ -1155,11 +1148,7 @@ function ProjectDetail({
         </button>
 
         {entry && (
-          <img
-            src={spriteUrl(entry.id, undefined)}
-            alt={project.targetSpeciesName}
-            className="h-14 w-14 shrink-0 object-contain"
-          />
+          <SpriteImg src={spriteUrl(entry.id, undefined)} alt={project.targetSpeciesName} size="h-14 w-14" />
         )}
 
         <div className="flex-1 min-w-0">

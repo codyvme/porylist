@@ -3,7 +3,9 @@ import { X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSingleAbilityDetail, usePokemonSummaryList, type AbilityListEntry } from "@/lib/pokeapi";
 import { bestFlavorText, spriteUrl, type GameOption } from "@/lib/games";
+import { SpriteImg } from "@/components/SpriteImg";
 import { formatPokemonName } from "@/lib/utils";
+
 
 const VERSION_GROUP_LABELS: Record<string, string> = {
   "ruby-sapphire":                       "Ruby/Sapphire",
@@ -149,12 +151,7 @@ export function AbilityModal({ name, entry, game, onClose }: AbilityModalProps) 
                         className="flex flex-col items-center gap-0.5 rounded-lg px-1.5 py-1 hover:bg-muted transition-colors"
                         title={formatPokemonName(p.name)}
                       >
-                        <img
-                          src={spriteUrl(p.id, game?.spriteVersion)}
-                          alt={formatPokemonName(p.name)}
-                          className="h-10 w-10 object-contain"
-                          loading="lazy"
-                        />
+                        <SpriteImg src={spriteUrl(p.id, game?.spriteVersion)} alt={formatPokemonName(p.name)} />
                         <span className="text-center text-[10px] text-muted-foreground leading-tight max-w-[52px] truncate">
                           {formatPokemonName(p.name)}
                         </span>
@@ -180,12 +177,7 @@ export function AbilityModal({ name, entry, game, onClose }: AbilityModalProps) 
                         className="flex flex-col items-center gap-0.5 rounded-lg px-1.5 py-1 hover:bg-muted transition-colors"
                         title={formatPokemonName(p.name)}
                       >
-                        <img
-                          src={spriteUrl(p.id, game?.spriteVersion)}
-                          alt={formatPokemonName(p.name)}
-                          className="h-10 w-10 object-contain"
-                          loading="lazy"
-                        />
+                        <SpriteImg src={spriteUrl(p.id, game?.spriteVersion)} alt={formatPokemonName(p.name)} />
                         <span className="text-center text-[10px] text-muted-foreground leading-tight max-w-[52px] truncate">
                           {formatPokemonName(p.name)}
                         </span>

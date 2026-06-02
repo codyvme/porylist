@@ -5,6 +5,7 @@ import { spriteUrl, type GameOption } from "@/lib/games";
 import { typeStyle } from "@/lib/types";
 import { formatPokemonName, cn } from "@/lib/utils";
 import type { Playthrough, TeamMember } from "@/lib/playthroughs";
+import { SpriteImg } from "@/components/SpriteImg";
 
 interface Props {
   playthrough: Playthrough;
@@ -152,12 +153,7 @@ export function PlaythroughTeamTab({ playthrough, game, onUpdate }: Props) {
                 key={i}
                 className="flex items-center gap-3 rounded-lg border border-primary px-3 py-2 bg-primary/5"
               >
-                <img
-                  src={spriteFor(summary.id)}
-                  alt=""
-                  className="h-12 w-12 shrink-0 object-contain"
-                  onError={(e) => { (e.target as HTMLImageElement).src = fallbackSprite(summary.id); }}
-                />
+                <SpriteImg src={spriteFor(summary.id)} alt="" size="h-12 w-12" fallbackSrc={fallbackSprite(summary.id)} />
                 <input
                   ref={nicknameInputRef}
                   value={draftNickname}
@@ -229,12 +225,7 @@ export function PlaythroughTeamTab({ playthrough, game, onUpdate }: Props) {
                           onMouseDown={(e) => { e.preventDefault(); handleAdd(p.name); }}
                           className="flex w-full items-center gap-2 px-3 py-1.5 text-sm hover:bg-muted"
                         >
-                          <img
-                            src={spriteFor(p.id)}
-                            alt=""
-                            className="h-7 w-7 object-contain"
-                            onError={(e) => { (e.target as HTMLImageElement).src = fallbackSprite(p.id); }}
-                          />
+                          <SpriteImg src={spriteFor(p.id)} alt="" size="h-7 w-7" fallbackSrc={fallbackSprite(p.id)} />
                           <span className="flex-1 text-left">{formatPokemonName(p.name)}</span>
                         </button>
                       ))}
@@ -260,12 +251,7 @@ export function PlaythroughTeamTab({ playthrough, game, onUpdate }: Props) {
             >
               {summary && member ? (
                 <>
-                  <img
-                    src={spriteFor(summary.id)}
-                    alt=""
-                    className="h-12 w-12 shrink-0 object-contain"
-                    onError={(e) => { (e.target as HTMLImageElement).src = fallbackSprite(summary.id); }}
-                  />
+                  <SpriteImg src={spriteFor(summary.id)} alt="" size="h-12 w-12" fallbackSrc={fallbackSprite(summary.id)} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
                       <span className="truncate text-sm font-medium">

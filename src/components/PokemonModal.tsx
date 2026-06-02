@@ -1,5 +1,6 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { SparkleBurst } from "@/components/SparkleBurst";
+import { SpriteImg } from "@/components/SpriteImg";
 import { useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronLeft, ChevronRight, Loader2, Sparkles, Volume2, X } from "lucide-react";
 
@@ -581,11 +582,7 @@ function MoveTable({ moves, moveDetailsMap, showLevel, machineNumberMap, eggPare
                                           className="flex flex-col items-center gap-0.5 rounded-lg p-1 hover:bg-muted/50"
                                           title={p.name}
                                         >
-                                          <img
-                                            src={`${SPRITES_ROOT}/${p.id}.png`}
-                                            alt={p.name}
-                                            className="h-10 w-10 object-contain"
-                                          />
+                                          <SpriteImg src={`${SPRITES_ROOT}/${p.id}.png`} alt={p.name} size="h-10 w-10" />
                                           <span className="max-w-[56px] truncate text-[10px] leading-tight text-muted-foreground">
                                             {p.name}
                                           </span>
@@ -612,16 +609,9 @@ function MoveTable({ moves, moveDetailsMap, showLevel, machineNumberMap, eggPare
 }
 
 function GameSpriteThumb({ src, alt }: { src: string; alt: string }) {
-  const [failed, setFailed] = useState(false);
-  if (failed) return null;
   return (
     <div className="flex flex-col items-center gap-1">
-      <img
-        src={src}
-        alt={alt}
-        className="h-16 w-16 object-contain"
-        onError={() => setFailed(true)}
-      />
+      <SpriteImg src={src} alt={alt} size="h-16 w-16" />
       <span className="text-xs text-muted-foreground">In-game</span>
     </div>
   );
@@ -714,6 +704,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
   const [showShiny, setShowShiny] = useState(false);
   const [sparkleKey, setSparkleKey] = useState(0);
   const [spriteLoaded, setSpriteLoaded] = useState(false);
+  const heroImgRef = useRef<HTMLImageElement>(null);
   const [expandedMove, setExpandedMove] = useState<string | null>(null);
   const [locationsGameValue, setLocationsGameValue] = useState<string | null>(game?.value ?? null);
 
@@ -738,8 +729,9 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
     setExpandedMove(null);
   }, [activeTab]);
 
-  useEffect(() => {
-    setSpriteLoaded(false);
+  useLayoutEffect(() => {
+    const alreadyLoaded = heroImgRef.current?.complete && (heroImgRef.current.naturalWidth ?? 0) > 0;
+    setSpriteLoaded(!!alreadyLoaded);
   }, [pokemonName]);
 
   const { data: pokemon, isLoading } = useSinglePokemon(pokemonName);
@@ -1111,7 +1103,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                   <ChevronLeft className="h-4 w-4 shrink-0" />
                   {prevPokemon && (
                     <>
-                      <img src={`${SPRITES_ROOT}/${prevPokemon.id}.png`} alt={prevPokemon.name} className="h-6 w-6 object-contain" />
+                      <SpriteImg src={`${SPRITES_ROOT}/${prevPokemon.id}.png`} alt={prevPokemon.name} size="h-6 w-6" />
                       <span className="max-w-[80px] truncate text-xs">{formatPokemonName(prevPokemon.name)}</span>
                     </>
                   )}
@@ -1126,7 +1118,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                   {nextPokemon && (
                     <>
                       <span className="max-w-[80px] truncate text-xs">{formatPokemonName(nextPokemon.name)}</span>
-                      <img src={`${SPRITES_ROOT}/${nextPokemon.id}.png`} alt={nextPokemon.name} className="h-6 w-6 object-contain" />
+                      <SpriteImg src={`${SPRITES_ROOT}/${nextPokemon.id}.png`} alt={nextPokemon.name} size="h-6 w-6" />
                     </>
                   )}
                   <ChevronRight className="h-4 w-4 shrink-0" />
@@ -1173,12 +1165,11 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                       shiny image is already cached when the button is clicked */}
                   {homeSpriteNormal && homeSpriteShiny && (
                     <div className="relative h-36 w-36 sm:h-48 sm:w-48">
-                      {/* Shimmer shown until the normal sprite has loaded */}
-                      <div className={cn(
-                        "absolute inset-4 skeleton-shimmer rounded-lg transition-opacity duration-300",
-                        spriteLoaded ? "opacity-0 pointer-events-none" : "opacity-100",
-                      )} />
+                      {!spriteLoaded && (
+                        <div className="absolute inset-4 skeleton-shimmer rounded-lg" />
+                      )}
                       <img
+                        ref={heroImgRef}
                         src={homeSpriteNormal}
                         alt={displayName}
                         onLoad={() => setSpriteLoaded(true)}
@@ -1430,13 +1421,11 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                                 key={node.speciesName}
                                 className="flex flex-col items-center gap-1 rounded-lg border-2 border-primary bg-primary/10 px-3 py-2 min-w-[80px]"
                               >
-                                <img
+                                <SpriteImg
                                   src={`${SPRITES_ROOT}/other/home/${node.speciesId}.png`}
                                   alt={node.speciesName}
-                                  className="h-14 w-14 object-contain"
-                                  onError={(e) => {
-                                    (e.target as HTMLImageElement).src = `${SPRITES_ROOT}/${node.speciesId}.png`;
-                                  }}
+                                  size="h-14 w-14"
+                                  fallbackSrc={`${SPRITES_ROOT}/${node.speciesId}.png`}
                                 />
                                 <p className="text-center text-xs font-semibold leading-tight text-primary">
                                   {formatPokemonName(node.speciesName)}
@@ -1451,13 +1440,11 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                                 className="flex flex-col items-center gap-1 rounded-lg border bg-muted/30 px-3 py-2 text-center transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-w-[80px]"
                                 onClick={() => onNavigate(node.speciesName)}
                               >
-                                <img
+                                <SpriteImg
                                   src={`${SPRITES_ROOT}/other/home/${node.speciesId}.png`}
                                   alt={node.speciesName}
-                                  className="h-14 w-14 object-contain"
-                                  onError={(e) => {
-                                    (e.target as HTMLImageElement).src = `${SPRITES_ROOT}/${node.speciesId}.png`;
-                                  }}
+                                  size="h-14 w-14"
+                                  fallbackSrc={`${SPRITES_ROOT}/${node.speciesId}.png`}
                                 />
                                 <p className="text-xs font-medium leading-tight">
                                   {formatPokemonName(node.speciesName)}

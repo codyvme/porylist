@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import { PokemonModal, CryButton } from "@/components/PokemonModal";
+import { SpriteImg } from "@/components/SpriteImg";
 import { Link } from "react-router-dom";
 import {
   Backpack, Crosshair, Dna, Leaf, List, Scale,
@@ -202,18 +203,14 @@ function PokemonOfTheDay({ game }: { game: GameOption | null }) {
                 ? `${SPRITES_ROOT}/versions/${game!.spriteVersion}/shiny/${pokemon.id}.png`
                 : `${SPRITES_ROOT}/other/home/shiny/${pokemon.id}.png`;
               return (
-                <div key={pokemon.id} className="relative h-36 w-36 animate-bounce-in">
-                  <img
-                    src={normalSrc}
-                    alt={formatPokemonName(pokemon.name)}
-                    className={cn("absolute inset-0 h-36 w-36 object-contain drop-shadow-sm transition-opacity", showShiny ? "opacity-0" : "opacity-100")}
-                  />
-                  <img
-                    src={shinySrc}
-                    alt={`${formatPokemonName(pokemon.name)} shiny`}
-                    className={cn("absolute inset-0 h-36 w-36 object-contain drop-shadow-sm transition-opacity", showShiny ? "opacity-100" : "opacity-0")}
-                  />
-                </div>
+                <SpriteImg
+                  key={pokemon.id}
+                  src={showShiny ? shinySrc : normalSrc}
+                  alt={formatPokemonName(pokemon.name)}
+                  size="h-36 w-36"
+                  className="animate-bounce-in"
+                  imgClassName="drop-shadow-sm"
+                />
               );
             })()}
             <div className="relative">

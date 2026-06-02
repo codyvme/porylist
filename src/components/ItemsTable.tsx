@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, ChevronsUpDown, Search, X } from "lucide-react";
 import { useItemList, type ItemListEntry } from "@/lib/pokeapi";
 import { type GameOption } from "@/lib/games";
+import { SpriteImg } from "@/components/SpriteImg";
 import { Select } from "@/components/ui/select";
 import { ItemModal } from "@/components/ItemModal";
 import { cn } from "@/lib/utils";
@@ -18,14 +19,7 @@ function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
 }
 
 function ItemSprite({ name }: { name: string }) {
-  return (
-    <img
-      src={`${SPRITES_BASE}/${name}.png`}
-      alt={name}
-      className="h-8 w-8 object-contain"
-      onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0"; }}
-    />
-  );
+  return <SpriteImg src={`${SPRITES_BASE}/${name}.png`} alt={name} size="h-8 w-8" />;
 }
 
 function formatCost(cost: number): string {

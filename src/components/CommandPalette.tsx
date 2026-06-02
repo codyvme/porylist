@@ -17,6 +17,7 @@ import { PokemonModal } from "@/components/PokemonModal";
 import { MoveModal } from "@/components/MoveModal";
 import { AbilityModal } from "@/components/AbilityModal";
 import { ItemModal } from "@/components/ItemModal";
+import { SpriteImg } from "@/components/SpriteImg";
 
 const ITEM_SPRITES = "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/items";
 const MAX_RESULTS = 30;
@@ -66,24 +67,10 @@ function score(name: string, displayName: string, q: string): number {
 
 function ResultIcon({ result }: { result: Result }) {
   if (result.kind === "pokemon") {
-    return (
-      <img
-        src={spriteUrl(result.data.id)}
-        alt=""
-        className="h-8 w-8 object-contain"
-        onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0"; }}
-      />
-    );
+    return <SpriteImg src={spriteUrl(result.data.id)} alt="" size="h-8 w-8" />;
   }
   if (result.kind === "item") {
-    return (
-      <img
-        src={`${ITEM_SPRITES}/${result.data.name}.png`}
-        alt=""
-        className="h-7 w-7 object-contain"
-        onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0"; }}
-      />
-    );
+    return <SpriteImg src={`${ITEM_SPRITES}/${result.data.name}.png`} alt="" size="h-7 w-7" />;
   }
   if (result.kind === "action") {
     const { Icon } = result;

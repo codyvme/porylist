@@ -6,6 +6,7 @@ import {
   type Playthrough,
 } from "@/lib/playthroughs";
 import { usePokemonSummaryList, useRouteData } from "@/lib/pokeapi";
+import { SpriteImg } from "@/components/SpriteImg";
 import { spriteUrl, type GameOption } from "@/lib/games";
 import { formatPokemonName, cn } from "@/lib/utils";
 
@@ -301,7 +302,7 @@ function EncounterForm({
                   onClick={() => { setSpecies(p.name); setSpeciesQuery(""); }}
                   className="flex w-full items-center gap-2 px-2 py-1.5 text-left text-sm hover:bg-muted"
                 >
-                  <img src={spriteUrl(p.id)} alt="" className="h-7 w-7 object-contain" />
+                  <SpriteImg src={spriteUrl(p.id)} alt="" size="h-7 w-7" />
                   {formatPokemonName(p.name)}
                 </button>
               ))}
@@ -469,10 +470,11 @@ function EncounterRow({
   return (
     <div className="flex items-center gap-3 rounded-lg border border-border bg-card p-2.5">
       {pokemonSummary ? (
-        <img
+        <SpriteImg
           src={spriteUrl(pokemonSummary.id)}
           alt=""
-          className={cn("h-12 w-12 object-contain", encounter.status === "fainted" && "grayscale opacity-70")}
+          size="h-12 w-12"
+          className={encounter.status === "fainted" ? "grayscale opacity-70" : undefined}
         />
       ) : (
         <div className="flex h-12 w-12 items-center justify-center rounded bg-muted text-muted-foreground">

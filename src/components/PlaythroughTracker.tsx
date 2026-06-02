@@ -38,6 +38,7 @@ import { MoveModal } from "@/components/MoveModal";
 import { PokemonModal } from "@/components/PokemonModal";
 import { AbilityModal } from "@/components/AbilityModal";
 import { ItemModal } from "@/components/ItemModal";
+import { SpriteImg } from "@/components/SpriteImg";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -541,13 +542,13 @@ function TrainerTeamModal({ trainer, game, onClose }: { trainer: TrainerEntry; g
                 } : undefined}
               >
                 {/* Sprite */}
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center">
-                  {spriteUrl ? (
-                    <img src={spriteUrl} alt={displayName} className="h-full w-full object-contain" loading="lazy" />
-                  ) : (
+                {spriteUrl ? (
+                  <SpriteImg src={spriteUrl} alt={displayName} size="h-14 w-14" />
+                ) : (
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center">
                     <span className="text-2xl">?</span>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">

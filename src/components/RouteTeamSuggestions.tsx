@@ -3,6 +3,7 @@ import { Users } from "lucide-react";
 import { usePokemonSummaryList, typesForGeneration } from "@/lib/pokeapi";
 import { ALL_TYPES, computeTypeEffectiveness } from "@/lib/type-chart";
 import { spriteUrl, SPRITES_ROOT, type GameOption } from "@/lib/games";
+import { SpriteImg } from "@/components/SpriteImg";
 import { typeStyle } from "@/lib/types";
 import { formatPokemonName } from "@/lib/utils";
 
@@ -124,12 +125,7 @@ export function RouteTeamSuggestions({ routePokemonNames, game, onOpen, teamOver
             onClick={() => onOpen(r.name)}
             className="flex items-center gap-2 rounded-md border border-border bg-background px-2 py-1.5 text-left hover:bg-muted"
           >
-            <img
-              src={spriteUrl(r.id)}
-              alt=""
-              className="h-9 w-9 object-contain"
-              onError={(e) => { (e.target as HTMLImageElement).src = `${SPRITES_ROOT}/${r.id}.png`; }}
-            />
+            <SpriteImg src={spriteUrl(r.id)} alt="" size="h-9 w-9" fallbackSrc={`${SPRITES_ROOT}/${r.id}.png`} />
             <div className="min-w-0 flex-1">
               <div className="truncate text-sm font-medium">{formatPokemonName(r.name)}</div>
               <div className="mt-0.5 flex flex-wrap gap-0.5 text-[10px]">

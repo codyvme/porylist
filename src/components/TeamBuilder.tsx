@@ -7,6 +7,7 @@ import { SPRITES_ROOT, spriteUrl } from "@/lib/games";
 import { cn, formatPokemonName } from "@/lib/utils";
 import { suggestItems } from "@/lib/item-suggester";
 import { Tooltip } from "@/components/ui/tooltip";
+import { SpriteImg } from "@/components/SpriteImg";
 
 const ITEM_SPRITES = "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/items";
 
@@ -192,12 +193,7 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
               >
                 {m ? (
                   <>
-                    <img
-                      src={spriteUrl(m.id, undefined)}
-                      alt={m.name}
-                      className="h-16 w-16 object-contain"
-                      onError={(e) => { (e.target as HTMLImageElement).src = `${SPRITES_ROOT}/${m.id}.png`; }}
-                    />
+                    <SpriteImg src={spriteUrl(m.id, undefined)} alt={m.name} size="h-16 w-16" fallbackSrc={`${SPRITES_ROOT}/${m.id}.png`} />
                     <span className="max-w-full truncate text-center text-xs font-medium">
                       {formatPokemonName(m.name)}
                     </span>
@@ -312,12 +308,7 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
                     className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border border-border bg-card px-3 py-2"
                   >
                     <div className="flex min-w-[140px] items-center gap-2">
-                      <img
-                        src={spriteUrl(m.id, undefined)}
-                        alt={m.name}
-                        className="h-8 w-8 object-contain"
-                        onError={(e) => { (e.target as HTMLImageElement).src = `${SPRITES_ROOT}/${m.id}.png`; }}
-                      />
+                      <SpriteImg src={spriteUrl(m.id, undefined)} alt={m.name} size="h-8 w-8" fallbackSrc={`${SPRITES_ROOT}/${m.id}.png`} />
                       <span className="text-sm font-medium">{formatPokemonName(m.name)}</span>
                     </div>
                     <div className="flex flex-wrap items-center gap-1.5">
@@ -330,12 +321,7 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
                             side="top"
                           >
                             <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-2 py-1 text-xs">
-                              <img
-                                src={`${ITEM_SPRITES}/${slug}.png`}
-                                alt=""
-                                className="h-4 w-4 object-contain"
-                                onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0"; }}
-                              />
+                              <SpriteImg src={`${ITEM_SPRITES}/${slug}.png`} alt="" size="h-4 w-4" />
                               <span>{meta?.displayName ?? slug.replace(/-/g, " ")}</span>
                             </span>
                           </Tooltip>
