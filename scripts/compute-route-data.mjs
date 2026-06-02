@@ -76,6 +76,12 @@ const METHOD_LABEL = {
   "gift-egg":          "Egg Gift",
   "hoenn-sound":       "Hoenn Sound",
   "sinnoh-sound":      "Sinnoh Sound",
+  "swarm":             "Swarm",
+  "swarm-walk":        "Swarm (Grass)",
+  "swarm-old-rod":     "Swarm (Old Rod)",
+  "swarm-good-rod":    "Swarm (Good Rod)",
+  "swarm-super-rod":   "Swarm (Super Rod)",
+  "swarm-surf":        "Swarm (Surfing)",
   "unknown":           "Unknown",
 };
 
@@ -123,6 +129,17 @@ function getRadioMethod(conditionValues) {
   return null;
 }
 
+// Returns true if this encounter only occurs during a swarm event.
+// Returns false if it's explicitly marked as a non-swarm slot (swarm-no).
+// Returns null if swarm condition is absent (always available).
+function getSwarmCondition(conditionValues) {
+  for (const cv of conditionValues) {
+    if (cv.name === "swarm-yes") return true;
+    if (cv.name === "swarm-no")  return false;
+  }
+  return null;
+}
+
 // Map: locationKey → Map(pokemonId → { id, name, versions: Map(versionName → Map(slotKey → {...})) })
 const locationMap = new Map();
 
@@ -132,7 +149,8 @@ for (let id = 1; id <= 1025; id++) {
   const encounters = JSON.parse(readFileSync(path, "utf8"));
 
   for (const area of encounters) {
-    const locKey = area.location_area.name;
+    // Strip trailing "-area" to match the keys used in location-order-manual.json
+    const locKey = area.location_area.name.replace(/-area$/, "");
     if (!locationMap.has(locKey)) locationMap.set(locKey, new Map());
     const pokemonMap = locationMap.get(locKey);
 
@@ -148,7 +166,13 @@ for (let id = 1; id <= 1025; id++) {
 
       for (const enc of vd.encounter_details) {
         const radioMethod = getRadioMethod(enc.condition_values);
-        const mName = radioMethod ?? enc.method.name;
+        const swarm = getSwarmCondition(enc.condition_values);
+        const baseName = radioMethod ?? enc.method.name;
+        // Swarm-yes encounters get a "swarm-" prefix so they display as their
+        // own group, separate from regular encounters on the same route.
+        const mName = (!radioMethod && swarm === true)
+          ? (baseName === "walk" ? "swarm-walk" : `swarm-${baseName}`)
+          : baseName;
         // Radio encounters don't have meaningful time-of-day distinctions
         const timeOfDay = radioMethod ? "" : getTimeOfDay(enc.condition_values);
 

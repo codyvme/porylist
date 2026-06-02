@@ -383,7 +383,7 @@ function IconRail() {
         )}
         {NAV_ITEMS.map((item, i) =>
           item === null ? (
-            <div key={`sep-${i}`} className="my-1.5 border-t border-border dark:border-[hsl(193_60%_18%/0.6)]" />
+            <div key={`sep-${i}`} className="my-1.5 border-t border-black/10 dark:border-white/20" />
           ) : (
             <Tooltip key={item.to} content={item.label} side="right" className="block w-full" disabled={navExpanded}>
               <NavLink
@@ -408,7 +408,7 @@ function IconRail() {
       </div>
 
       {/* Expand / collapse toggle at bottom */}
-      <div className="mt-auto pt-2 border-t border-border dark:border-[hsl(193_60%_18%/0.6)]">
+      <div className="mt-auto pt-2 border-t border-black/10 dark:border-white/20">
         <Tooltip content={navExpanded ? "Collapse" : "Expand"} side="right" disabled={navExpanded}>
           <button
             onClick={() => setNavExpanded((v) => !v)}
@@ -469,7 +469,7 @@ function MobileDrawer({ open, onClose, onOpenAbout }: { open: boolean; onClose: 
         <nav className="flex flex-1 flex-col py-2">
           {NAV_ITEMS.map((item, i) =>
             item === null ? (
-              <div key={`sep-${i}`} className="my-1.5 border-t border-border dark:border-[hsl(193_60%_18%/0.6)]" />
+              <div key={`sep-${i}`} className="my-1.5 border-t border-black/10 dark:border-white/20" />
             ) : (
               <NavLink
                 key={item.to}
