@@ -1,6 +1,5 @@
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect, useLayoutEffect, useRef } from "react";
 import { PokemonModal, CryButton } from "@/components/PokemonModal";
-import { SpriteImg } from "@/components/SpriteImg";
 import { Link } from "react-router-dom";
 import {
   Backpack, Crosshair, Dna, Leaf, List, Scale,
@@ -141,6 +140,9 @@ function PokemonOfTheDay({ game }: { game: GameOption | null }) {
   const { data: pokemonList = [] } = usePokemonSummaryList();
   const [modalOpen, setModalOpen] = useState(false);
   const [showShiny, setShowShiny] = useState(false);
+  const [spriteLoaded, setSpriteLoaded] = useState(false);
+  const heroImgRef = useRef<HTMLImageElement>(null);
+
   const [sparkleKey, setSparkleKey] = useState(0);
   // Allow the modal to navigate to another species (e.g. via the evolution
   // chain) — when the user clicks a sibling Pokémon, swap the modal target.
@@ -156,6 +158,11 @@ function PokemonOfTheDay({ game }: { game: GameOption | null }) {
     const day = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
     return shuffled[day % shuffled.length];
   }, [pokemonList]);
+
+  useLayoutEffect(() => {
+    const alreadyLoaded = heroImgRef.current?.complete && (heroImgRef.current.naturalWidth ?? 0) > 0;
+    setSpriteLoaded(!!alreadyLoaded);
+  }, [pokemon?.id]);
 
   const speciesName = pokemon?.species?.name ?? pokemon?.name ?? null;
   const { data: species } = usePokemonSpecies(speciesName);
@@ -203,14 +210,21 @@ function PokemonOfTheDay({ game }: { game: GameOption | null }) {
                 ? `${SPRITES_ROOT}/versions/${game!.spriteVersion}/shiny/${pokemon.id}.png`
                 : `${SPRITES_ROOT}/other/home/shiny/${pokemon.id}.png`;
               return (
-                <SpriteImg
-                  key={pokemon.id}
-                  src={showShiny ? shinySrc : normalSrc}
-                  alt={formatPokemonName(pokemon.name)}
-                  size="h-36 w-36"
-                  className="animate-bounce-in"
-                  imgClassName="drop-shadow-sm"
-                />
+                <div key={pokemon.id} className="relative h-36 w-36 animate-bounce-in">
+                  {!spriteLoaded && <div className="absolute inset-0 skeleton-shimmer rounded-lg" />}
+                  <img
+                    ref={heroImgRef}
+                    src={normalSrc}
+                    alt={formatPokemonName(pokemon.name)}
+                    onLoad={() => setSpriteLoaded(true)}
+                    className={cn("absolute inset-0 h-36 w-36 object-contain drop-shadow-sm transition-opacity duration-200", showShiny ? "opacity-0" : "opacity-100")}
+                  />
+                  <img
+                    src={shinySrc}
+                    alt={`${formatPokemonName(pokemon.name)} shiny`}
+                    className={cn("absolute inset-0 h-36 w-36 object-contain drop-shadow-sm transition-opacity duration-200", showShiny ? "opacity-100" : "opacity-0")}
+                  />
+                </div>
               );
             })()}
             <div className="relative">
