@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Check, Download, Trash2, UserRound, X } from "lucide-react";
+import { Check, Download, Mail, Trash2, UserRound, X } from "lucide-react";
 import { cn, formatPokemonName } from "@/lib/utils";
 import { usePokemonSummaryList } from "@/lib/pokeapi";
 import { spriteUrl } from "@/lib/games";
 import { SpriteImg } from "@/components/SpriteImg";
 import {
   upsertUserProfile,
+  updateEmail,
   purgeUserData,
   deleteAccount,
   type UserProfile,
@@ -94,6 +95,25 @@ export function AccountSettingsModal({
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+
+  // Email change state
+  const [emailStep, setEmailStep] = useState<"idle" | "editing" | "sent">("idle");
+  const [newEmail, setNewEmail] = useState("");
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+
+  async function handleChangeEmail() {
+    setEmailSending(true);
+    setEmailError(null);
+    const { error } = await updateEmail(newEmail.trim());
+    setEmailSending(false);
+    if (error) {
+      setEmailError(error.message);
+    } else {
+      setEmailStep("sent");
+      setNewEmail("");
+    }
+  }
 
   // Data management state
   const [purgeStep, setPurgeStep] = useState<"idle" | "confirm">("idle");
@@ -349,6 +369,61 @@ export function AccountSettingsModal({
               )}
               {saveError && <span className="text-sm text-destructive">{saveError}</span>}
             </div>
+          </section>
+
+          {/* ── Email section ── */}
+          <section className="space-y-3">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Email</h3>
+            <div className="flex items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2">
+              <Mail className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">{user.email}</span>
+            </div>
+            {emailStep === "idle" && (
+              <button
+                onClick={() => { setEmailStep("editing"); setEmailError(null); }}
+                className="rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
+              >
+                Change email
+              </button>
+            )}
+            {emailStep === "editing" && (
+              <div className="space-y-2">
+                <input
+                  type="email"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter" && newEmail.trim()) handleChangeEmail(); if (e.key === "Escape") { setEmailStep("idle"); setEmailError(null); } }}
+                  placeholder="New email address"
+                  autoFocus
+                  className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                {emailError && <p className="text-xs text-destructive">{emailError}</p>}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => { setEmailStep("idle"); setEmailError(null); setNewEmail(""); }}
+                    className="rounded-lg border px-3 py-1.5 text-sm transition-colors hover:bg-muted"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleChangeEmail}
+                    disabled={emailSending || !newEmail.trim()}
+                    className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+                  >
+                    {emailSending ? "Sending…" : "Send confirmation"}
+                  </button>
+                </div>
+              </div>
+            )}
+            {emailStep === "sent" && (
+              <div className="flex items-start gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2.5 text-sm text-emerald-700 dark:text-emerald-400">
+                <Check className="mt-0.5 h-4 w-4 shrink-0" />
+                <div>
+                  <p className="font-medium">Confirmation sent</p>
+                  <p className="text-xs mt-0.5 opacity-80">Check your new inbox and click the link to confirm the change.</p>
+                </div>
+              </div>
+            )}
           </section>
 
           {/* ── Data Management section ── */}

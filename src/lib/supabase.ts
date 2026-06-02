@@ -19,6 +19,10 @@ export async function signOut() {
   return supabase.auth.signOut();
 }
 
+export async function updateEmail(newEmail: string) {
+  return supabase.auth.updateUser({ email: newEmail });
+}
+
 export async function fetchCaughtFromDB(userId: string): Promise<Record<string, string[]>> {
   const { data, error } = await supabase
     .from("caught_pokemon")
