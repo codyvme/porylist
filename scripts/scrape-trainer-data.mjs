@@ -340,6 +340,8 @@ function extractTeamForGameCodes(wikitext, targetCodes) {
     const gameCode = (headerArgs["game"] || "").trim().toUpperCase();
     if (!codeSet.has(gameCode)) continue;
 
+    const location = (headerArgs["location"] || "").toLowerCase();
+
     // Extract all Pokémon templates from this segment
     const pokemonBlocks = extractTemplates(segment, "Pokémon");
     const fallbackBlocks = pokemonBlocks.length === 0
@@ -350,12 +352,16 @@ function extractTeamForGameCodes(wikitext, targetCodes) {
       .map(parsePokemonTemplate)
       .filter(Boolean);
 
-    if (team.length > 0) candidates.push(team);
+    if (team.length > 0) candidates.push({ team, location });
   }
 
   if (candidates.length === 0) return null;
-  // Prefer the battle with the most Pokémon (full-team battles over scripted fights)
-  return candidates.reduce((best, c) => c.length > best.length ? c : best);
+
+  // Prefer the canonical gym battle (location contains "gym") over rematches/dojos.
+  // If no gym-location candidate exists (E4, Champion), fall back to the first candidate.
+  const gymCandidates = candidates.filter(c => c.location.includes("gym"));
+  if (gymCandidates.length > 0) return gymCandidates[0].team;
+  return candidates[0].team;
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────

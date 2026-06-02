@@ -1,0 +1,2316 @@
+{
+  "trainers": [
+    {
+      "slug": "falkner",
+      "name": "Falkner",
+      "class": "Gym Leader",
+      "badgeId": "zephyr",
+      "order": 1,
+      "team": [
+        {
+          "species": "pidgey",
+          "ndex": 16,
+          "level": 9,
+          "ability": "keen-eye",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "tackle",
+              "type": "normal"
+            },
+            {
+              "name": "sand-attack",
+              "type": "ground"
+            }
+          ]
+        },
+        {
+          "species": "pidgeotto",
+          "ndex": 17,
+          "level": 13,
+          "ability": "keen-eye",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "tackle",
+              "type": "normal"
+            },
+            {
+              "name": "roost",
+              "type": "flying"
+            },
+            {
+              "name": "gust",
+              "type": "flying"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "bugsy",
+      "name": "Bugsy",
+      "class": "Gym Leader",
+      "badgeId": "hive",
+      "order": 2,
+      "team": [
+        {
+          "species": "scyther",
+          "ndex": 123,
+          "level": 17,
+          "ability": "technician",
+          "heldItem": "sitrus-berry",
+          "moves": [
+            {
+              "name": "u-turn",
+              "type": "bug"
+            },
+            {
+              "name": "quick-attack",
+              "type": "normal"
+            },
+            {
+              "name": "leer",
+              "type": "normal"
+            },
+            {
+              "name": "focus-energy",
+              "type": "normal"
+            }
+          ]
+        },
+        {
+          "species": "metapod",
+          "ndex": 11,
+          "level": 15,
+          "ability": "shed-skin",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "tackle",
+              "type": "normal"
+            }
+          ]
+        },
+        {
+          "species": "kakuna",
+          "ndex": 14,
+          "level": 15,
+          "ability": "shed-skin",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "poison-sting",
+              "type": "poison"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "whitney",
+      "name": "Whitney",
+      "class": "Gym Leader",
+      "badgeId": "plain",
+      "order": 3,
+      "team": [
+        {
+          "species": "clefairy",
+          "ndex": 35,
+          "level": 17,
+          "ability": "cute-charm",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "mimic",
+              "type": "normal"
+            },
+            {
+              "name": "encore",
+              "type": "normal"
+            },
+            {
+              "name": "doubleslap",
+              "type": "normal"
+            },
+            {
+              "name": "metronome",
+              "type": "normal"
+            }
+          ]
+        },
+        {
+          "species": "miltank",
+          "ndex": 241,
+          "level": 19,
+          "ability": "scrappy",
+          "heldItem": "lum-berry",
+          "moves": [
+            {
+              "name": "stomp",
+              "type": "normal"
+            },
+            {
+              "name": "rollout",
+              "type": "rock"
+            },
+            {
+              "name": "attract",
+              "type": "normal"
+            },
+            {
+              "name": "milk-drink",
+              "type": "normal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "morty",
+      "name": "Morty",
+      "class": "Gym Leader",
+      "badgeId": "fog",
+      "order": 4,
+      "team": [
+        {
+          "species": "gastly",
+          "ndex": 92,
+          "level": 21,
+          "ability": "levitate",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "lick",
+              "type": "ghost"
+            },
+            {
+              "name": "spite",
+              "type": "ghost"
+            },
+            {
+              "name": "mean-look",
+              "type": "normal"
+            },
+            {
+              "name": "curse",
+              "type": "???"
+            }
+          ]
+        },
+        {
+          "species": "haunter",
+          "ndex": 93,
+          "level": 21,
+          "ability": "levitate",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "hypnosis",
+              "type": "psychic"
+            },
+            {
+              "name": "dream-eater",
+              "type": "psychic"
+            },
+            {
+              "name": "curse",
+              "type": "???"
+            },
+            {
+              "name": "nightmare",
+              "type": "ghost"
+            }
+          ]
+        },
+        {
+          "species": "gengar",
+          "ndex": 94,
+          "level": 25,
+          "ability": "levitate",
+          "heldItem": "sitrus-berry",
+          "moves": [
+            {
+              "name": "hypnosis",
+              "type": "psychic"
+            },
+            {
+              "name": "shadow-ball",
+              "type": "ghost"
+            },
+            {
+              "name": "mean-look",
+              "type": "normal"
+            },
+            {
+              "name": "sucker-punch",
+              "type": "dark"
+            }
+          ]
+        },
+        {
+          "species": "haunter",
+          "ndex": 93,
+          "level": 23,
+          "ability": "levitate",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "curse",
+              "type": "???"
+            },
+            {
+              "name": "mean-look",
+              "type": "normal"
+            },
+            {
+              "name": "sucker-punch",
+              "type": "dark"
+            },
+            {
+              "name": "night-shade",
+              "type": "ghost"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "chuck",
+      "name": "Chuck",
+      "class": "Gym Leader",
+      "badgeId": "storm",
+      "order": 5,
+      "team": [
+        {
+          "species": "primeape",
+          "ndex": 57,
+          "level": 29,
+          "ability": "vital-spirit",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "leer",
+              "type": "normal"
+            },
+            {
+              "name": "double-team",
+              "type": "normal"
+            },
+            {
+              "name": "rock-slide",
+              "type": "rock"
+            },
+            {
+              "name": "focus-punch",
+              "type": "fighting"
+            }
+          ]
+        },
+        {
+          "species": "poliwrath",
+          "ndex": 62,
+          "level": 31,
+          "ability": "water-absorb",
+          "heldItem": "sitrus-berry",
+          "moves": [
+            {
+              "name": "hypnosis",
+              "type": "psychic"
+            },
+            {
+              "name": "body-slam",
+              "type": "normal"
+            },
+            {
+              "name": "surf",
+              "type": "water"
+            },
+            {
+              "name": "focus-punch",
+              "type": "fighting"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "jasmine",
+      "name": "Jasmine",
+      "class": "Gym Leader",
+      "badgeId": "mineral",
+      "order": 6,
+      "team": [
+        {
+          "species": "steelix",
+          "ndex": 208,
+          "level": null,
+          "ability": null,
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "screech",
+              "type": null
+            },
+            {
+              "name": "stone-edge",
+              "type": null
+            },
+            {
+              "name": "mud-sport",
+              "type": null
+            },
+            {
+              "name": "fire-fang",
+              "type": null
+            }
+          ]
+        },
+        {
+          "species": "magnemite",
+          "ndex": 81,
+          "level": 30,
+          "ability": "magnet-pull",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "thunderbolt",
+              "type": "electric"
+            },
+            {
+              "name": "sonicboom",
+              "type": "normal"
+            },
+            {
+              "name": "supersonic",
+              "type": "normal"
+            },
+            {
+              "name": "thunder-wave",
+              "type": "electric"
+            }
+          ]
+        },
+        {
+          "species": "magnemite",
+          "ndex": 81,
+          "level": 30,
+          "ability": "magnet-pull",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "thunderbolt",
+              "type": "electric"
+            },
+            {
+              "name": "sonicboom",
+              "type": "normal"
+            },
+            {
+              "name": "supersonic",
+              "type": "normal"
+            },
+            {
+              "name": "thunder-wave",
+              "type": "electric"
+            }
+          ]
+        },
+        {
+          "species": "steelix",
+          "ndex": 208,
+          "level": 35,
+          "ability": "sturdy",
+          "heldItem": "sitrus-berry",
+          "moves": [
+            {
+              "name": "iron-tail",
+              "type": "steel"
+            },
+            {
+              "name": "rock-throw",
+              "type": "rock"
+            },
+            {
+              "name": "sandstorm",
+              "type": "rock"
+            },
+            {
+              "name": "screech",
+              "type": "normal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "pryce",
+      "name": "Pryce",
+      "class": "Gym Leader",
+      "badgeId": "glacier",
+      "order": 7,
+      "team": [
+        {
+          "species": "seel",
+          "ndex": 86,
+          "level": 30,
+          "ability": "thick-fat",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "icy-wind",
+              "type": "ice"
+            },
+            {
+              "name": "rest",
+              "type": "psychic"
+            },
+            {
+              "name": "snore",
+              "type": "normal"
+            },
+            {
+              "name": "hail",
+              "type": "ice"
+            }
+          ]
+        },
+        {
+          "species": "dewgong",
+          "ndex": 87,
+          "level": 32,
+          "ability": "thick-fat",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "aurora-beam",
+              "type": "ice"
+            },
+            {
+              "name": "rest",
+              "type": "psychic"
+            },
+            {
+              "name": "sleep-talk",
+              "type": "normal"
+            },
+            {
+              "name": "ice-shard",
+              "type": "ice"
+            }
+          ]
+        },
+        {
+          "species": "piloswine",
+          "ndex": 221,
+          "level": 34,
+          "ability": "snow-cloak",
+          "heldItem": "sitrus-berry",
+          "moves": [
+            {
+              "name": "blizzard",
+              "type": "ice"
+            },
+            {
+              "name": "ice-fang",
+              "type": "ice"
+            },
+            {
+              "name": "mud-bomb",
+              "type": "ground"
+            },
+            {
+              "name": "hail",
+              "type": "ice"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "clair",
+      "name": "Clair",
+      "class": "Gym Leader",
+      "badgeId": "rising",
+      "order": 8,
+      "team": [
+        {
+          "species": "gyarados",
+          "ndex": 130,
+          "level": 38,
+          "ability": "intimidate",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "bite",
+              "type": "dark"
+            },
+            {
+              "name": "twister",
+              "type": "dragon"
+            },
+            {
+              "name": "dragon-rage",
+              "type": "dragon"
+            },
+            {
+              "name": "dragon-pulse",
+              "type": "dragon"
+            }
+          ]
+        },
+        {
+          "species": "dragonair",
+          "ndex": 148,
+          "level": 38,
+          "ability": "shed-skin",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "thunder-wave",
+              "type": "electric"
+            },
+            {
+              "name": "slam",
+              "type": "normal"
+            },
+            {
+              "name": "aqua-tail",
+              "type": "water"
+            },
+            {
+              "name": "dragon-pulse",
+              "type": "dragon"
+            }
+          ]
+        },
+        {
+          "species": "dragonair",
+          "ndex": 148,
+          "level": 38,
+          "ability": "shed-skin",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "thunder-wave",
+              "type": "electric"
+            },
+            {
+              "name": "slam",
+              "type": "normal"
+            },
+            {
+              "name": "fire-blast",
+              "type": "fire"
+            },
+            {
+              "name": "dragon-pulse",
+              "type": "dragon"
+            }
+          ]
+        },
+        {
+          "species": "kingdra",
+          "ndex": 230,
+          "level": 41,
+          "ability": "sniper",
+          "heldItem": "sitrus-berry",
+          "moves": [
+            {
+              "name": "hydro-pump",
+              "type": "water"
+            },
+            {
+              "name": "smokescreen",
+              "type": "normal"
+            },
+            {
+              "name": "hyper-beam",
+              "type": "normal"
+            },
+            {
+              "name": "dragon-pulse",
+              "type": "dragon"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "will",
+      "name": "Will",
+      "class": "Elite Four",
+      "badgeId": null,
+      "order": 9,
+      "team": [
+        {
+          "species": "xatu",
+          "ndex": 178,
+          "level": 40,
+          "ability": "synchronize",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "u-turn",
+              "type": "bug"
+            },
+            {
+              "name": "me-first",
+              "type": "normal"
+            },
+            {
+              "name": "confuse-ray",
+              "type": "ghost"
+            },
+            {
+              "name": "psychic",
+              "type": "psychic"
+            }
+          ]
+        },
+        {
+          "species": "jynx",
+          "ndex": 124,
+          "level": 41,
+          "ability": "oblivious",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "lovely-kiss",
+              "type": "normal"
+            },
+            {
+              "name": "doubleslap",
+              "type": "normal"
+            },
+            {
+              "name": "ice-punch",
+              "type": "ice"
+            },
+            {
+              "name": "psychic",
+              "type": "psychic"
+            }
+          ]
+        },
+        {
+          "species": "slowbro",
+          "ndex": 80,
+          "level": 41,
+          "ability": "own-tempo",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "curse",
+              "type": "???"
+            },
+            {
+              "name": "amnesia",
+              "type": "psychic"
+            },
+            {
+              "name": "water-pulse",
+              "type": "water"
+            },
+            {
+              "name": "psychic",
+              "type": "psychic"
+            }
+          ]
+        },
+        {
+          "species": "exeggutor",
+          "ndex": 103,
+          "level": 41,
+          "ability": "chlorophyll",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "reflect",
+              "type": "psychic"
+            },
+            {
+              "name": "hypnosis",
+              "type": "psychic"
+            },
+            {
+              "name": "egg-bomb",
+              "type": "normal"
+            },
+            {
+              "name": "psychic",
+              "type": "psychic"
+            }
+          ]
+        },
+        {
+          "species": "xatu",
+          "ndex": 178,
+          "level": 42,
+          "ability": "early-bird",
+          "heldItem": "sitrus-berry",
+          "moves": [
+            {
+              "name": "aerial-ace",
+              "type": "flying"
+            },
+            {
+              "name": "ominous-wind",
+              "type": "ghost"
+            },
+            {
+              "name": "confuse-ray",
+              "type": "ghost"
+            },
+            {
+              "name": "psychic",
+              "type": "psychic"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "koga",
+      "name": "Koga",
+      "class": "Elite Four",
+      "badgeId": null,
+      "order": 10,
+      "team": [
+        {
+          "species": "ariados",
+          "ndex": 168,
+          "level": 40,
+          "ability": "insomnia",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "spider-web",
+              "type": "bug"
+            },
+            {
+              "name": "baton-pass",
+              "type": "normal"
+            },
+            {
+              "name": "giga-drain",
+              "type": "grass"
+            },
+            {
+              "name": "poison-jab",
+              "type": "poison"
+            }
+          ]
+        },
+        {
+          "species": "forretress",
+          "ndex": 205,
+          "level": 43,
+          "ability": "sturdy",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "swift",
+              "type": "normal"
+            },
+            {
+              "name": "explosion",
+              "type": "normal"
+            },
+            {
+              "name": "protect",
+              "type": "normal"
+            },
+            {
+              "name": "toxic-spikes",
+              "type": "poison"
+            }
+          ]
+        },
+        {
+          "species": "muk",
+          "ndex": 89,
+          "level": 42,
+          "ability": "sticky-hold",
+          "heldItem": "black-sludge",
+          "moves": [
+            {
+              "name": "gunk-shot",
+              "type": "poison"
+            },
+            {
+              "name": "minimize",
+              "type": "normal"
+            },
+            {
+              "name": "screech",
+              "type": "normal"
+            },
+            {
+              "name": "toxic",
+              "type": "poison"
+            }
+          ]
+        },
+        {
+          "species": "venomoth",
+          "ndex": 49,
+          "level": 41,
+          "ability": "shield-dust",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "psychic",
+              "type": "psychic"
+            },
+            {
+              "name": "gust",
+              "type": "flying"
+            },
+            {
+              "name": "supersonic",
+              "type": "normal"
+            },
+            {
+              "name": "toxic",
+              "type": "poison"
+            }
+          ]
+        },
+        {
+          "species": "crobat",
+          "ndex": 169,
+          "level": 44,
+          "ability": "inner-focus",
+          "heldItem": "sitrus-berry",
+          "moves": [
+            {
+              "name": "quick-attack",
+              "type": "normal"
+            },
+            {
+              "name": "wing-attack",
+              "type": "flying"
+            },
+            {
+              "name": "double-team",
+              "type": "normal"
+            },
+            {
+              "name": "poison-fang",
+              "type": "poison"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "bruno",
+      "name": "Bruno",
+      "class": "Elite Four",
+      "badgeId": null,
+      "order": 11,
+      "team": [
+        {
+          "species": "hitmontop",
+          "ndex": 237,
+          "level": 42,
+          "ability": "technician",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "dig",
+              "type": "ground"
+            },
+            {
+              "name": "counter",
+              "type": "fighting"
+            },
+            {
+              "name": "triple-kick",
+              "type": "fighting"
+            },
+            {
+              "name": "quick-attack",
+              "type": "normal"
+            }
+          ]
+        },
+        {
+          "species": "hitmonlee",
+          "ndex": 106,
+          "level": 42,
+          "ability": "reckless",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "hi-jump-kick",
+              "type": "fighting"
+            },
+            {
+              "name": "blaze-kick",
+              "type": "fire"
+            },
+            {
+              "name": "focus-energy",
+              "type": "normal"
+            },
+            {
+              "name": "swagger",
+              "type": "normal"
+            }
+          ]
+        },
+        {
+          "species": "hitmonchan",
+          "ndex": 107,
+          "level": 42,
+          "ability": "iron-fist",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "thunderpunch",
+              "type": "electric"
+            },
+            {
+              "name": "ice-punch",
+              "type": "ice"
+            },
+            {
+              "name": "fire-punch",
+              "type": "fire"
+            },
+            {
+              "name": "bullet-punch",
+              "type": "steel"
+            }
+          ]
+        },
+        {
+          "species": "onix",
+          "ndex": 95,
+          "level": 43,
+          "ability": "sturdy",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "sandstorm",
+              "type": "rock"
+            },
+            {
+              "name": "dragonbreath",
+              "type": "dragon"
+            },
+            {
+              "name": "rock-slide",
+              "type": "rock"
+            },
+            {
+              "name": "earthquake",
+              "type": "ground"
+            }
+          ]
+        },
+        {
+          "species": "machamp",
+          "ndex": 68,
+          "level": 46,
+          "ability": "no-guard",
+          "heldItem": "sitrus-berry",
+          "moves": [
+            {
+              "name": "revenge",
+              "type": "fighting"
+            },
+            {
+              "name": "cross-chop",
+              "type": "fighting"
+            },
+            {
+              "name": "rock-slide",
+              "type": "rock"
+            },
+            {
+              "name": "foresight",
+              "type": "normal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "karen",
+      "name": "Karen",
+      "class": "Elite Four",
+      "badgeId": null,
+      "order": 12,
+      "team": [
+        {
+          "species": "umbreon",
+          "ndex": 197,
+          "level": 42,
+          "ability": "synchronize",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "double-team",
+              "type": "normal"
+            },
+            {
+              "name": "confuse-ray",
+              "type": "ghost"
+            },
+            {
+              "name": "faint-attack",
+              "type": "dark"
+            },
+            {
+              "name": "payback",
+              "type": "dark"
+            }
+          ]
+        },
+        {
+          "species": "vileplume",
+          "ndex": 45,
+          "level": 42,
+          "ability": "chlorophyll",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "stun-spore",
+              "type": "grass"
+            },
+            {
+              "name": "petal-dance",
+              "type": "grass"
+            },
+            {
+              "name": "acid",
+              "type": "poison"
+            },
+            {
+              "name": "moonlight",
+              "type": "normal"
+            }
+          ]
+        },
+        {
+          "species": "murkrow",
+          "ndex": 198,
+          "level": 44,
+          "ability": "super-luck",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "sucker-punch",
+              "type": "dark"
+            },
+            {
+              "name": "faint-attack",
+              "type": "dark"
+            },
+            {
+              "name": "pluck",
+              "type": "flying"
+            },
+            {
+              "name": "whirlwind",
+              "type": "normal"
+            }
+          ]
+        },
+        {
+          "species": "gengar",
+          "ndex": 94,
+          "level": 45,
+          "ability": "levitate",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "focus-blast",
+              "type": "fighting"
+            },
+            {
+              "name": "destiny-bond",
+              "type": "ghost"
+            },
+            {
+              "name": "spite",
+              "type": "ghost"
+            },
+            {
+              "name": "lick",
+              "type": "ghost"
+            }
+          ]
+        },
+        {
+          "species": "houndoom",
+          "ndex": 229,
+          "level": 47,
+          "ability": "flash-fire",
+          "heldItem": "sitrus-berry",
+          "moves": [
+            {
+              "name": "nasty-plot",
+              "type": "dark"
+            },
+            {
+              "name": "dark-pulse",
+              "type": "dark"
+            },
+            {
+              "name": "flamethrower",
+              "type": "fire"
+            },
+            {
+              "name": "crunch",
+              "type": "dark"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "lance",
+      "name": "Lance",
+      "class": "Champion",
+      "badgeId": null,
+      "order": 13,
+      "team": [
+        {
+          "species": "dragonite",
+          "ndex": 149,
+          "level": 40,
+          "ability": "inner-focus",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "fly",
+              "type": "flying"
+            },
+            {
+              "name": "twister",
+              "type": "dragon"
+            },
+            {
+              "name": "thunder",
+              "type": "electric"
+            },
+            {
+              "name": "hyper-beam",
+              "type": "normal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "brock",
+      "name": "Brock",
+      "class": "Gym Leader",
+      "badgeId": "boulder",
+      "order": 14,
+      "team": [
+        {
+          "species": "graveler",
+          "ndex": 75,
+          "level": 51,
+          "ability": "sturdy",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "defense-curl",
+              "type": "normal"
+            },
+            {
+              "name": "rollout",
+              "type": "rock"
+            },
+            {
+              "name": "earthquake",
+              "type": "ground"
+            },
+            {
+              "name": "rock-slide",
+              "type": "rock"
+            }
+          ]
+        },
+        {
+          "species": "rhyhorn",
+          "ndex": 111,
+          "level": 51,
+          "ability": "rock-head",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "earthquake",
+              "type": "ground"
+            },
+            {
+              "name": "sandstorm",
+              "type": "rock"
+            },
+            {
+              "name": "scary-face",
+              "type": "normal"
+            },
+            {
+              "name": "horn-drill",
+              "type": "normal"
+            }
+          ]
+        },
+        {
+          "species": "omastar",
+          "ndex": 139,
+          "level": 53,
+          "ability": "shell-armor",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "protect",
+              "type": "normal"
+            },
+            {
+              "name": "spike-cannon",
+              "type": "normal"
+            },
+            {
+              "name": "ancientpower",
+              "type": "rock"
+            },
+            {
+              "name": "brine",
+              "type": "water"
+            }
+          ]
+        },
+        {
+          "species": "kabutops",
+          "ndex": 141,
+          "level": 52,
+          "ability": "battle-armor",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "endure",
+              "type": "normal"
+            },
+            {
+              "name": "giga-drain",
+              "type": "grass"
+            },
+            {
+              "name": "aqua-jet",
+              "type": "water"
+            },
+            {
+              "name": "rock-slide",
+              "type": "rock"
+            }
+          ]
+        },
+        {
+          "species": "onix",
+          "ndex": 95,
+          "level": 54,
+          "ability": "sturdy",
+          "heldItem": "sitrus-berry",
+          "moves": [
+            {
+              "name": "screech",
+              "type": "normal"
+            },
+            {
+              "name": "sandstorm",
+              "type": "rock"
+            },
+            {
+              "name": "iron-tail",
+              "type": "steel"
+            },
+            {
+              "name": "rock-slide",
+              "type": "rock"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "misty",
+      "name": "Misty",
+      "class": "Gym Leader",
+      "badgeId": "cascade",
+      "order": 15,
+      "team": [
+        {
+          "species": "golduck",
+          "ndex": 55,
+          "level": 49,
+          "ability": "damp",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "water-pulse",
+              "type": "water"
+            },
+            {
+              "name": "disable",
+              "type": "normal"
+            },
+            {
+              "name": "psychic",
+              "type": "psychic"
+            },
+            {
+              "name": "psych-up",
+              "type": "normal"
+            }
+          ]
+        },
+        {
+          "species": "quagsire",
+          "ndex": 195,
+          "level": 49,
+          "ability": "water-absorb",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "water-pulse",
+              "type": "water"
+            },
+            {
+              "name": "amnesia",
+              "type": "psychic"
+            },
+            {
+              "name": "rain-dance",
+              "type": "water"
+            },
+            {
+              "name": "earthquake",
+              "type": "ground"
+            }
+          ]
+        },
+        {
+          "species": "lapras",
+          "ndex": 131,
+          "level": 52,
+          "ability": "shell-armor",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "ice-beam",
+              "type": "ice"
+            },
+            {
+              "name": "sing",
+              "type": "normal"
+            },
+            {
+              "name": "water-pulse",
+              "type": "water"
+            },
+            {
+              "name": "body-slam",
+              "type": "normal"
+            }
+          ]
+        },
+        {
+          "species": "starmie",
+          "ndex": 121,
+          "level": 54,
+          "ability": "natural-cure",
+          "heldItem": "sitrus-berry",
+          "moves": [
+            {
+              "name": "water-pulse",
+              "type": "water"
+            },
+            {
+              "name": "confuse-ray",
+              "type": "ghost"
+            },
+            {
+              "name": "ice-beam",
+              "type": "ice"
+            },
+            {
+              "name": "recover",
+              "type": "normal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "lt-surge",
+      "name": "Lt. Surge",
+      "class": "Gym Leader",
+      "badgeId": "thunder",
+      "order": 16,
+      "team": [
+        {
+          "species": "raichu",
+          "ndex": 26,
+          "level": 51,
+          "ability": "static",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "thunder-wave",
+              "type": "electric"
+            },
+            {
+              "name": "shock-wave",
+              "type": "electric"
+            },
+            {
+              "name": "quick-attack",
+              "type": "normal"
+            },
+            {
+              "name": "double-team",
+              "type": "normal"
+            }
+          ]
+        },
+        {
+          "species": "electrode",
+          "ndex": 101,
+          "level": 47,
+          "ability": "static",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "thunder-wave",
+              "type": "electric"
+            },
+            {
+              "name": "double-team",
+              "type": "normal"
+            },
+            {
+              "name": "shock-wave",
+              "type": "electric"
+            },
+            {
+              "name": "light-screen",
+              "type": "psychic"
+            }
+          ]
+        },
+        {
+          "species": "electrode",
+          "ndex": 101,
+          "level": 47,
+          "ability": "static",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "screech",
+              "type": "normal"
+            },
+            {
+              "name": "double-team",
+              "type": "normal"
+            },
+            {
+              "name": "selfdestruct",
+              "type": "normal"
+            },
+            {
+              "name": "charge-beam",
+              "type": "electric"
+            }
+          ]
+        },
+        {
+          "species": "magneton",
+          "ndex": 82,
+          "level": 47,
+          "ability": "sturdy",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "supersonic",
+              "type": "normal"
+            },
+            {
+              "name": "double-team",
+              "type": "normal"
+            },
+            {
+              "name": "shock-wave",
+              "type": "electric"
+            },
+            {
+              "name": "mirror-shot",
+              "type": "steel"
+            }
+          ]
+        },
+        {
+          "species": "electabuzz",
+          "ndex": 125,
+          "level": 53,
+          "ability": "static",
+          "heldItem": "sitrus-berry",
+          "moves": [
+            {
+              "name": "quick-attack",
+              "type": "normal"
+            },
+            {
+              "name": "shock-wave",
+              "type": "electric"
+            },
+            {
+              "name": "light-screen",
+              "type": "psychic"
+            },
+            {
+              "name": "low-kick",
+              "type": "fighting"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "erika",
+      "name": "Erika",
+      "class": "Gym Leader",
+      "badgeId": "rainbow",
+      "order": 17,
+      "team": [
+        {
+          "species": "jumpluff",
+          "ndex": 189,
+          "level": 51,
+          "ability": "chlorophyll",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "leech-seed",
+              "type": "grass"
+            },
+            {
+              "name": "u-turn",
+              "type": "bug"
+            },
+            {
+              "name": "giga-drain",
+              "type": "grass"
+            },
+            {
+              "name": "sunny-day",
+              "type": "fire"
+            }
+          ]
+        },
+        {
+          "species": "tangela",
+          "ndex": 114,
+          "level": 52,
+          "ability": "chlorophyll",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "ancientpower",
+              "type": "rock"
+            },
+            {
+              "name": "wring-out",
+              "type": "normal"
+            },
+            {
+              "name": "giga-drain",
+              "type": "grass"
+            },
+            {
+              "name": "sleep-powder",
+              "type": "grass"
+            }
+          ]
+        },
+        {
+          "species": "victreebel",
+          "ndex": 71,
+          "level": 56,
+          "ability": "chlorophyll",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "sunny-day",
+              "type": "fire"
+            },
+            {
+              "name": "grass-knot",
+              "type": "grass"
+            },
+            {
+              "name": "leaf-storm",
+              "type": "grass"
+            },
+            {
+              "name": "razor-leaf",
+              "type": "grass"
+            }
+          ]
+        },
+        {
+          "species": "bellossom",
+          "ndex": 182,
+          "level": 56,
+          "ability": "chlorophyll",
+          "heldItem": "sitrus-berry",
+          "moves": [
+            {
+              "name": "sunny-day",
+              "type": "fire"
+            },
+            {
+              "name": "solarbeam",
+              "type": "grass"
+            },
+            {
+              "name": "giga-drain",
+              "type": "grass"
+            },
+            {
+              "name": "synthesis",
+              "type": "grass"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "janine",
+      "name": "Janine",
+      "class": "Gym Leader",
+      "badgeId": "soul",
+      "order": 18,
+      "team": [
+        {
+          "species": "crobat",
+          "ndex": 169,
+          "level": 47,
+          "ability": "inner-focus",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "confuse-ray",
+              "type": "ghost"
+            },
+            {
+              "name": "screech",
+              "type": "normal"
+            },
+            {
+              "name": "wing-attack",
+              "type": "flying"
+            },
+            {
+              "name": "supersonic",
+              "type": "normal"
+            }
+          ]
+        },
+        {
+          "species": "weezing",
+          "ndex": 110,
+          "level": 44,
+          "ability": "levitate",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "sludge-bomb",
+              "type": "poison"
+            },
+            {
+              "name": "toxic",
+              "type": "poison"
+            },
+            {
+              "name": "explosion",
+              "type": "normal"
+            },
+            {
+              "name": "double-hit",
+              "type": "normal"
+            }
+          ]
+        },
+        {
+          "species": "ariados",
+          "ndex": 168,
+          "level": 47,
+          "ability": "insomnia",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "swagger",
+              "type": "normal"
+            },
+            {
+              "name": "night-shade",
+              "type": "ghost"
+            },
+            {
+              "name": "poison-jab",
+              "type": "poison"
+            },
+            {
+              "name": "pin-missile",
+              "type": "bug"
+            }
+          ]
+        },
+        {
+          "species": "ariados",
+          "ndex": 168,
+          "level": 47,
+          "ability": "insomnia",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "psychic",
+              "type": "psychic"
+            },
+            {
+              "name": "poison-jab",
+              "type": "poison"
+            },
+            {
+              "name": "scary-face",
+              "type": "normal"
+            },
+            {
+              "name": "pin-missile",
+              "type": "bug"
+            }
+          ]
+        },
+        {
+          "species": "venomoth",
+          "ndex": 49,
+          "level": 50,
+          "ability": "tinted-lens",
+          "heldItem": "sitrus-berry",
+          "moves": [
+            {
+              "name": "double-team",
+              "type": "normal"
+            },
+            {
+              "name": "psychic",
+              "type": "psychic"
+            },
+            {
+              "name": "sludge-bomb",
+              "type": "poison"
+            },
+            {
+              "name": "signal-beam",
+              "type": "bug"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "sabrina",
+      "name": "Sabrina",
+      "class": "Gym Leader",
+      "badgeId": "marsh",
+      "order": 19,
+      "team": [
+        {
+          "species": "espeon",
+          "ndex": 196,
+          "level": 53,
+          "ability": "synchronize",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "calm-mind",
+              "type": "psychic"
+            },
+            {
+              "name": "shadow-ball",
+              "type": "ghost"
+            },
+            {
+              "name": "psychic",
+              "type": "psychic"
+            },
+            {
+              "name": "skill-swap",
+              "type": "psychic"
+            }
+          ]
+        },
+        {
+          "species": "mr-mime",
+          "ndex": 122,
+          "level": 53,
+          "ability": "filter",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "mimic",
+              "type": "normal"
+            },
+            {
+              "name": "light-screen",
+              "type": "psychic"
+            },
+            {
+              "name": "psychic",
+              "type": "psychic"
+            },
+            {
+              "name": "skill-swap",
+              "type": "psychic"
+            }
+          ]
+        },
+        {
+          "species": "alakazam",
+          "ndex": 65,
+          "level": 55,
+          "ability": "inner-focus",
+          "heldItem": "sitrus-berry",
+          "moves": [
+            {
+              "name": "psychic",
+              "type": "psychic"
+            },
+            {
+              "name": "skill-swap",
+              "type": "psychic"
+            },
+            {
+              "name": "reflect",
+              "type": "psychic"
+            },
+            {
+              "name": "energy-ball",
+              "type": "grass"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "blaine",
+      "name": "Blaine",
+      "class": "Gym Leader",
+      "badgeId": "volcano",
+      "order": 20,
+      "team": [
+        {
+          "species": "magcargo",
+          "ndex": 219,
+          "level": 54,
+          "ability": "flame-body",
+          "heldItem": "white-herb",
+          "moves": [
+            {
+              "name": "overheat",
+              "type": "fire"
+            },
+            {
+              "name": "sunny-day",
+              "type": "fire"
+            },
+            {
+              "name": "smog",
+              "type": "poison"
+            },
+            {
+              "name": "rock-slide",
+              "type": "rock"
+            }
+          ]
+        },
+        {
+          "species": "magmar",
+          "ndex": 126,
+          "level": 54,
+          "ability": "flame-body",
+          "heldItem": "white-herb",
+          "moves": [
+            {
+              "name": "thunderpunch",
+              "type": "electric"
+            },
+            {
+              "name": "confuse-ray",
+              "type": "ghost"
+            },
+            {
+              "name": "overheat",
+              "type": "fire"
+            },
+            {
+              "name": "sunny-day",
+              "type": "fire"
+            }
+          ]
+        },
+        {
+          "species": "rapidash",
+          "ndex": 78,
+          "level": 59,
+          "ability": "flash-fire",
+          "heldItem": "white-herb",
+          "moves": [
+            {
+              "name": "quick-attack",
+              "type": "normal"
+            },
+            {
+              "name": "bounce",
+              "type": "flying"
+            },
+            {
+              "name": "overheat",
+              "type": "fire"
+            },
+            {
+              "name": "flare-blitz",
+              "type": "fire"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "blue",
+      "name": "Blue",
+      "class": "Gym Leader",
+      "badgeId": "earth",
+      "order": 21,
+      "team": [
+        {
+          "species": "exeggutor",
+          "ndex": 103,
+          "level": 55,
+          "ability": "chlorophyll",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "leaf-storm",
+              "type": "grass"
+            },
+            {
+              "name": "psychic",
+              "type": "psychic"
+            },
+            {
+              "name": "hypnosis",
+              "type": "psychic"
+            },
+            {
+              "name": "trick-room",
+              "type": "psychic"
+            }
+          ]
+        },
+        {
+          "species": "arcanine",
+          "ndex": 59,
+          "level": 58,
+          "ability": "intimidate",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "roar",
+              "type": "normal"
+            },
+            {
+              "name": "dragon-pulse",
+              "type": "dragon"
+            },
+            {
+              "name": "flare-blitz",
+              "type": "fire"
+            },
+            {
+              "name": "extremespeed",
+              "type": "normal"
+            }
+          ]
+        },
+        {
+          "species": "rhydon",
+          "ndex": 112,
+          "level": 58,
+          "ability": "rock-head",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "megahorn",
+              "type": "bug"
+            },
+            {
+              "name": "stone-edge",
+              "type": "rock"
+            },
+            {
+              "name": "thunder-fang",
+              "type": "electric"
+            },
+            {
+              "name": "earthquake",
+              "type": "ground"
+            }
+          ]
+        },
+        {
+          "species": "gyarados",
+          "ndex": 130,
+          "level": 52,
+          "ability": "intimidate",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "ice-fang",
+              "type": "ice"
+            },
+            {
+              "name": "waterfall",
+              "type": "water"
+            },
+            {
+              "name": "dragon-dance",
+              "type": "dragon"
+            },
+            {
+              "name": "return",
+              "type": "normal"
+            }
+          ]
+        },
+        {
+          "species": "machamp",
+          "ndex": 68,
+          "level": 56,
+          "ability": "no-guard",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "dynamicpunch",
+              "type": "fighting"
+            },
+            {
+              "name": "earthquake",
+              "type": "ground"
+            },
+            {
+              "name": "stone-edge",
+              "type": "rock"
+            },
+            {
+              "name": "thunderpunch",
+              "type": "electric"
+            }
+          ]
+        },
+        {
+          "species": "pidgeot",
+          "ndex": 18,
+          "level": 60,
+          "ability": "tangled-feet",
+          "heldItem": "sitrus-berry",
+          "moves": [
+            {
+              "name": "return",
+              "type": "normal"
+            },
+            {
+              "name": "whirlwind",
+              "type": "normal"
+            },
+            {
+              "name": "air-slash",
+              "type": "flying"
+            },
+            {
+              "name": "mirror-move",
+              "type": "flying"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "red",
+      "name": "Red",
+      "class": "Champion",
+      "badgeId": null,
+      "order": 22,
+      "team": [
+        {
+          "species": "pikachu",
+          "ndex": 25,
+          "level": 88,
+          "ability": "static",
+          "heldItem": "light-ball",
+          "moves": [
+            {
+              "name": "volt-tackle",
+              "type": "electric"
+            },
+            {
+              "name": "iron-tail",
+              "type": "steel"
+            },
+            {
+              "name": "quick-attack",
+              "type": "normal"
+            },
+            {
+              "name": "thunderbolt",
+              "type": "electric"
+            }
+          ]
+        },
+        {
+          "species": "lapras",
+          "ndex": 131,
+          "level": 80,
+          "ability": "shell-armor",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "body-slam",
+              "type": "normal"
+            },
+            {
+              "name": "brine",
+              "type": "water"
+            },
+            {
+              "name": "blizzard",
+              "type": "ice"
+            },
+            {
+              "name": "psychic",
+              "type": "psychic"
+            }
+          ]
+        },
+        {
+          "species": "snorlax",
+          "ndex": 143,
+          "level": 82,
+          "ability": "thick-fat",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "shadow-ball",
+              "type": "ghost"
+            },
+            {
+              "name": "crunch",
+              "type": "dark"
+            },
+            {
+              "name": "blizzard",
+              "type": "ice"
+            },
+            {
+              "name": "giga-impact",
+              "type": "normal"
+            }
+          ]
+        },
+        {
+          "species": "venusaur",
+          "ndex": 3,
+          "level": 84,
+          "ability": "overgrow",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "frenzy-plant",
+              "type": "grass"
+            },
+            {
+              "name": "giga-drain",
+              "type": "grass"
+            },
+            {
+              "name": "sludge-bomb",
+              "type": "poison"
+            },
+            {
+              "name": "sleep-powder",
+              "type": "grass"
+            }
+          ]
+        },
+        {
+          "species": "charizard",
+          "ndex": 6,
+          "level": 84,
+          "ability": "blaze",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "blast-burn",
+              "type": "fire"
+            },
+            {
+              "name": "flare-blitz",
+              "type": "fire"
+            },
+            {
+              "name": "air-slash",
+              "type": "flying"
+            },
+            {
+              "name": "dragon-pulse",
+              "type": "dragon"
+            }
+          ]
+        },
+        {
+          "species": "blastoise",
+          "ndex": 9,
+          "level": 84,
+          "ability": "torrent",
+          "heldItem": null,
+          "moves": [
+            {
+              "name": "hydro-cannon",
+              "type": "water"
+            },
+            {
+              "name": "blizzard",
+              "type": "ice"
+            },
+            {
+              "name": "flash-cannon",
+              "type": "steel"
+            },
+            {
+              "name": "focus-blast",
+              "type": "fighting"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

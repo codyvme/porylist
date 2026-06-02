@@ -19,6 +19,7 @@ export const TYPE_COLORS: Record<string, string> = {
   dark: '#705746',
   steel: '#B7B7CE',
   fairy: '#D685AD',
+  '???': '#68A090',
 };
 
 export function typeStyle(name: string): React.CSSProperties {

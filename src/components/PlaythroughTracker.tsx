@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo, useRef } from "react";
+import React, { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   fetchPlaythroughsFromDB,
@@ -33,8 +33,11 @@ import {
 } from "@/lib/playthroughs";
 import { EncountersTab } from "@/components/EncountersTab";
 import { PlaythroughTeamTab } from "@/components/PlaythroughTeamTab";
-import { useTrainerData, type TrainerEntry } from "@/lib/pokeapi";
+import { useTrainerData, usePokemonSummaryList, useItemList, typesForGeneration, type TrainerEntry, type ItemListEntry } from "@/lib/pokeapi";
 import { MoveModal } from "@/components/MoveModal";
+import { PokemonModal } from "@/components/PokemonModal";
+import { AbilityModal } from "@/components/AbilityModal";
+import { ItemModal } from "@/components/ItemModal";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -392,48 +395,114 @@ function formatSlug(slug: string): string {
   return slug.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
 }
 
-function TrainerTeamModal({ trainer, onClose }: { trainer: TrainerEntry; onClose: () => void }) {
-  const [activeMove, setActiveMove] = useState<string | null>(null);
-  // Tracks whether the move modal was closed by its own button (vs browser back)
-  const closingMoveViaButtonRef = useRef(false);
+function TrainerTeamModal({ trainer, game, onClose }: { trainer: TrainerEntry; game: GameOption | undefined; onClose: () => void }) {
+  const { data: summaryList = [] } = usePokemonSummaryList();
+  const summaryByName = useMemo(() => {
+    const map = new Map<string, typeof summaryList[number]>();
+    for (const p of summaryList) map.set(p.name, p);
+    return map;
+  }, [summaryList]);
 
-  // Escape: close move modal first, then trainer modal
+  const { data: itemList = [] } = useItemList();
+  const itemBySlug = useMemo(() => {
+    const map = new Map<string, ItemListEntry>();
+    for (const item of itemList) map.set(item.name, item);
+    return map;
+  }, [itemList]);
+
+  const [activeMove, setActiveMove] = useState<string | null>(null);
+  const [activePokemon, setActivePokemon] = useState<string | null>(null);
+  const [activeAbility, setActiveAbility] = useState<string | null>(null);
+  const [activeItem, setActiveItem] = useState<ItemListEntry | null>(null);
+  const closingMoveViaButtonRef = useRef(false);
+  const closingPokemonViaButtonRef = useRef(false);
+  const closingAbilityViaButtonRef = useRef(false);
+  const closingItemViaButtonRef = useRef(false);
+
+  // Escape: close inner modals first, then trainer modal
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
-      if (activeMove) closeMove();
+      if (activePokemon) closePokemon();
+      else if (activeMove) closeMove();
+      else if (activeAbility) closeAbility();
+      else if (activeItem) closeItem();
       else onClose();
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [onClose, activeMove]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [onClose, activeMove, activePokemon, activeAbility, activeItem]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Browser back button: close move modal, keep trainer modal open
+  const makePopstateHandler = (closingRef: React.MutableRefObject<boolean>, setter: (v: null) => void) => () => {
+    if (!closingRef.current) setter(null);
+    closingRef.current = false;
+  };
+
   useEffect(() => {
     if (!activeMove) return;
-    const handler = () => {
-      if (!closingMoveViaButtonRef.current) setActiveMove(null);
-      closingMoveViaButtonRef.current = false;
-    };
+    const handler = makePopstateHandler(closingMoveViaButtonRef, setActiveMove);
     window.addEventListener("popstate", handler);
     return () => window.removeEventListener("popstate", handler);
-  }, [activeMove]);
+  }, [activeMove]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const openMove = (slug: string) => {
+  useEffect(() => {
+    if (!activePokemon) return;
+    const handler = makePopstateHandler(closingPokemonViaButtonRef, setActivePokemon);
+    window.addEventListener("popstate", handler);
+    return () => window.removeEventListener("popstate", handler);
+  }, [activePokemon]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!activeAbility) return;
+    const handler = makePopstateHandler(closingAbilityViaButtonRef, setActiveAbility);
+    window.addEventListener("popstate", handler);
+    return () => window.removeEventListener("popstate", handler);
+  }, [activeAbility]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!activeItem) return;
+    const handler = makePopstateHandler(closingItemViaButtonRef, setActiveItem);
+    window.addEventListener("popstate", handler);
+    return () => window.removeEventListener("popstate", handler);
+  }, [activeItem]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const openSubModal = (open: () => void) => {
     history.pushState(null, "", window.location.href);
-    setActiveMove(slug);
+    open();
+  };
+  const closeSubModal = (closingRef: React.MutableRefObject<boolean>, close: () => void) => {
+    closingRef.current = true;
+    close();
+    history.back();
   };
 
-  const closeMove = () => {
-    closingMoveViaButtonRef.current = true;
-    setActiveMove(null);
-    history.back(); // remove the pushed entry
-  };
+  const openMove = (slug: string) => openSubModal(() => setActiveMove(slug));
+  const closeMove = () => closeSubModal(closingMoveViaButtonRef, () => setActiveMove(null));
+  const openPokemon = (species: string) => openSubModal(() => setActivePokemon(species));
+  const closePokemon = () => closeSubModal(closingPokemonViaButtonRef, () => setActivePokemon(null));
+  const openAbility = (slug: string) => openSubModal(() => setActiveAbility(slug));
+  const closeAbility = () => closeSubModal(closingAbilityViaButtonRef, () => setActiveAbility(null));
+  const openItem = (slug: string) => { const entry = itemBySlug.get(slug); if (entry) openSubModal(() => setActiveItem(entry)); };
+  const closeItem = () => closeSubModal(closingItemViaButtonRef, () => setActiveItem(null));
+
+  const isSubModalOpen = !!(activeMove || activePokemon || activeAbility || activeItem);
 
   return (
     <>
     {activeMove && <MoveModal name={activeMove} onClose={closeMove} />}
-    <div className={cn("fixed inset-0 z-50 flex items-center justify-center p-4", activeMove && "hidden")} onClick={onClose}>
+    {activePokemon && (
+      <PokemonModal
+        pokemonName={activePokemon}
+        game={game}
+        onClose={closePokemon}
+        onNavigate={(name) => { history.replaceState(null, "", window.location.href); setActivePokemon(name); }}
+        prevPokemon={null}
+        nextPokemon={null}
+      />
+    )}
+    {activeAbility && <AbilityModal name={activeAbility} game={game} onClose={closeAbility} />}
+    {activeItem && <ItemModal item={activeItem} onClose={closeItem} />}
+    <div className={cn("fixed inset-0 z-50 flex items-center justify-center p-4", isSubModalOpen && "hidden")} onClick={onClose}>
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
       <div
         className="relative z-10 w-full max-w-2xl max-h-[80vh] overflow-y-auto rounded-2xl border bg-background shadow-2xl"
@@ -458,16 +527,21 @@ function TrainerTeamModal({ trainer, onClose }: { trainer: TrainerEntry; onClose
           {trainer.team.map((mon, i) => {
             const spriteUrl = mon.ndex ? `${SPRITES_ROOT}/${mon.ndex}.png` : null;
             const displayName = formatPokemonName(mon.species);
-            const typeColor = TYPE_COLORS[mon.species] ?? null;
+            const summary = summaryByName.get(mon.species);
+            const types = summary ? typesForGeneration(summary, game?.generation ?? 9) : [];
+            const primaryColor = types[0] ? (TYPE_COLORS[types[0]] ?? null) : null;
 
             return (
               <div
                 key={i}
-                className="flex items-start gap-3 rounded-xl border bg-muted/30 p-3"
-                style={typeColor ? { borderColor: `${typeColor}40`, background: `${typeColor}08` } : undefined}
+                className="flex items-start gap-3 rounded-xl border p-3"
+                style={primaryColor ? {
+                  borderColor: `${primaryColor}40`,
+                  background: `linear-gradient(135deg, ${primaryColor}18 0%, transparent 60%)`,
+                } : undefined}
               >
                 {/* Sprite */}
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-muted/50">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center">
                   {spriteUrl ? (
                     <img src={spriteUrl} alt={displayName} className="h-full w-full object-contain" loading="lazy" />
                   ) : (
@@ -478,19 +552,39 @@ function TrainerTeamModal({ trainer, onClose }: { trainer: TrainerEntry; onClose
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline gap-1.5">
-                    <span className="font-semibold">{displayName}</span>
+                    <button
+                      onClick={() => openPokemon(mon.species)}
+                      className="font-semibold text-primary hover:underline transition-colors text-left"
+                    >
+                      {displayName}
+                    </button>
                     {mon.level && (
                       <span className="text-xs text-muted-foreground">Lv. {mon.level}</span>
                     )}
                   </div>
+                  {types.length > 0 && (
+                    <div className="flex items-center gap-1 mt-0.5 mb-1.5">
+                      {types.map(t => (
+                        <span key={t} className="rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white" style={typeStyle(t)}>{t}</span>
+                      ))}
+                    </div>
+                  )}
                   {mon.ability && (
-                    <p className="text-[11px] text-muted-foreground mt-0.5">
-                      <span className="font-medium">Ability:</span> {formatSlug(mon.ability)}
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      <span className="font-bold">Ability: </span>
+                      <button onClick={() => openAbility(mon.ability!)} className="text-primary hover:underline transition-colors">
+                        {formatSlug(mon.ability)}
+                      </button>
                     </p>
                   )}
                   {mon.heldItem && (
-                    <p className="text-[11px] text-muted-foreground">
-                      <span className="font-medium">Item:</span> {formatSlug(mon.heldItem)}
+                    <p className="text-xs text-muted-foreground">
+                      <span className="font-bold">Item: </span>
+                      {itemBySlug.get(mon.heldItem) ? (
+                        <button onClick={() => openItem(mon.heldItem!)} className="text-primary hover:underline transition-colors">
+                          {formatSlug(mon.heldItem)}
+                        </button>
+                      ) : <span className="text-primary">{formatSlug(mon.heldItem)}</span>}
                     </p>
                   )}
                   {mon.moves.length > 0 && (
@@ -537,6 +631,7 @@ function BadgesTab({
   onUpdate: (p: Playthrough) => void;
 }) {
   const group = VERSION_TO_GAME_GROUP[playthrough.gameValue] ?? playthrough.gameValue;
+  const game = GAMES_BY_VALUE[group];
   const badges: Badge[] = GAME_BADGES[group] ?? [];
   const earned = new Set(playthrough.earnedBadges);
   const [activeTrainer, setActiveTrainer] = useState<TrainerEntry | null>(null);
@@ -573,7 +668,7 @@ function BadgesTab({
   return (
     <>
       {activeTrainer && (
-        <TrainerTeamModal trainer={activeTrainer} onClose={() => setActiveTrainer(null)} />
+        <TrainerTeamModal trainer={activeTrainer} game={game} onClose={() => setActiveTrainer(null)} />
       )}
       <div className="flex flex-col gap-1">
         {badges.map((badge) => {
@@ -620,7 +715,7 @@ function BadgesTab({
                     </span>
                   )}
                 </div>
-                <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
+                <p className="truncate text-xs text-muted-foreground mt-1">{subtitle}</p>
               </div>
 
               {/* Buttons — icon-only to stay compact */}
