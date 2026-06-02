@@ -326,7 +326,7 @@ function PlaythroughsSection() {
         return (
           <Link
             key={p.id}
-            to="/routes"
+            to={`/routes?run=${p.id}`}
             className="flex items-center gap-3 rounded-lg border p-3 hover:border-primary/40 hover:bg-muted/50 transition-colors"
           >
             <div className="shrink-0 w-9 h-12 rounded overflow-hidden bg-muted flex items-center justify-center">

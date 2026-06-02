@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   fetchPlaythroughsFromDB,
   upsertPlaythrough,
@@ -844,8 +845,9 @@ export function PlaythroughTracker({
   navigationTarget?: { gameValue: string; locationKey: string } | null;
   user: User | null;
 }) {
+  const [searchParams] = useSearchParams();
   const [playthroughs, setPlaythroughs] = useState<Playthrough[]>(loadPlaythroughs);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(() => searchParams.get("run"));
   const [isCreating, setIsCreating] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
   const [runsCollapsed, setRunsCollapsed] = useState(false);

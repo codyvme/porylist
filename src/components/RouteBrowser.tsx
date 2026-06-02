@@ -74,6 +74,11 @@ const METHOD_ICONS: Record<string, string> = {
   "hoenn-sound":      "📻",
   "sinnoh-sound":     "📻",
   "swarm":            "🌀",
+  "swarm-walk":       "🌀",
+  "swarm-old-rod":    "🌀",
+  "swarm-good-rod":   "🌀",
+  "swarm-super-rod":  "🌀",
+  "swarm-surf":       "🌀",
 };
 
 // Method display order
@@ -85,6 +90,7 @@ const METHOD_ORDER = [
   "surf-spots", "super-rod-spots", "dirt", "sand", "flying", "building", "backlot",
   "poke-radar", "pokeradar", "pokeradar-chain", "curry", "gift", "gift-egg",
   "hoenn-sound", "sinnoh-sound", "swarm",
+  "swarm-walk", "swarm-surf", "swarm-old-rod", "swarm-good-rod", "swarm-super-rod",
 ];
 
 function methodOrder(method: string) {
