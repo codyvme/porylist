@@ -13,8 +13,11 @@ public/data/**
 !public/data/version-exclusives.json
 !public/data/route-data/
 !public/data/route-data/*.json
+!public/data/trainers/
+!public/data/trainers/*.json
 .claude/
 .wrangler/
 .bulba-cache/
+.cache/
 scripts/bulbapedia-cache/
 scripts/scrape-bulbapedia-all.mjs
