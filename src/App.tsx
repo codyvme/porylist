@@ -333,11 +333,11 @@ const NAV_ITEMS = [
   { to: "/pokedex",    label: "Pokédex",           Icon: List          },
   null, // separator
   { to: "/breeding",   label: "Breeding Tracker",  Icon: Dna           },
-  { to: "/shiny",      label: "Shiny Tracker",     Icon: Sparkles      },
   { to: "/catch",      label: "Catch Calculator",  Icon: Crosshair     },
-  { to: "/damage",     label: "Damage Calculator", Icon: Swords        },
   { to: "/compare",    label: "Compare",           Icon: Scale         },
+  { to: "/damage",     label: "Damage Calculator", Icon: Swords        },
   { to: "/routes",     label: "Playthroughs",      Icon: Trophy        },
+  { to: "/shiny",      label: "Shiny Tracker",     Icon: Sparkles      },
   { to: "/team",       label: "Team Builder",      Icon: Users         },
 ] as const;
 
