@@ -141,3 +141,38 @@
   pointer-events: none;
   animation: sparkle-pop 0.55s ease-out forwards;
 }
+
+/* ─── Reduced motion ──────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  /* Static shimmer — no moving gradient */
+  .skeleton-shimmer {
+    animation: none;
+    background: hsl(var(--muted));
+  }
+
+  /* Sprite entrance: drop the bounce, keep a quick fade */
+  .animate-bounce-in {
+    animation: fade-in 0.15s ease-out both;
+  }
+
+  /* Stat bars: appear instantly */
+  .animate-stat-fill {
+    animation: none;
+  }
+
+  /* Slide-up: keep the fade, drop the translate */
+  .animate-fade-up {
+    animation: fade-in 0.15s ease-out both;
+  }
+
+  /* Sparkle burst: skip entirely */
+  .sparkle-particle {
+    display: none;
+  }
+
+  /* Type badge: no scale on hover */
+  .type-badge:hover {
+    transform: none;
+  }
+}
