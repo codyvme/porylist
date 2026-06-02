@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Check, Download, Mail, Trash2, UserRound, X } from "lucide-react";
+import { Check, Download, Mail, Trash2, Upload, UserRound, X } from "lucide-react";
 import { cn, formatPokemonName } from "@/lib/utils";
 import { usePokemonSummaryList } from "@/lib/pokeapi";
 import { spriteUrl } from "@/lib/games";
@@ -122,6 +122,9 @@ export function AccountSettingsModal({
   const [deleteStep, setDeleteStep] = useState<"idle" | "confirm">("idle");
   const [deleting, setDeleting] = useState(false);
   const [dataError, setDataError] = useState<string | null>(null);
+  const [importStatus, setImportStatus] = useState<"idle" | "success" | "error">("idle");
+  const [importError, setImportError] = useState<string | null>(null);
+  const importRef = useRef<HTMLInputElement>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -164,26 +167,21 @@ export function AccountSettingsModal({
     }
   }
 
-  function handleExport() {
-    const caught = (() => {
-      try { return JSON.parse(localStorage.getItem("porylist-caught") ?? "{}"); }
-      catch { return {}; }
-    })();
-    const team = (() => {
-      try { return JSON.parse(localStorage.getItem("porylist-team") ?? "[]"); }
-      catch { return []; }
-    })();
-    const breeding = (() => {
-      try { return JSON.parse(localStorage.getItem("porylist-breeding-v1") ?? "[]"); }
-      catch { return []; }
-    })();
+  function readLS<T>(key: string, fallback: T): T {
+    try { return JSON.parse(localStorage.getItem(key) ?? JSON.stringify(fallback)); }
+    catch { return fallback; }
+  }
 
+  function handleExport() {
     const payload = {
       exported_at: new Date().toISOString(),
+      version: 1,
       username: profile?.username ?? null,
-      caught,
-      team,
-      breeding_projects: breeding,
+      caught: readLS("porylist-caught", {}),
+      team: readLS("porylist-team", []),
+      breeding_projects: readLS("porylist-breeding-v1", []),
+      playthroughs: readLS("porylist-playthroughs-v1", []),
+      shiny_hunts: readLS("porylist-shiny-hunts-v1", []),
     };
 
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
@@ -195,15 +193,50 @@ export function AccountSettingsModal({
     URL.revokeObjectURL(url);
   }
 
+  function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImportStatus("idle");
+    setImportError(null);
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target?.result as string);
+        if (typeof data !== "object" || !data) throw new Error("Invalid file format.");
+
+        // Restore each key if present in the export
+        if (data.caught && typeof data.caught === "object")
+          localStorage.setItem("porylist-caught", JSON.stringify(data.caught));
+        if (Array.isArray(data.team))
+          localStorage.setItem("porylist-team", JSON.stringify(data.team));
+        if (Array.isArray(data.breeding_projects))
+          localStorage.setItem("porylist-breeding-v1", JSON.stringify(data.breeding_projects));
+        if (Array.isArray(data.playthroughs))
+          localStorage.setItem("porylist-playthroughs-v1", JSON.stringify(data.playthroughs));
+        if (Array.isArray(data.shiny_hunts))
+          localStorage.setItem("porylist-shiny-hunts-v1", JSON.stringify(data.shiny_hunts));
+
+        setImportStatus("success");
+        // Reset file input so the same file can be re-imported if needed
+        if (importRef.current) importRef.current.value = "";
+      } catch (err) {
+        setImportStatus("error");
+        setImportError(err instanceof Error ? err.message : "Failed to parse file.");
+        if (importRef.current) importRef.current.value = "";
+      }
+    };
+    reader.readAsText(file);
+  }
+
   async function handlePurge() {
     setPurging(true);
     setDataError(null);
     try {
       await purgeUserData(user.id);
-      localStorage.removeItem("porylist-caught");
-      localStorage.removeItem("porylist-team");
-      localStorage.removeItem("porylist-breeding-v1");
-      localStorage.removeItem("porylist-cache-v7");
+      ["porylist-caught", "porylist-team", "porylist-breeding-v1",
+       "porylist-playthroughs-v1", "porylist-shiny-hunts-v1", "porylist-cache-v7"]
+        .forEach((k) => localStorage.removeItem(k));
       onPurge();
       window.location.reload();
     } catch {
@@ -217,10 +250,9 @@ export function AccountSettingsModal({
     setDataError(null);
     try {
       await deleteAccount();
-      localStorage.removeItem("porylist-caught");
-      localStorage.removeItem("porylist-team");
-      localStorage.removeItem("porylist-breeding-v1");
-      localStorage.removeItem("porylist-cache-v7");
+      ["porylist-caught", "porylist-team", "porylist-breeding-v1",
+       "porylist-playthroughs-v1", "porylist-shiny-hunts-v1", "porylist-cache-v7"]
+        .forEach((k) => localStorage.removeItem(k));
       window.location.reload();
     } catch {
       setDataError("Failed to delete account. Please try again.");
@@ -450,7 +482,7 @@ export function AccountSettingsModal({
             <div>
               <p className="mb-1 text-sm font-medium">Export your data</p>
               <p className="mb-3 text-sm text-muted-foreground">
-                Download a JSON file with all your caught Pokémon, breeding projects, and team.
+                Download a JSON file with your caught Pokémon, team, playthroughs, breeding projects, and shiny hunts.
               </p>
               <button
                 onClick={handleExport}
@@ -459,6 +491,39 @@ export function AccountSettingsModal({
                 <Download className="h-4 w-4" />
                 Export data
               </button>
+            </div>
+
+            <hr className="border-border" />
+
+            {/* Import */}
+            <div>
+              <p className="mb-1 text-sm font-medium">Import data</p>
+              <p className="mb-3 text-sm text-muted-foreground">
+                Restore from a Porylist export file. Existing data will be overwritten.
+              </p>
+              <input
+                ref={importRef}
+                type="file"
+                accept=".json,application/json"
+                onChange={handleImportFile}
+                className="hidden"
+              />
+              <button
+                onClick={() => { setImportStatus("idle"); setImportError(null); importRef.current?.click(); }}
+                className="flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
+              >
+                <Upload className="h-4 w-4" />
+                Import data
+              </button>
+              {importStatus === "success" && (
+                <div className="mt-3 flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400">
+                  <Check className="h-4 w-4 shrink-0" />
+                  Data imported — reload the page to see changes.
+                </div>
+              )}
+              {importStatus === "error" && (
+                <p className="mt-3 text-sm text-destructive">{importError}</p>
+              )}
             </div>
 
             <hr className="border-border" />
