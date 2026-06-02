@@ -98,6 +98,30 @@ export async function deleteBreedingProject(projectId: string) {
   return supabase.from("breeding_projects").delete().eq("id", projectId);
 }
 
+// ── Shiny hunts ────────────────────────────────────────────────────────────
+
+export async function fetchShinyHuntsFromDB(userId: string): Promise<import("./shiny-hunts").ShinyHunt[]> {
+  const { data, error } = await supabase
+    .from("shiny_hunts")
+    .select("data")
+    .eq("user_id", userId);
+  if (error || !data) return [];
+  return data.map((row) => row.data as import("./shiny-hunts").ShinyHunt);
+}
+
+export async function upsertShinyHunt(userId: string, hunt: import("./shiny-hunts").ShinyHunt) {
+  return supabase.from("shiny_hunts").upsert({
+    id: hunt.id,
+    user_id: userId,
+    data: hunt,
+    updated_at: new Date().toISOString(),
+  });
+}
+
+export async function deleteShinyHunt(huntId: string) {
+  return supabase.from("shiny_hunts").delete().eq("id", huntId);
+}
+
 // ── User profiles ─────────────────────────────────────────────────────────
 
 export interface UserProfile {
@@ -155,6 +179,7 @@ export async function purgeUserData(userId: string): Promise<void> {
     supabase.from("caught_pokemon").delete().eq("user_id", userId),
     supabase.from("breeding_projects").delete().eq("user_id", userId),
     supabase.from("playthroughs").delete().eq("user_id", userId),
+    supabase.from("shiny_hunts").delete().eq("user_id", userId),
   ]);
 }
 

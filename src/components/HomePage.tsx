@@ -13,12 +13,13 @@ import { usePokemonSummaryList, usePokemonSpecies } from "@/lib/pokeapi";
 import { TYPE_COLORS, typeStyle } from "@/lib/types";
 import { loadPlaythroughs, VERSION_TO_GAME_GROUP, VERSION_DISPLAY_LABEL } from "@/lib/playthroughs";
 import { loadProjects } from "@/lib/breeding";
+import { loadHunts, METHOD_LABELS, shinyRate, cumulativeProb } from "@/lib/shiny-hunts";
 import { fetchDashboardConfig, upsertDashboardConfig, type User } from "@/lib/supabase";
 import { SparkleBurst } from "@/components/SparkleBurst";
 
 // ─── Module config ────────────────────────────────────────────────────────────
 
-type ModuleId = "pokemon-of-the-day" | "playthroughs" | "breeding" | "quick-links";
+type ModuleId = "pokemon-of-the-day" | "playthroughs" | "breeding" | "shiny-hunts" | "quick-links";
 
 interface ModuleDef {
   id: ModuleId;
@@ -29,6 +30,7 @@ const MODULE_DEFS: ModuleDef[] = [
   { id: "pokemon-of-the-day", label: "Pokémon of the Day" },
   { id: "playthroughs",       label: "Playthroughs"       },
   { id: "breeding",           label: "Breeding Projects"  },
+  { id: "shiny-hunts",        label: "Shiny Hunts"        },
   { id: "quick-links",        label: "Quick Links"        },
 ];
 
@@ -50,6 +52,59 @@ const POTD_SEED = 0x504f5459; // "POTY" in hex — fixed, never changes
 
 const STORAGE_KEY = "porylist-dashboard-v1";
 
+// ─── Shiny Hunts dashboard section ───────────────────────────────────────────
+
+function ShinySection() {
+  const hunts = useMemo(() => loadHunts(), []);
+  const active = hunts.filter(h => h.status === "active");
+
+  if (active.length === 0) {
+    return (
+      <div className="flex items-center justify-between rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
+        <span>No active hunts</span>
+        <Link to="/shiny" className="flex items-center gap-1 text-xs text-primary hover:underline">
+          Start one <ArrowRight className="h-3 w-3" />
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      {active.slice(0, 3).map(hunt => {
+        const game = GAMES_BY_VALUE[hunt.gameValue];
+        const generation = game?.generation ?? 6;
+        const p = shinyRate(hunt, generation);
+        const cumPct = (cumulativeProb(p, hunt.count) * 100).toFixed(1);
+        return (
+          <Link
+            key={hunt.id}
+            to="/shiny"
+            className="flex items-center gap-3 rounded-xl border p-3 hover:border-primary/40 hover:bg-muted/50 transition-colors"
+          >
+            <Sparkles className="h-5 w-5 shrink-0 text-yellow-500" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">{hunt.speciesName}</p>
+              <p className="text-xs text-muted-foreground truncate">
+                {METHOD_LABELS[hunt.method]} · {hunt.count.toLocaleString()} encounters
+              </p>
+            </div>
+            <div className="shrink-0 text-right">
+              <p className="text-xs font-semibold tabular-nums">{cumPct}%</p>
+              <p className="text-[10px] text-muted-foreground">cumulative</p>
+            </div>
+          </Link>
+        );
+      })}
+      {active.length > 3 && (
+        <Link to="/shiny" className="text-xs text-muted-foreground hover:text-foreground text-center py-1">
+          +{active.length - 3} more active hunt{active.length - 3 !== 1 ? "s" : ""}
+        </Link>
+      )}
+    </div>
+  );
+}
+
 function loadModuleConfig(): Record<ModuleId, boolean> {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -59,7 +114,7 @@ function loadModuleConfig(): Record<ModuleId, boolean> {
 }
 
 function defaultConfig(): Record<ModuleId, boolean> {
-  return { "pokemon-of-the-day": true, playthroughs: true, breeding: true, "quick-links": true };
+  return { "pokemon-of-the-day": true, playthroughs: true, breeding: true, "shiny-hunts": true, "quick-links": true };
 }
 
 function saveModuleConfig(cfg: Record<ModuleId, boolean>) {
@@ -558,6 +613,18 @@ export function HomePage({ game, user }: { game: GameOption | null; user: User |
             </Link>
           </div>
           <BreedingSection />
+        </section>
+      )}
+
+      {moduleConfig["shiny-hunts"] && (
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-semibold">Shiny Hunts</h2>
+            <Link to="/shiny" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+              View all
+            </Link>
+          </div>
+          <ShinySection />
         </section>
       )}
 

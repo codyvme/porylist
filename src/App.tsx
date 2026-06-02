@@ -8,6 +8,7 @@ import { MovesTable } from "@/components/MovesTable";
 import { AbilitiesTable } from "@/components/AbilitiesTable";
 import { TeamBuilder } from "@/components/TeamBuilder";
 import { BreedingTracker } from "@/components/BreedingTracker";
+import { ShinyHuntTracker } from "@/components/ShinyHuntTracker";
 import { CompareView } from "@/components/CompareView";
 import { NaturesTable } from "@/components/NaturesTable";
 import { ItemsTable } from "@/components/ItemsTable";
@@ -332,6 +333,7 @@ const NAV_ITEMS = [
   { to: "/pokedex",    label: "Pokédex",           Icon: List          },
   null, // separator
   { to: "/breeding",   label: "Breeding Tracker",  Icon: Dna           },
+  { to: "/shiny",      label: "Shiny Tracker",     Icon: Sparkles      },
   { to: "/catch",      label: "Catch Calculator",  Icon: Crosshair     },
   { to: "/damage",     label: "Damage Calculator", Icon: Swords        },
   { to: "/compare",    label: "Compare",           Icon: Scale         },
@@ -757,6 +759,7 @@ export function App() {
               <Route path="/catch" element={<CatchCalculator game={selectedGame} />} />
               <Route path="/damage" element={<DamageCalculator />} />
               <Route path="/breeding" element={<BreedingTracker user={user} />} />
+              <Route path="/shiny" element={<ShinyHuntTracker user={user} />} />
               <Route path="/compare" element={<CompareView game={selectedGame} />} />
               <Route path="/team" element={
                 <TeamBuilder team={team} onAdd={addToTeam} onRemove={removeFromTeam} onClear={clearTeam} />
