@@ -86,6 +86,7 @@ export function AccountSettingsModal({
   onClose: () => void;
 }) {
   const { data: summaryList } = usePokemonSummaryList();
+  const [activeTab, setActiveTab] = useState<"profile" | "account" | "data">("profile");
 
   // Profile edit state
   const [username, setUsername] = useState(profile?.username ?? "");
@@ -241,12 +242,29 @@ export function AccountSettingsModal({
           </button>
         </div>
 
-        {/* Scrollable body */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-5 space-y-8">
+        {/* Tabs */}
+        <div className="flex shrink-0 border-b">
+          {(["profile", "account", "data"] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={cn(
+                "px-5 py-3 text-sm font-medium capitalize transition-colors border-b-2 -mb-px",
+                activeTab === tab
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {tab === "data" ? "Data" : tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </button>
+          ))}
+        </div>
 
-          {/* ── Profile section ── */}
-          <section>
-            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Profile</h3>
+        {/* Tab content */}
+        <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-5">
+
+          {/* ── Profile tab ── */}
+          {activeTab === "profile" && <section className="space-y-5">
 
             {/* Preview + username row */}
             <div className="flex items-center gap-4 mb-5">
@@ -369,11 +387,10 @@ export function AccountSettingsModal({
               )}
               {saveError && <span className="text-sm text-destructive">{saveError}</span>}
             </div>
-          </section>
+          </section>}
 
-          {/* ── Email section ── */}
-          <section className="space-y-3">
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Email</h3>
+          {/* ── Account tab ── */}
+          {activeTab === "account" && <section className="space-y-3">
             <div className="flex items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2">
               <Mail className="h-4 w-4 shrink-0 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">{user.email}</span>
@@ -424,11 +441,10 @@ export function AccountSettingsModal({
                 </div>
               </div>
             )}
-          </section>
+          </section>}
 
-          {/* ── Data Management section ── */}
-          <section className="space-y-5">
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Data Management</h3>
+          {/* ── Data tab ── */}
+          {activeTab === "data" && <section className="space-y-5">
 
             {/* Export */}
             <div>
@@ -524,7 +540,7 @@ export function AccountSettingsModal({
 
               {dataError && <p className="mt-3 text-sm text-destructive">{dataError}</p>}
             </div>
-          </section>
+          </section>}
         </div>
       </div>
     </div>
