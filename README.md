@@ -29,9 +29,11 @@ A fast, filterable Pokémon reference and playthrough companion covering all 1,0
 ### Tools
 
 - **Catch Calculator** — simulate catch probabilities using the generation-accurate formula for the selected game. Inputs include Pokémon, level, current HP %, status condition, and ball type. Shows catch %, expected throws, and cumulative probability for 1/3/5/10 attempts. All 27 balls supported with conditional multipliers (Nest Ball scales with level, Net Ball checks type, Dusk Ball checks night/cave, Quick Ball checks first turn, etc.).
-- **Compare** — compare two Pokémon side-by-side across stats, types, abilities, and moves.
+- **Damage Calculator** — calculate battle damage ranges for any attacker/defender combination, factoring in stats, EVs, nature, held item, move, and weather.
+- **Compare** — compare up to 3 Pokémon side-by-side across base stats, types, abilities, type matchups, and Pokémon info.
 - **Team Builder** — pick up to 6 Pokémon and see a defensive matchup grid with shared-weakness totals, offensive STAB coverage, and a shareable team link.
 - **Breeding Tracker** — track active breeding projects with target IVs, natures, egg moves, and shiny hunting. Syncs to your account when signed in.
+- **Shiny Hunt Tracker** — log encounters for an active shiny hunt with method-accurate odds, cumulative probability, and encounter history.
 - **Playthroughs** — track game runs with per-run Pokédex progress, badge/trial completion, and Nuzlocke mode with configurable rules. Includes a route browser with Bulbapedia-sourced encounter tables for all games (Gen I–IX, including Legends: Arceus and Scarlet/Violet). Syncs to your account when signed in.
 
 ### Other
@@ -39,7 +41,7 @@ A fast, filterable Pokémon reference and playthrough companion covering all 1,0
 - **Home page** — Pokémon of the Day (deterministic per calendar day, same for all visitors), active playthrough summaries, and quick navigation to all sections.
 - **Catch tracker** — mark Pokémon as caught per game via the Pokéball icon in the table or detail modal; progress persists locally and syncs to your account when signed in.
 - **Dark mode** — defaults to your device preference; toggle in the header.
-- **Offline-capable** — data is cached in localStorage via TanStack Query, so repeat visits are instant with no network requests.
+- **Offline-capable & installable** — a fully configured PWA (vite-plugin-pwa + Workbox). Add to your home screen on iOS or Android for a native app feel. Data is cached in localStorage via TanStack Query and in the service worker cache, so repeat visits are instant even without a connection.
 
 ---
 
