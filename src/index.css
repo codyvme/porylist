@@ -24,6 +24,7 @@
     --input: 193 25% 87%;
     --ring: 193 91% 34%;
     --porygon-red: 0 100% 69%;
+    --btn-primary: 0 84% 45%;
     --radius: 0.5rem;
   }
 
@@ -48,6 +49,7 @@
     --input: 200 32% 20%;
     --ring: 193 75% 55%;
     --porygon-red: 0 100% 69%;
+    --btn-primary: 0 100% 69%;
   }
 }
 
@@ -93,6 +95,18 @@
 @keyframes sparkle-pop {
   0%   { transform: translate(-50%, -50%) rotate(var(--angle)) translateX(0px) scale(1.2); opacity: 1; }
   100% { transform: translate(-50%, -50%) rotate(var(--angle)) translateX(var(--dist)) scale(0); opacity: 0; }
+}
+
+@layer utilities {
+  /* Button backgrounds use porylist red; low-opacity tints (/5, /10, /20)
+     stay teal so nav active states and subtle highlights are unaffected. */
+  .bg-primary            { background-color: hsl(var(--btn-primary)); }
+  .bg-primary\/60        { background-color: hsl(var(--btn-primary) / 0.6); }
+  .bg-primary\/80        { background-color: hsl(var(--btn-primary) / 0.8); }
+  .bg-primary\/90        { background-color: hsl(var(--btn-primary) / 0.9); }
+  .hover\:bg-primary:hover     { background-color: hsl(var(--btn-primary)); }
+  .hover\:bg-primary\/80:hover { background-color: hsl(var(--btn-primary) / 0.8); }
+  .hover\:bg-primary\/90:hover { background-color: hsl(var(--btn-primary) / 0.9); }
 }
 
 @layer utilities {

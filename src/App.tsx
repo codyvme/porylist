@@ -146,7 +146,7 @@ function AboutModal({ onClose }: { onClose: () => void }) {
         <h2 className="mb-3 text-lg font-semibold">About Porylist</h2>
         <div className="space-y-4 text-sm text-muted-foreground">
           <p>
-            Pokédex, moves, abilities, items, and natures for every game. Simulate catch probabilities, compare Pokémon side-by-side, build and analyze teams, track playthroughs with route encounter tables, and plan breeding chains — all in one place.
+            Pokédex, moves, abilities, items, and natures for every game. Simulate catch probabilities and battle damage, compare Pokémon side-by-side, build and analyze teams, track playthroughs with route encounter tables, hunt for shinies, and plan breeding chains — all in one place.
           </p>
 
           <div className="flex gap-2">
@@ -379,8 +379,8 @@ function IconRail() {
         {/* Sliding active indicator */}
         {indicatorTop !== null && (
           <div
-            className="absolute left-0 w-0.5 h-11 bg-primary rounded-r pointer-events-none"
-            style={{ top: indicatorTop, transition: "top 0.25s cubic-bezier(0.4, 0, 0.2, 1)" }}
+            className="absolute left-0 w-0.5 h-11 rounded-r pointer-events-none"
+            style={{ top: indicatorTop, transition: "top 0.25s cubic-bezier(0.4, 0, 0.2, 1)", backgroundColor: "hsl(var(--primary))" }}
           />
         )}
         {NAV_ITEMS.map((item, i) =>
@@ -698,6 +698,7 @@ export function App() {
                 />
               </div>
               <h1 className="text-2xl font-bold tracking-tight text-white">Porylist</h1>
+              <span className="hidden sm:block border-l border-slate-600 pl-3 ml-3 text-xs text-slate-400">Pokémon Reference & Playthrough Companion</span>
             </NavLink>
 
             {/* Right-side actions */}

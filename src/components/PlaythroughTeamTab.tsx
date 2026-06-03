@@ -181,6 +181,7 @@ export function PlaythroughTeamTab({ playthrough, game, onUpdate }: Props) {
                   game={game ?? undefined}
                   dropUp={i >= 3}
                   className="flex-1"
+                  autoFocus
                 />
                 <button
                   onClick={() => setActiveSlot(null)}
