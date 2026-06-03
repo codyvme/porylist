@@ -1,5 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from "react";
-import { ChevronDown, Search, X } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   usePokemonSummaryList,
@@ -13,6 +12,7 @@ import { TYPE_COLORS } from "@/lib/types";
 import { formatPokemonName, cn } from "@/lib/utils";
 import { GameFilter } from "@/components/GameFilter";
 import { SpriteImg } from "@/components/SpriteImg";
+import { PokemonSearch } from "@/components/PokemonSearch";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -174,157 +174,6 @@ function CompareRow({
   );
 }
 
-// ── Pokémon picker ────────────────────────────────────────────────────────────
-
-function PokemonPicker({
-  selected,
-  game,
-  onSelect,
-  onClear,
-}: {
-  selected: PokemonSummary | null;
-  game: GameOption | null;
-  onSelect: (p: PokemonSummary) => void;
-  onClear: () => void;
-}) {
-  const { data: list } = usePokemonSummaryList();
-  const [open, setOpen] = useState(false);
-  const [q, setQ] = useState("");
-  const ref = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const h = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-        setQ("");
-      }
-    };
-    document.addEventListener("mousedown", h);
-    return () => document.removeEventListener("mousedown", h);
-  }, [open]);
-
-  useEffect(() => {
-    if (open) requestAnimationFrame(() => inputRef.current?.focus());
-  }, [open]);
-
-  const filtered = useMemo(() => {
-    if (!list) return [];
-    const norm = q.toLowerCase().replace(/[^a-z0-9♀♂]/g, "");
-    if (!norm) return list.slice(0, 60);
-    return list
-      .filter((p) => {
-        const display = formatPokemonName(p.name).toLowerCase().replace(/[^a-z0-9♀♂]/g, "");
-        return (
-          display.includes(norm) ||
-          p.name.replace(/-/g, "").includes(norm) ||
-          String(p.id).startsWith(norm)
-        );
-      })
-      .slice(0, 60);
-  }, [list, q]);
-
-  return (
-    <div ref={ref} className="relative">
-      {/* Trigger */}
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className={cn(
-          "flex h-9 w-full items-center gap-2 rounded-lg border bg-background px-3 text-sm transition-colors",
-          open
-            ? "border-primary ring-2 ring-primary/20"
-            : "border-border hover:border-primary/50 hover:bg-muted/30",
-        )}
-      >
-        {selected ? (
-          <>
-            <SpriteImg src={spriteUrl(selected.id, game?.spriteVersion)} alt={selected.name} size="h-6 w-6" />
-            <span className="flex-1 truncate text-left font-medium">
-              {formatPokemonName(selected.name)}
-            </span>
-          </>
-        ) : (
-          <span className="flex-1 text-left text-muted-foreground">Choose Pokémon…</span>
-        )}
-        <ChevronDown
-          className={cn(
-            "h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform",
-            open && "rotate-180",
-          )}
-        />
-      </button>
-
-      {/* Clear button (only when closed and selected) */}
-      {selected && !open && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onClear();
-          }}
-          className="absolute right-8 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground hover:text-foreground"
-          aria-label={`Clear ${formatPokemonName(selected.name)}`}
-        >
-          <X className="h-3.5 w-3.5" />
-        </button>
-      )}
-
-      {/* Dropdown */}
-      {open && (
-        <div className="absolute left-0 top-full z-50 mt-1 w-full rounded-lg border border-border bg-background shadow-xl">
-          <div className="flex items-center gap-2 border-b border-border px-3 py-2">
-            <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-            <input
-              ref={inputRef}
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Search Pokémon…"
-              className="flex-1 bg-transparent text-base sm:text-sm outline-none placeholder:text-muted-foreground"
-            />
-            {q && (
-              <button
-                onClick={() => setQ("")}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            )}
-          </div>
-          <div className="max-h-64 overflow-y-auto py-1">
-            {filtered.length === 0 ? (
-              <p className="px-3 py-3 text-center text-sm text-muted-foreground">
-                No Pokémon found.
-              </p>
-            ) : (
-              filtered.map((p) => (
-                <button
-                  key={p.name}
-                  onClick={() => {
-                    onSelect(p);
-                    setOpen(false);
-                    setQ("");
-                  }}
-                  className={cn(
-                    "flex w-full items-center gap-2 px-3 py-1.5 text-sm transition-colors hover:bg-muted",
-                    selected?.name === p.name && "bg-primary/10 font-medium text-primary",
-                  )}
-                >
-                  <SpriteImg
-                    src={spriteUrl(p.id, game?.spriteVersion)}
-                    alt={p.name}
-                    size="h-7 w-7"
-                  />
-                  <span className="flex-1 text-left">{formatPokemonName(p.name)}</span>
-                </button>
-              ))
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function CompareView({ game }: { game: GameOption | null }) {
@@ -402,12 +251,13 @@ export function CompareView({ game }: { game: GameOption | null }) {
             {/* ── Slot pickers ── */}
             <div className="grid grid-cols-3 gap-3">
               {([0, 1, 2] as const).map((i) => (
-                <PokemonPicker
+                <PokemonSearch
                   key={i}
-                  selected={slots[i]}
-                  game={game}
-                  onSelect={(p) => setSlot(i, p)}
-                  onClear={() => setSlot(i, null)}
+                  value={slots[i]?.name ?? null}
+                  game={game ?? undefined}
+                  maxResults={60}
+                  placeholder="Choose Pokémon…"
+                  onChange={(name) => setSlot(i, name ? ((list ?? []).find((p) => p.name === name) ?? null) : null)}
                 />
               ))}
             </div>

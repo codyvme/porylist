@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { ChevronDown, Search, Swords, X } from "lucide-react";
+import { useMemo, useState, useRef, useEffect } from "react";
+import { Search, X } from "lucide-react";
 import {
   usePokemonSummaryList,
   useMoveList,
@@ -7,7 +7,6 @@ import {
   type PokemonSummary,
   type MoveListEntry,
 } from "@/lib/pokeapi";
-import { TYPE_COLORS } from "@/lib/types";
 import { TypeBadge } from "@/components/TypeBadge";
 import { PokemonSearch } from "@/components/PokemonSearch";
 import { formatPokemonName, cn } from "@/lib/utils";
@@ -37,6 +36,17 @@ function MovePicker({
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const ref = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
 
   const matches = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -47,66 +57,58 @@ function MovePicker({
   }, [query, moves]);
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div ref={ref} className="relative flex flex-col gap-1.5">
       <label className="text-xs font-medium text-muted-foreground">Move</label>
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="flex h-12 items-center gap-3 rounded-md border border-input bg-background px-3 text-left hover:bg-muted/50"
-      >
-        {value ? (
-          <>
-            <Swords className="h-5 w-5 shrink-0" style={{ color: TYPE_COLORS[value.type] ?? "#888" }} />
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-sm font-medium">{value.displayName}</div>
-              <div className="text-xs text-muted-foreground">
-                {value.category} · Power {value.power ?? "—"} · Acc {value.accuracy ?? "—"}
-              </div>
-            </div>
-            <TypeBadge type={value.type} />
-          </>
-        ) : (
-          <span className="text-sm text-muted-foreground">Select a move…</span>
-        )}
-        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
-      </button>
-      {open && (
-        <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setOpen(false)}>
-          <div
-            className="absolute left-1/2 top-24 w-full max-w-md -translate-x-1/2 overflow-hidden rounded-xl border border-border bg-background shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <input
+          ref={inputRef}
+          type="text"
+          placeholder="Search moves…"
+          value={open ? query : (value?.displayName ?? "")}
+          onFocus={() => { setQuery(""); setOpen(true); }}
+          onChange={(e) => setQuery(e.target.value)}
+          className={cn(
+            "h-9 w-full rounded-md border border-input bg-background pl-8 text-base sm:text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary",
+            value && !open ? "pr-8" : "pr-3",
+          )}
+        />
+        {value && !open && (
+          <button
+            type="button"
+            onClick={() => onChange(null)}
+            aria-label="Clear move"
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground hover:text-foreground"
           >
-            <div className="flex items-center gap-2 border-b border-border px-3">
-              <Search className="h-4 w-4 text-muted-foreground" />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search moves…"
-                autoFocus
-                className="h-11 flex-1 bg-transparent text-base sm:text-sm outline-none"
-              />
-              <button onClick={() => setOpen(false)} aria-label="Close" className="p-1 text-muted-foreground hover:text-foreground">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            <div className="max-h-96 overflow-y-auto">
-              {matches.map((m) => (
-                <button
-                  key={m.name}
-                  onClick={() => { onChange(m); setOpen(false); setQuery(""); }}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-muted"
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-medium">{m.displayName}</div>
-                    <div className="text-xs text-muted-foreground capitalize">
-                      {m.category} · Power {m.power ?? "—"}
-                    </div>
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+      {open && (
+        <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-72 overflow-y-auto rounded-lg border border-border bg-background py-1 shadow-xl">
+          {matches.length === 0 ? (
+            <p className="px-3 py-2 text-sm text-muted-foreground">No moves found.</p>
+          ) : (
+            matches.map((m) => (
+              <button
+                key={m.name}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => { onChange(m); setOpen(false); setQuery(""); }}
+                className={cn(
+                  "flex w-full items-center gap-2 px-3 py-1.5 text-left hover:bg-muted",
+                  value?.name === m.name && "bg-primary/10",
+                )}
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-medium">{m.displayName}</div>
+                  <div className="text-xs text-muted-foreground capitalize">
+                    {m.category} · Power {m.power ?? "—"}
                   </div>
-                  <TypeBadge type={m.type} />
-                </button>
-              ))}
-            </div>
-          </div>
+                </div>
+                <TypeBadge type={m.type} />
+              </button>
+            ))
+          )}
         </div>
       )}
     </div>

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Search, UserRound } from "lucide-react";
+import { Search, UserRound, X } from "lucide-react";
 import { cn, formatPokemonName } from "@/lib/utils";
 import { usePokemonSummaryList, type PokemonSummary } from "@/lib/pokeapi";
 import { spriteUrl, type GameOption } from "@/lib/games";
@@ -22,6 +22,8 @@ interface PokemonSearchProps {
   game?: GameOption;
   /** Open the dropdown upward instead of downward. */
   dropUp?: boolean;
+  /** Show a clear (✕) button when a value is selected and the input is closed. Default: true */
+  clearable?: boolean;
   /** Extra classes on the root wrapper div. */
   className?: string;
 }
@@ -40,6 +42,7 @@ export function PokemonSearch({
   maxResults = 8,
   game,
   dropUp = false,
+  clearable = true,
   className,
 }: PokemonSearchProps) {
   const { data: summaryList = [] } = usePokemonSummaryList();
@@ -62,13 +65,19 @@ export function PokemonSearch({
   }, [open]);
 
   const results = useMemo(() => {
-    const q = query.toLowerCase().trim();
     let list = summaryList;
     if (filter) list = list.filter(filter);
-    if (q) {
-      list = list.filter(
-        (p) => p.name.includes(q) || formatPokemonName(p.name).toLowerCase().includes(q),
-      );
+    // Normalize away punctuation/spacing so "mrmime" matches "Mr. Mime", etc.
+    const norm = query.toLowerCase().replace(/[^a-z0-9♀♂]/g, "");
+    if (norm) {
+      list = list.filter((p) => {
+        const display = formatPokemonName(p.name).toLowerCase().replace(/[^a-z0-9♀♂]/g, "");
+        return (
+          display.includes(norm) ||
+          p.name.replace(/-/g, "").includes(norm) ||
+          String(p.id).startsWith(norm)
+        );
+      });
     }
     return list.slice(0, maxResults);
   }, [summaryList, query, filter, maxResults]);
@@ -95,8 +104,21 @@ export function PokemonSearch({
           value={open ? query : (selectedEntry ? formatPokemonName(selectedEntry.name) : "")}
           onFocus={() => { setQuery(""); setOpen(true); }}
           onChange={(e) => setQuery(e.target.value)}
-          className="h-9 w-full rounded-md border border-input bg-background pl-8 pr-3 text-base sm:text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+          className={cn(
+            "h-9 w-full rounded-md border border-input bg-background pl-8 text-base sm:text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary",
+            clearable && selectedEntry && !open ? "pr-8" : "pr-3",
+          )}
         />
+        {clearable && selectedEntry && !open && (
+          <button
+            type="button"
+            onClick={() => onChange(null)}
+            aria-label="Clear selection"
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground hover:text-foreground"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
       </div>
 
       {open && (
