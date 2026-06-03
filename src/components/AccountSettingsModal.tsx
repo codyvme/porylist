@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Check, Download, Mail, Trash2, Upload, UserRound, X } from "lucide-react";
-import { cn, formatPokemonName } from "@/lib/utils";
+import { useRef, useState } from "react";
+import { Check, Download, Mail, Trash2, Upload, X } from "lucide-react";
+import { PokemonSearch } from "@/components/PokemonSearch";
+import { Modal } from "@/components/ui/modal";
+import { cn } from "@/lib/utils";
 import { usePokemonSummaryList } from "@/lib/pokeapi";
 import { spriteUrl } from "@/lib/games";
 import { SpriteImg } from "@/components/SpriteImg";
@@ -85,14 +87,12 @@ export function AccountSettingsModal({
   onPurge: () => void;
   onClose: () => void;
 }) {
-  const { data: summaryList } = usePokemonSummaryList();
   const [activeTab, setActiveTab] = useState<"profile" | "account" | "data">("profile");
 
   // Profile edit state
   const [username, setUsername] = useState(profile?.username ?? "");
   const [avatarPokemon, setAvatarPokemon] = useState<string | null>(profile?.avatarPokemon ?? null);
   const [avatarBgColor, setAvatarBgColor] = useState(profile?.avatarBgColor ?? "#0883A4");
-  const [pokemonSearch, setPokemonSearch] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -127,22 +127,6 @@ export function AccountSettingsModal({
   const importRef = useRef<HTMLInputElement>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [onClose]);
-
-  // Pokémon search results
-  const pokemonResults = useMemo(() => {
-    if (!summaryList) return [];
-    if (!pokemonSearch.trim()) return summaryList.slice(0, 30);
-    const q = pokemonSearch.toLowerCase();
-    return summaryList
-      .filter((s) => s.name.includes(q) || formatPokemonName(s.name).toLowerCase().includes(q))
-      .slice(0, 30);
-  }, [summaryList, pokemonSearch]);
 
   const currentAvatarProfile: UserProfile = {
     userId: user.id,
@@ -261,11 +245,7 @@ export function AccountSettingsModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
-      <div
-        className="relative flex w-full max-w-lg flex-col rounded-xl bg-background shadow-xl max-h-[90vh]"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <Modal onClose={onClose} className="flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="flex shrink-0 items-center justify-between border-b px-6 py-4">
           <h2 className="text-base font-semibold">Account Settings</h2>
@@ -358,48 +338,12 @@ export function AccountSettingsModal({
               {/* Pokémon picker */}
               <div>
                 <p className="mb-2 text-xs text-muted-foreground">Pokémon sprite</p>
-                <input
-                  type="text"
-                  value={pokemonSearch}
-                  onChange={(e) => setPokemonSearch(e.target.value)}
-                  placeholder="Search Pokémon…"
-                  className="mb-3 h-8 w-full rounded-md border border-input bg-background px-3 text-base sm:text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                <PokemonSearch
+                  value={avatarPokemon}
+                  onChange={setAvatarPokemon}
+                  allowNone
+                  maxResults={50}
                 />
-                <div className="grid grid-cols-6 gap-1.5 max-h-44 overflow-y-auto p-0.5">
-                  {/* Clear selection */}
-                  <button
-                    onClick={() => setAvatarPokemon(null)}
-                    className={cn(
-                      "flex flex-col items-center gap-0.5 rounded-md p-1.5 text-center transition-colors",
-                      avatarPokemon === null
-                        ? "bg-primary/10 ring-2 ring-primary"
-                        : "hover:bg-muted",
-                    )}
-                    title="No sprite"
-                  >
-                    <UserRound className="h-8 w-8 text-muted-foreground/50" />
-                    <span className="text-[9px] text-muted-foreground leading-none">None</span>
-                  </button>
-
-                  {pokemonResults.map((s) => (
-                    <button
-                      key={s.name}
-                      onClick={() => setAvatarPokemon(s.name)}
-                      className={cn(
-                        "flex flex-col items-center gap-0.5 rounded-md p-1 text-center transition-colors",
-                        avatarPokemon === s.name
-                          ? "bg-primary/10 ring-2 ring-primary"
-                          : "hover:bg-muted",
-                      )}
-                      title={formatPokemonName(s.name)}
-                    >
-                      <SpriteImg src={spriteUrl(s.id, undefined)} alt={s.name} size="h-8 w-8" />
-                      <span className="line-clamp-1 text-[9px] text-muted-foreground leading-none">
-                        {formatPokemonName(s.name)}
-                      </span>
-                    </button>
-                  ))}
-                </div>
               </div>
             </div>
 
@@ -607,7 +551,6 @@ export function AccountSettingsModal({
             </div>
           </section>}
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

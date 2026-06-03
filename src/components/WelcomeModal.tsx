@@ -1,5 +1,5 @@
-import { useEffect } from "react";
 import { Search, Gamepad2, CloudUpload, X } from "lucide-react";
+import { useEscapeKey } from "@/lib/hooks";
 
 const STORAGE_KEY = "porylist-welcomed-v1";
 
@@ -17,11 +17,7 @@ interface WelcomeModalProps {
 }
 
 export function WelcomeModal({ onClose, onOpenPalette }: WelcomeModalProps) {
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [onClose]);
+  useEscapeKey(onClose);
 
   const isMac = navigator.platform.toLowerCase().includes("mac");
   const shortcut = isMac ? "⌘K" : "Ctrl K";

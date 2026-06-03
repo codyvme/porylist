@@ -1,8 +1,8 @@
-import { useEffect } from "react";
 import { X } from "lucide-react";
 import { TYPE_COLORS } from "@/lib/types";
 import { useSingleMoveDetail, type MoveListEntry } from "@/lib/pokeapi";
 import { bestFlavorText, type GameOption } from "@/lib/games";
+import { Modal } from "@/components/ui/modal";
 
 const CATEGORY_STYLE: Record<string, { bg: string; label: string }> = {
   physical: { bg: "#C92112", label: "Physical" },
@@ -49,12 +49,6 @@ interface MoveModalProps {
 export function MoveModal({ name, entry, game, onClose }: MoveModalProps) {
   const { data: detail, isLoading } = useSingleMoveDetail(name);
 
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [onClose]);
-
   const displayName = detail?.names?.find((n) => n.language.name === "en")?.name
     ?? entry?.displayName
     ?? name.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
@@ -81,14 +75,7 @@ export function MoveModal({ name, entry, game, onClose }: MoveModalProps) {
   const catStyle = CATEGORY_STYLE[category];
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
-      onClick={onClose}
-    >
-      <div
-        className="relative w-full max-w-lg rounded-xl bg-background shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <Modal onClose={onClose}>
         {/* Header */}
         <div className="flex items-start justify-between gap-4 border-b px-5 py-4">
           <div>
@@ -165,7 +152,6 @@ export function MoveModal({ name, entry, game, onClose }: MoveModalProps) {
             </div>
           )}
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

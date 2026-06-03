@@ -7,8 +7,9 @@ import {
   type PokemonSummary,
   type MoveListEntry,
 } from "@/lib/pokeapi";
-import { spriteUrl, SPRITES_ROOT } from "@/lib/games";
-import { TYPE_COLORS, typeStyle } from "@/lib/types";
+import { TYPE_COLORS } from "@/lib/types";
+import { TypeBadge } from "@/components/TypeBadge";
+import { PokemonSearch } from "@/components/PokemonSearch";
 import { formatPokemonName, cn } from "@/lib/utils";
 import { GameFilter } from "@/components/GameFilter";
 import {
@@ -23,108 +24,6 @@ const BOOST_OPTIONS = [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6];
 
 function statByName(p: PokemonSummary, name: string): number {
   return p.stats.find((s) => s.stat.name === name)?.base_stat ?? 0;
-}
-
-function PokemonPicker({
-  label,
-  value,
-  onChange,
-  pokemon,
-}: {
-  label: string;
-  value: PokemonSummary | null;
-  onChange: (p: PokemonSummary | null) => void;
-  pokemon: PokemonSummary[];
-}) {
-  const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
-
-  const matches = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return pokemon.slice(0, 50);
-    return pokemon
-      .filter((p) => p.name.includes(q) || formatPokemonName(p.name).toLowerCase().includes(q))
-      .slice(0, 50);
-  }, [query, pokemon]);
-
-  return (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-medium text-muted-foreground">{label}</label>
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="flex h-12 items-center gap-3 rounded-md border border-input bg-background px-3 text-left hover:bg-muted/50"
-      >
-        {value ? (
-          <>
-            <img
-              src={spriteUrl(value.id)}
-              alt=""
-              className="h-10 w-10 object-contain"
-              onError={(e) => { (e.target as HTMLImageElement).src = `${SPRITES_ROOT}/${value.id}.png`; }}
-            />
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-sm font-medium">{formatPokemonName(value.name)}</div>
-              <div className="flex gap-1">
-                {value.types.map((t) => (
-                  <span key={t.type.name} className="rounded-full px-1.5 text-[10px] font-semibold capitalize text-white" style={typeStyle(t.type.name)}>
-                    {t.type.name}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </>
-        ) : (
-          <span className="text-sm text-muted-foreground">Select a Pokémon…</span>
-        )}
-        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
-      </button>
-      {open && (
-        <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setOpen(false)}>
-          <div
-            className="absolute left-1/2 top-24 w-full max-w-md -translate-x-1/2 overflow-hidden rounded-xl border border-border bg-background shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center gap-2 border-b border-border px-3">
-              <Search className="h-4 w-4 text-muted-foreground" />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search Pokémon…"
-                autoFocus
-                className="h-11 flex-1 bg-transparent text-base sm:text-sm outline-none"
-              />
-              <button onClick={() => setOpen(false)} aria-label="Close" className="p-1 text-muted-foreground hover:text-foreground">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            <div className="max-h-96 overflow-y-auto">
-              {matches.map((p) => (
-                <button
-                  key={p.name}
-                  onClick={() => { onChange(p); setOpen(false); setQuery(""); }}
-                  className={cn(
-                    "flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-muted",
-                    value?.name === p.name && "bg-muted",
-                  )}
-                >
-                  <img src={spriteUrl(p.id)} alt="" className="h-8 w-8 object-contain" />
-                  <span className="flex-1 text-sm">{formatPokemonName(p.name)}</span>
-                  <div className="flex gap-1">
-                    {p.types.map((t) => (
-                      <span key={t.type.name} className="rounded-full px-1.5 text-[10px] font-semibold capitalize text-white" style={typeStyle(t.type.name)}>
-                        {t.type.name}
-                      </span>
-                    ))}
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
 }
 
 function MovePicker({
@@ -164,9 +63,7 @@ function MovePicker({
                 {value.category} · Power {value.power ?? "—"} · Acc {value.accuracy ?? "—"}
               </div>
             </div>
-            <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize text-white" style={typeStyle(value.type)}>
-              {value.type}
-            </span>
+            <TypeBadge type={value.type} />
           </>
         ) : (
           <span className="text-sm text-muted-foreground">Select a move…</span>
@@ -205,9 +102,7 @@ function MovePicker({
                       {m.category} · Power {m.power ?? "—"}
                     </div>
                   </div>
-                  <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize text-white" style={typeStyle(m.type)}>
-                    {m.type}
-                  </span>
+                  <TypeBadge type={m.type} />
                 </button>
               ))}
             </div>
@@ -285,7 +180,14 @@ export function DamageCalculator() {
         {/* Attacker */}
         <section className="flex flex-col gap-3 rounded-lg border border-border p-4">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Attacker</h2>
-          <PokemonPicker label="Pokémon" value={attacker} onChange={setAttacker} pokemon={pokemonList} />
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-muted-foreground">Pokémon</label>
+            <PokemonSearch
+              value={attacker?.name ?? null}
+              onChange={(name) => setAttacker(name ? pokemonList.find((p) => p.name === name) ?? null : null)}
+              maxResults={50}
+            />
+          </div>
 
           <div className="grid grid-cols-2 gap-3">
             <NumberField label="Level" value={attackerLevel} onChange={setAttackerLevel} min={1} max={100} />
@@ -317,7 +219,14 @@ export function DamageCalculator() {
         {/* Defender */}
         <section className="flex flex-col gap-3 rounded-lg border border-border p-4">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Defender</h2>
-          <PokemonPicker label="Pokémon" value={defender} onChange={setDefender} pokemon={pokemonList} />
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-muted-foreground">Pokémon</label>
+            <PokemonSearch
+              value={defender?.name ?? null}
+              onChange={(name) => setDefender(name ? pokemonList.find((p) => p.name === name) ?? null : null)}
+              maxResults={50}
+            />
+          </div>
 
           <div className="grid grid-cols-2 gap-3">
             <NumberField label="Level" value={defenderLevel} onChange={setDefenderLevel} min={1} max={100} />

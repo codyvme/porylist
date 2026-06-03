@@ -8,6 +8,7 @@ import { PokemonModal } from "@/components/PokemonModal";
 import { SpriteImg } from "@/components/SpriteImg";
 import { Tooltip } from "@/components/ui/tooltip";
 import { cn, formatPokemonName } from "@/lib/utils";
+import { useEscapeKey } from "@/lib/hooks";
 import { RouteTeamSuggestions } from "@/components/RouteTeamSuggestions";
 
 const VERSION_LABELS: Record<string, string> = {
@@ -492,11 +493,7 @@ function CaughtModal({ caughtList, spriteVersion, onOpen, onToggleCaught, caught
 }) {
   const [search, setSearch] = useState("");
 
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [onClose]);
+  useEscapeKey(onClose);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -585,11 +582,7 @@ function MissingModal({ title, missing, spriteVersion, onOpen, onToggleCaught, c
 }) {
   const [search, setSearch] = useState("");
 
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [onClose]);
+  useEscapeKey(onClose);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();

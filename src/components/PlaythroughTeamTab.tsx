@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Pencil, Plus, Search, X } from "lucide-react";
+import { Pencil, Plus, X } from "lucide-react";
+import { PokemonSearch } from "@/components/PokemonSearch";
 import { usePokemonSummaryList, typesForGeneration } from "@/lib/pokeapi";
 import { spriteUrl, type GameOption } from "@/lib/games";
-import { typeStyle } from "@/lib/types";
+import { TypeBadge } from "@/components/TypeBadge";
 import { formatPokemonName, cn } from "@/lib/utils";
 import type { Playthrough, TeamMember } from "@/lib/playthroughs";
 import { SpriteImg } from "@/components/SpriteImg";
@@ -24,11 +25,9 @@ export function PlaythroughTeamTab({ playthrough, game, onUpdate }: Props) {
   const team = playthrough.team ?? [];
   const { data: summaryList = [] } = usePokemonSummaryList();
   const [activeSlot, setActiveSlot] = useState<number | null>(null);
-  const [query, setQuery] = useState("");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [draftNickname, setDraftNickname] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
   const nicknameInputRef = useRef<HTMLInputElement>(null);
 
   const summaryByName = useMemo(() => {
@@ -46,28 +45,12 @@ export function PlaythroughTeamTab({ playthrough, game, onUpdate }: Props) {
   }, [game]);
   const fallbackSprite = useCallback((id: number) => spriteUrl(id, undefined), []);
 
-  const suggestions = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return [];
-    const onTeam = new Set(team.map((m) => m.species));
-    const genMax = game?.genMax;
-    return summaryList
-      .filter((p) => {
-        if (onTeam.has(p.name)) return false;
-        // Hide Pokémon that didn't exist in this game's generation.
-        if (genMax != null && p.id > genMax) return false;
-        return p.name.includes(q) || formatPokemonName(p.name).toLowerCase().includes(q);
-      })
-      .slice(0, 8);
-  }, [query, summaryList, team, game?.genMax]);
-
   // Close search popup on outside click
   useEffect(() => {
     if (activeSlot === null) return;
     const handler = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setActiveSlot(null);
-        setQuery("");
       }
     };
     document.addEventListener("mousedown", handler);
@@ -89,7 +72,6 @@ export function PlaythroughTeamTab({ playthrough, game, onUpdate }: Props) {
     if (team.some((m) => m.species === species) || team.length >= 6) return;
     writeTeam([...team, { species }]);
     setActiveSlot(null);
-    setQuery("");
   }, [team, writeTeam]);
 
   const handleRemove = useCallback((index: number) => {
@@ -184,54 +166,29 @@ export function PlaythroughTeamTab({ playthrough, game, onUpdate }: Props) {
             );
           }
 
-          // Empty slot in search mode — the row IS the search input
+          // Empty slot in search mode — show PokemonSearch in the row
           if (!summary && isActive) {
-            // Open suggestions downward for top half of list, upward for bottom
-            const openUpward = i >= 3;
+            const onTeam = new Set(team.map((m) => m.species));
             return (
               <div
                 key={i}
                 className="relative flex items-center gap-3 rounded-lg border border-primary bg-primary/5 px-3 py-2"
               >
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center">
-                  <Search className="h-5 w-5 text-primary" />
-                </div>
-                <input
-                  ref={inputRef}
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search Pokémon…"
-                  className="min-w-0 flex-1 bg-transparent text-base sm:text-sm outline-none placeholder:text-muted-foreground"
-                  onKeyDown={(e) => {
-                    if (e.key === "Escape") { setActiveSlot(null); setQuery(""); }
-                  }}
+                <PokemonSearch
+                  value={null}
+                  onChange={(name) => { if (name) { handleAdd(name); } else { setActiveSlot(null); } }}
+                  filter={(p) => !onTeam.has(p.name) && (game?.genMax == null || p.id <= game.genMax)}
+                  game={game ?? undefined}
+                  dropUp={i >= 3}
+                  className="flex-1"
                 />
                 <button
-                  onClick={() => { setActiveSlot(null); setQuery(""); }}
+                  onClick={() => setActiveSlot(null)}
                   className="shrink-0 rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
                   aria-label="Cancel"
                 >
                   <X className="h-4 w-4" />
                 </button>
-                {suggestions.length > 0 && (
-                  <div className={cn(
-                    "absolute left-0 right-0 z-30 overflow-hidden rounded-lg border bg-background shadow-xl",
-                    openUpward ? "bottom-full mb-1" : "top-full mt-1",
-                  )}>
-                    <div className="max-h-64 overflow-y-auto py-1">
-                      {suggestions.map((p) => (
-                        <button
-                          key={p.name}
-                          onMouseDown={(e) => { e.preventDefault(); handleAdd(p.name); }}
-                          className="flex w-full items-center gap-2 px-3 py-1.5 text-sm hover:bg-muted"
-                        >
-                          <SpriteImg src={spriteFor(p.id)} alt="" size="h-7 w-7" fallbackSrc={fallbackSprite(p.id)} />
-                          <span className="flex-1 text-left">{formatPokemonName(p.name)}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             );
           }
@@ -243,11 +200,7 @@ export function PlaythroughTeamTab({ playthrough, game, onUpdate }: Props) {
                 "flex items-center gap-3 rounded-lg border px-3 py-2 transition-colors",
                 summary ? "border-border bg-card" : "border-dashed border-muted-foreground/25 cursor-pointer hover:border-primary/50 hover:bg-muted/30",
               )}
-              onClick={!summary ? () => {
-                setActiveSlot(i);
-                setQuery("");
-                setTimeout(() => inputRef.current?.focus(), 0);
-              } : undefined}
+              onClick={!summary ? () => setActiveSlot(i) : undefined}
             >
               {summary && member ? (
                 <>
@@ -271,9 +224,7 @@ export function PlaythroughTeamTab({ playthrough, game, onUpdate }: Props) {
                   </div>
                   <div className="flex shrink-0 gap-1">
                     {typesForGeneration(summary, game?.generation).map((t) => (
-                      <span key={t} className="rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize text-white" style={typeStyle(t)}>
-                        {t}
-                      </span>
+                      <TypeBadge key={t} type={t} />
                     ))}
                   </div>
                   <button

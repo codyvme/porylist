@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { SparkleBurst } from "@/components/SparkleBurst";
-import { ArrowLeft, ChevronDown, ChevronLeft, ChevronRight, Dna, Pencil, Plus, RotateCcw, Search, Settings, Archive, Star, Trash2, Trophy, X } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronLeft, ChevronRight, Dna, Pencil, Plus, RotateCcw, Settings, Archive, Star, Trash2, Trophy, X } from "lucide-react";
+import { PokemonSearch } from "@/components/PokemonSearch";
+import { EmptyState } from "@/components/EmptyState";
 import { Select } from "@/components/ui/select";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { cn, formatPokemonName } from "@/lib/utils";
@@ -200,16 +202,12 @@ function NewProjectForm({
 
   const isEditing = !!initialProject;
 
-  const [speciesSearch, setSpeciesSearch] = useState(
-    initialProject ? formatPokemonName(initialProject.targetSpecies) : "",
-  );
   const [speciesSlug, setSpeciesSlug] = useState<string | null>(
     initialProject?.targetSpecies ?? null,
   );
   const [speciesName, setSpeciesName] = useState(
     initialProject?.targetSpeciesName ?? "",
   );
-  const [showSpeciesDrop, setShowSpeciesDrop] = useState(false);
   const [gameValue, setGameValue] = useState(
     initialProject?.gameValue ?? (BREEDING_GAME_OPTIONS[0]?.value ?? ""),
   );
@@ -231,25 +229,15 @@ function NewProjectForm({
   const [eggMoves, setEggMoves] = useState<string[]>(initialProject?.targetEggMoves ?? []);
   const [showMoveDrop, setShowMoveDrop] = useState(false);
 
-  const speciesRef = useRef<HTMLDivElement>(null);
   const moveRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (!speciesRef.current?.contains(e.target as Node)) setShowSpeciesDrop(false);
       if (!moveRef.current?.contains(e.target as Node)) setShowMoveDrop(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
-
-  const speciesSuggestions = useMemo(() => {
-    if (!summaryList || speciesSearch.length < 1) return [];
-    const q = speciesSearch.toLowerCase();
-    return summaryList
-      .filter((s) => s.name.includes(q) || formatPokemonName(s.name).toLowerCase().includes(q))
-      .slice(0, 8);
-  }, [summaryList, speciesSearch]);
 
   const moveSuggestions = useMemo(() => {
     if (!moveList || moveSearch.length < 1) return [];
@@ -310,41 +298,16 @@ function NewProjectForm({
 
       <div className="grid gap-6 sm:grid-cols-2">
         {/* Target Pokémon */}
-        <div className="flex flex-col gap-1.5" ref={speciesRef}>
+        <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium">Target Pokémon</label>
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <input
-              className="h-9 w-full rounded-md border border-input bg-background pl-8 pr-3 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="Search Pokémon…"
-              value={speciesSearch}
-              onChange={(e) => {
-                setSpeciesSearch(e.target.value);
-                setSpeciesSlug(null);
-                setShowSpeciesDrop(true);
-              }}
-              onFocus={() => setShowSpeciesDrop(true)}
-            />
-            {showSpeciesDrop && speciesSuggestions.length > 0 && (
-              <div className="absolute z-20 mt-1 w-full rounded-md border bg-background shadow-md">
-                {speciesSuggestions.map((s) => (
-                  <button
-                    key={s.name}
-                    className="flex w-full items-center gap-2 px-3 py-1.5 text-sm hover:bg-muted"
-                    onClick={() => {
-                      setSpeciesSlug(s.name);
-                      setSpeciesName(formatPokemonName(s.name));
-                      setSpeciesSearch(formatPokemonName(s.name));
-                      setShowSpeciesDrop(false);
-                    }}
-                  >
-                    <SpriteImg src={spriteUrl(s.id, undefined)} alt={s.name} size="h-7 w-7" />
-                    {formatPokemonName(s.name)}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          <PokemonSearch
+            value={speciesSlug}
+            onChange={(name) => {
+              setSpeciesSlug(name);
+              setSpeciesName(name ? formatPokemonName(name) : "");
+            }}
+            filter={(p) => p.name === p.species.name}
+          />
         </div>
 
         {/* Game */}
@@ -1420,13 +1383,7 @@ export function BreedingTracker({ user }: { user: User | null }) {
         </div>
 
         {active.length === 0 && !isCreating && (
-          <div className="rounded-lg border border-dashed p-6 text-center">
-            <Dna className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
-            <p className="text-sm font-medium">No active projects</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Create a project to start tracking your breeding sessions.
-            </p>
-          </div>
+          <EmptyState icon={Dna} title="No active projects" description="Create a project to start tracking your breeding sessions." />
         )}
 
         {active.map((p) => {

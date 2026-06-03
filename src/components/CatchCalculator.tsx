@@ -1,9 +1,9 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { Search, ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { formatPokemonName } from "@/lib/utils";
+import { ChevronDown } from "lucide-react";
+import { cn, formatPokemonName } from "@/lib/utils";
 import { spriteUrl } from "@/lib/games";
 import { usePokemonSummaryList, usePokemonSpecies } from "@/lib/pokeapi";
+import { PokemonSearch } from "@/components/PokemonSearch";
 import type { GameOption } from "@/lib/games";
 import { GameFilter } from "@/components/GameFilter";
 import {
@@ -46,88 +46,6 @@ function pctBarColor(p: number): string {
   if (p >= 0.4)  return "bg-yellow-500";
   if (p >= 0.1)  return "bg-orange-500";
   return "bg-red-500";
-}
-
-// ─── Pokémon Combobox ─────────────────────────────────────────────────────────
-
-function PokemonPicker({
-  value,
-  onChange,
-}: {
-  value: string | null;
-  onChange: (name: string) => void;
-}) {
-  const { data: pokemonList = [] } = usePokemonSummaryList();
-  const [query, setQuery] = useState("");
-  const [open, setOpen] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const listRef = useRef<HTMLDivElement>(null);
-
-  const filtered = useMemo(() => {
-    const q = query.toLowerCase().trim();
-    if (!q) return pokemonList.slice(0, 50);
-    return pokemonList
-      .filter((p) => p.name.includes(q) || formatPokemonName(p.name).toLowerCase().includes(q))
-      .slice(0, 50);
-  }, [pokemonList, query]);
-
-  const selected = useMemo(() => pokemonList.find((p) => p.name === value) ?? null, [pokemonList, value]);
-
-  // Close on click-outside
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: MouseEvent) => {
-      if (
-        inputRef.current && !inputRef.current.contains(e.target as Node) &&
-        listRef.current && !listRef.current.contains(e.target as Node)
-      ) setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [open]);
-
-  return (
-    <div className="relative">
-      <div className="relative">
-        <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <input
-          ref={inputRef}
-          type="text"
-          className="h-9 w-full rounded-md border border-input bg-background pl-8 pr-3 text-base sm:text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-          placeholder="Search Pokémon…"
-          value={open ? query : (selected ? formatPokemonName(selected.name) : "")}
-          onFocus={() => { setQuery(""); setOpen(true); }}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-      </div>
-
-      {open && (
-        <div
-          ref={listRef}
-          className="absolute left-0 right-0 top-full z-50 mt-1 max-h-64 overflow-y-auto rounded-lg border bg-background shadow-lg"
-        >
-          {filtered.length === 0 ? (
-            <p className="px-3 py-2 text-sm text-muted-foreground">No results.</p>
-          ) : (
-            filtered.map((p) => (
-              <button
-                key={p.name}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => { onChange(p.name); setOpen(false); setQuery(""); }}
-                className={cn(
-                  "flex w-full items-center gap-2 px-3 py-1.5 text-sm hover:bg-muted",
-                  p.name === value && "bg-primary/10 font-medium",
-                )}
-              >
-                <img src={spriteUrl(p.id)} alt="" className="h-7 w-7 object-contain" />
-                <span className="flex-1 text-left">{formatPokemonName(p.name)}</span>
-              </button>
-            ))
-          )}
-        </div>
-      )}
-    </div>
-  );
 }
 
 // ─── Ball Picker ──────────────────────────────────────────────────────────────
@@ -291,7 +209,7 @@ export function CatchCalculator({ game }: { game: GameOption | null }) {
           {/* Pokémon */}
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium">Pokémon</label>
-            <PokemonPicker value={pokemonName} onChange={setPokemonName} />
+            <PokemonSearch value={pokemonName} onChange={(n) => { if (n) setPokemonName(n); }} maxResults={50} />
             {selectedPokemon && species && (
               <p className="text-xs text-muted-foreground">
                 Base catch rate: <span className="font-medium text-foreground">{species.capture_rate}</span>/255

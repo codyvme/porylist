@@ -1,9 +1,10 @@
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSingleAbilityDetail, usePokemonSummaryList, type AbilityListEntry } from "@/lib/pokeapi";
 import { bestFlavorText, spriteUrl, type GameOption } from "@/lib/games";
 import { SpriteImg } from "@/components/SpriteImg";
+import { Modal } from "@/components/ui/modal";
 import { formatPokemonName } from "@/lib/utils";
 
 
@@ -38,12 +39,6 @@ export function AbilityModal({ name, entry, game, onClose }: AbilityModalProps) 
   const navigate = useNavigate();
   const { data: detail, isLoading } = useSingleAbilityDetail(name);
   const { data: allPokemon } = usePokemonSummaryList();
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [onClose]);
 
   const displayName = entry?.displayName
     ?? name.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
@@ -81,14 +76,7 @@ export function AbilityModal({ name, entry, game, onClose }: AbilityModalProps) 
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
-      onClick={onClose}
-    >
-      <div
-        className="relative w-full max-w-lg rounded-xl bg-background shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <Modal onClose={onClose}>
         {/* Header */}
         <div className="flex items-start justify-between gap-4 border-b px-5 py-4">
           <h2 className="text-xl font-bold">{displayName}</h2>
@@ -190,8 +178,6 @@ export function AbilityModal({ name, entry, game, onClose }: AbilityModalProps) 
           )}
         </div>
       </div>
-      </div>
-    </div>
-
+    </Modal>
   );
 }
