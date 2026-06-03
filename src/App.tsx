@@ -15,7 +15,7 @@ import { ItemsTable } from "@/components/ItemsTable";
 import { CatchCalculator } from "@/components/CatchCalculator";
 import { DamageCalculator } from "@/components/DamageCalculator";
 import { HomePage } from "@/components/HomePage";
-import { CircleHelp, Crosshair, Dna, House, Leaf, List, LogOut, Menu, Moon, MoreHorizontal, Backpack, PanelLeftClose, PanelLeftOpen, Scale, Search, Settings, Sparkles, Sun, Swords, Trophy, Users, X } from "lucide-react";
+import { BookHeart, CircleHelp, Crosshair,  Egg, House, Leaf, List, LogOut, Menu, Moon, MoreHorizontal, Backpack, PanelLeftClose, PanelLeftOpen, Pill, Scale, Search, Settings, Sparkles, Sun, Swords, Trophy, Users, X } from "lucide-react";
 import { GAMES, SPRITES_ROOT, type GameOption } from "@/lib/games";
 import { Input } from "@/components/ui/input";
 import { Tooltip } from "@/components/ui/tooltip";
@@ -326,13 +326,13 @@ function UserMenu({
 const NAV_ITEMS = [
   { to: "/",           label: "Dashboard",         Icon: House         },
   null, // separator
-  { to: "/abilities",  label: "Abilities",         Icon: Sparkles      },
+  { to: "/abilities",  label: "Abilities",         Icon: Pill          },
   { to: "/items",      label: "Items",             Icon: Backpack      },
   { to: "/moves",      label: "Moves",             Icon: Swords        },
   { to: "/natures",    label: "Natures",           Icon: Leaf          },
-  { to: "/pokedex",    label: "Pokédex",           Icon: List          },
+  { to: "/pokedex",    label: "Pokédex",           Icon: BookHeart     },
   null, // separator
-  { to: "/breeding",   label: "Breeding Tracker",  Icon: Dna           },
+  { to: "/breeding",   label: "Breeding Tracker",  Icon: Egg           },
   { to: "/catch",      label: "Catch Calculator",  Icon: Crosshair     },
   { to: "/compare",    label: "Compare",           Icon: Scale         },
   { to: "/damage",     label: "Damage Calculator", Icon: Swords        },
