@@ -1,7 +1,7 @@
-import { useEffect } from "react";
 import { X } from "lucide-react";
 import type { ItemListEntry } from "@/lib/pokeapi";
 import { SpriteImg } from "@/components/SpriteImg";
+import { Modal } from "@/components/ui/modal";
 
 const SPRITES_BASE = "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/items";
 
@@ -16,21 +16,8 @@ interface ItemModalProps {
 }
 
 export function ItemModal({ item, onClose }: ItemModalProps) {
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [onClose]);
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
-      onClick={onClose}
-    >
-      <div
-        className="relative w-full max-w-md rounded-xl bg-background shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <Modal onClose={onClose} maxWidth="max-w-md">
         {/* Header */}
         <div className="flex items-center gap-4 border-b px-5 py-4">
           <SpriteImg src={`${SPRITES_BASE}/${item.name}.png`} alt={item.displayName} size="h-12 w-12" />
@@ -66,7 +53,6 @@ export function ItemModal({ item, onClose }: ItemModalProps) {
             <p className="text-sm">{formatCost(item.cost)}</p>
           </div>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

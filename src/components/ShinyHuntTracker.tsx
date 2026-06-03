@@ -8,6 +8,8 @@ import { GAMES, GAMES_BY_VALUE, spriteUrl } from "@/lib/games";
 import { usePokemonSummaryList } from "@/lib/pokeapi";
 import { SpriteImg } from "@/components/SpriteImg";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
+import { PokemonSearch } from "@/components/PokemonSearch";
+import { EmptyState } from "@/components/EmptyState";
 import { Tooltip } from "@/components/ui/tooltip";
 import {
   loadHunts, saveHunts, newHuntId,
@@ -360,17 +362,12 @@ function NewHuntForm({
   onAdd: (hunt: ShinyHunt) => void;
   onCancel: () => void;
 }) {
-  const { data: summaryList = [] } = usePokemonSummaryList();
-  const [query, setQuery] = useState("");
   const [species, setSpecies] = useState("");
   const [speciesName, setSpeciesName] = useState("");
   const [gameValue, setGameValue] = useState(GAMES[0]?.value ?? "");
   const [method, setMethod] = useState<ShinyMethod>("soft-reset");
   const [hasCharm, setHasCharm] = useState(false);
   const [notes, setNotes] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => { inputRef.current?.focus(); }, []);
 
   const game = GAMES_BY_VALUE[gameValue];
   const generation = game?.generation ?? 6;
@@ -380,21 +377,6 @@ function NewHuntForm({
   useEffect(() => {
     if (!methods.includes(method)) setMethod("soft-reset");
   }, [gameValue]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const filtered = useMemo(() => {
-    const q = query.toLowerCase().trim();
-    if (!q) return [];
-    return summaryList
-      .filter(p => p.name === p.species.name)
-      .filter(p => p.name.includes(q) || formatPokemonName(p.name).toLowerCase().includes(q))
-      .slice(0, 8);
-  }, [query, summaryList]);
-
-  const selectSpecies = (name: string) => {
-    setSpecies(name);
-    setSpeciesName(formatPokemonName(name));
-    setQuery(formatPokemonName(name));
-  };
 
   const previewP = species
     ? shinyRate({ method, hasShinyCharm: hasCharm, count: 0, species, speciesName, gameValue, id: "", status: "active", createdAt: 0, updatedAt: 0 }, generation)
@@ -418,29 +400,13 @@ function NewHuntForm({
       </div>
 
       {/* Species */}
-      <div className="relative flex flex-col gap-1.5">
+      <div className="flex flex-col gap-1.5">
         <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Target Pokémon</label>
-        <input
-          ref={inputRef}
-          value={query}
-          onChange={e => { setQuery(e.target.value); setSpecies(""); setSpeciesName(""); }}
-          placeholder="Search Pokémon..."
-          className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+        <PokemonSearch
+          value={species || null}
+          onChange={(name) => { setSpecies(name ?? ""); setSpeciesName(name ? formatPokemonName(name) : ""); }}
+          filter={(p) => p.name === p.species.name}
         />
-        {filtered.length > 0 && (
-          <div className="absolute top-full left-0 right-0 z-20 mt-1 rounded-lg border bg-background shadow-lg overflow-hidden">
-            {filtered.map(p => (
-              <button
-                key={p.name}
-                onMouseDown={e => { e.preventDefault(); selectSpecies(p.name); }}
-                className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted transition-colors"
-              >
-                <SpriteImg src={spriteUrl(p.id)} alt="" size="h-7 w-7" />
-                {formatPokemonName(p.name)}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Game */}
@@ -680,11 +646,7 @@ export function ShinyHuntTracker({ user }: { user: User | null }) {
           </div>
 
           {activeHunts.length === 0 && !isCreating && (
-            <div className="rounded-lg border border-dashed p-6 text-center">
-              <Sparkles className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
-              <p className="text-sm font-medium">No active hunts</p>
-              <p className="mt-1 text-xs text-muted-foreground">Start a new hunt to begin tracking.</p>
-            </div>
+            <EmptyState icon={Sparkles} title="No active hunts" description="Start a new hunt to begin tracking." />
           )}
 
           {activeHunts.map(h => (

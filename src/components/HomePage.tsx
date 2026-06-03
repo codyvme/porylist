@@ -17,6 +17,7 @@ import { loadHunts, METHOD_LABELS, shinyRate, cumulativeProb } from "@/lib/shiny
 import { fetchDashboardConfig, upsertDashboardConfig, type User } from "@/lib/supabase";
 import { SparkleBurst } from "@/components/SparkleBurst";
 import { SpriteImg } from "@/components/SpriteImg";
+import { EmptyState } from "@/components/EmptyState";
 
 // ─── Module config ────────────────────────────────────────────────────────────
 
@@ -61,13 +62,11 @@ function ShinySection() {
   const active = hunts.filter(h => h.status === "active");
 
   if (active.length === 0) return (
-    <div className="rounded-xl border border-dashed p-6 text-center">
-      <Sparkles className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
-      <p className="text-sm font-medium text-muted-foreground">No active shiny hunts</p>
-      <p className="mt-1 text-xs text-muted-foreground/60">
-        <Link to="/shiny" className="underline underline-offset-2 hover:text-foreground">Start a hunt</Link> to track your encounters.
-      </p>
-    </div>
+    <EmptyState
+      icon={Sparkles}
+      title="No active shiny hunts"
+      description={<><Link to="/shiny" className="underline underline-offset-2 hover:text-foreground">Start a hunt</Link> to track your encounters.</>}
+    />
   );
 
   return (
@@ -373,13 +372,11 @@ function PlaythroughsSection() {
   const playthroughs = useMemo(() => loadPlaythroughs().filter((p) => p.status === "active"), []);
 
   if (playthroughs.length === 0) return (
-    <div className="rounded-xl border border-dashed p-6 text-center">
-      <Trophy className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
-      <p className="text-sm font-medium text-muted-foreground">No active playthroughs</p>
-      <p className="mt-1 text-xs text-muted-foreground/60">
-        <Link to="/routes" className="underline underline-offset-2 hover:text-foreground">Start a run</Link> to track your progress.
-      </p>
-    </div>
+    <EmptyState
+      icon={Trophy}
+      title="No active playthroughs"
+      description={<><Link to="/routes" className="underline underline-offset-2 hover:text-foreground">Start a run</Link> to track your progress.</>}
+    />
   );
 
   return (
@@ -435,13 +432,11 @@ function BreedingSection() {
   const projects = useMemo(() => loadProjects().filter((p) => p.status === "active"), []);
 
   if (projects.length === 0) return (
-    <div className="rounded-xl border border-dashed p-6 text-center">
-      <Dna className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
-      <p className="text-sm font-medium text-muted-foreground">No active breeding projects</p>
-      <p className="mt-1 text-xs text-muted-foreground/60">
-        <Link to="/breeding" className="underline underline-offset-2 hover:text-foreground">Start a project</Link> to track your breeding.
-      </p>
-    </div>
+    <EmptyState
+      icon={Dna}
+      title="No active breeding projects"
+      description={<><Link to="/breeding" className="underline underline-offset-2 hover:text-foreground">Start a project</Link> to track your breeding.</>}
+    />
   );
 
   return (

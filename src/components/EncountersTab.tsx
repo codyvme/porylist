@@ -7,6 +7,7 @@ import {
 } from "@/lib/playthroughs";
 import { usePokemonSummaryList, useRouteData } from "@/lib/pokeapi";
 import { SpriteImg } from "@/components/SpriteImg";
+import { PokemonSearch } from "@/components/PokemonSearch";
 import { spriteUrl, type GameOption } from "@/lib/games";
 import { formatPokemonName, cn } from "@/lib/utils";
 
@@ -121,7 +122,6 @@ export function EncountersTab({ playthrough, game, routeDataKey, onUpdate }: Pro
           caughtSpecies={caughtSpecies}
           enforceFirstOnly={enforceFirstOnly}
           enforceSpeciesClause={enforceSpeciesClause}
-          pokemonList={pokemonList ?? []}
           onSubmit={handleAdd}
           onCancel={() => setShowAdd(false)}
         />
@@ -203,7 +203,6 @@ interface FormProps {
   caughtSpecies: Set<string>;
   enforceFirstOnly: boolean;
   enforceSpeciesClause: boolean;
-  pokemonList: { id: number; name: string }[];
   initial?: Partial<EncounterRecord>;
   submitLabel?: string;
   onSubmit: (rec: Omit<EncounterRecord, "id" | "createdAt" | "updatedAt">) => void;
@@ -212,11 +211,10 @@ interface FormProps {
 
 function EncounterForm({
   locations, burnedRoutes, caughtSpecies, enforceFirstOnly, enforceSpeciesClause,
-  pokemonList, initial, submitLabel = "Add", onSubmit, onCancel,
+  initial, submitLabel = "Add", onSubmit, onCancel,
 }: FormProps) {
   const [locationKey, setLocationKey] = useState(initial?.locationKey ?? "");
   const [species, setSpecies] = useState(initial?.species ?? "");
-  const [speciesQuery, setSpeciesQuery] = useState("");
   const [status, setStatus] = useState<Status>(initial?.status ?? "team");
   const [nickname, setNickname] = useState(initial?.nickname ?? "");
   const [level, setLevel] = useState<string>(initial?.level != null ? String(initial.level) : "");
@@ -225,14 +223,6 @@ function EncounterForm({
   const selectedLocation = locations.find((l) => l.key === locationKey);
   const routeAlreadyBurned = enforceFirstOnly && locationKey && burnedRoutes.has(locationKey) && locationKey !== initial?.locationKey;
   const speciesAlreadyCaught = enforceSpeciesClause && species && status !== "missed" && caughtSpecies.has(species) && species !== initial?.species;
-
-  const speciesSuggestions = useMemo(() => {
-    const q = speciesQuery.trim().toLowerCase();
-    if (!q) return [];
-    return pokemonList
-      .filter((p) => p.name.includes(q) || formatPokemonName(p.name).toLowerCase().includes(q))
-      .slice(0, 8);
-  }, [speciesQuery, pokemonList]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -283,32 +273,16 @@ function EncounterForm({
           </select>
         </label>
 
-        <label className="relative flex flex-col gap-1 text-xs sm:col-span-2">
+        <div className="flex flex-col gap-1 text-xs sm:col-span-2">
           <span className="font-medium text-muted-foreground">
             Pokémon{status === "missed" ? " (optional)" : ""}
           </span>
-          <input
-            value={species ? formatPokemonName(species) : speciesQuery}
-            onChange={(e) => { setSpecies(""); setSpeciesQuery(e.target.value); }}
+          <PokemonSearch
+            value={species || null}
+            onChange={(name) => setSpecies(name ?? "")}
             placeholder="Type to search…"
-            className="h-9 rounded-md border border-input bg-background px-2 text-base sm:text-sm"
           />
-          {!species && speciesSuggestions.length > 0 && (
-            <div className="absolute left-0 right-0 top-full z-20 mt-1 max-h-56 overflow-y-auto rounded-md border bg-background shadow-lg">
-              {speciesSuggestions.map((p) => (
-                <button
-                  key={p.name}
-                  type="button"
-                  onClick={() => { setSpecies(p.name); setSpeciesQuery(""); }}
-                  className="flex w-full items-center gap-2 px-2 py-1.5 text-left text-sm hover:bg-muted"
-                >
-                  <SpriteImg src={spriteUrl(p.id)} alt="" size="h-7 w-7" />
-                  {formatPokemonName(p.name)}
-                </button>
-              ))}
-            </div>
-          )}
-        </label>
+        </div>
 
         <label className="flex flex-col gap-1 text-xs">
           <span className="font-medium text-muted-foreground">Nickname (optional)</span>

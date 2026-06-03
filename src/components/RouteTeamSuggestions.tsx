@@ -4,7 +4,7 @@ import { usePokemonSummaryList, typesForGeneration } from "@/lib/pokeapi";
 import { ALL_TYPES, computeTypeEffectiveness } from "@/lib/type-chart";
 import { spriteUrl, SPRITES_ROOT, type GameOption } from "@/lib/games";
 import { SpriteImg } from "@/components/SpriteImg";
-import { typeStyle } from "@/lib/types";
+import { TypeBadge } from "@/components/TypeBadge";
 import { formatPokemonName } from "@/lib/utils";
 
 interface Props {
@@ -131,9 +131,7 @@ export function RouteTeamSuggestions({ routePokemonNames, game, onOpen, teamOver
               <div className="mt-0.5 flex flex-wrap gap-0.5 text-[10px]">
                 <span className="text-muted-foreground">Hits:</span>
                 {r.hits.map((t) => (
-                  <span key={t} className="rounded-full px-1.5 py-px text-[10px] font-medium capitalize text-white" style={typeStyle(t)}>
-                    {t}
-                  </span>
+                  <TypeBadge key={t} type={t} className="px-1.5 py-px font-medium" />
                 ))}
               </div>
             </div>

@@ -9,7 +9,8 @@ import {
 import { Archive, ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Circle, Pencil, Plus, RotateCcw, Settings, Skull, Swords, Trash2, Trophy, X } from "lucide-react";
 import { cn, formatPokemonName } from "@/lib/utils";
 import { GAMES_BY_VALUE, SPRITES_ROOT, type GameOption } from "@/lib/games";
-import { TYPE_COLORS, typeStyle } from "@/lib/types";
+import { TYPE_COLORS } from "@/lib/types";
+import { TypeBadge } from "@/components/TypeBadge";
 import { computeTypeEffectiveness, ALL_TYPES } from "@/lib/type-chart";
 import { Select } from "@/components/ui/select";
 import { Tooltip } from "@/components/ui/tooltip";
@@ -32,6 +33,7 @@ import {
   type NuzlockeOptions,
 } from "@/lib/playthroughs";
 import { EncountersTab } from "@/components/EncountersTab";
+import { EmptyState } from "@/components/EmptyState";
 import { PlaythroughTeamTab } from "@/components/PlaythroughTeamTab";
 import { useTrainerData, usePokemonSummaryList, useItemList, typesForGeneration, type TrainerEntry, type ItemListEntry } from "@/lib/pokeapi";
 import { MoveModal } from "@/components/MoveModal";
@@ -566,7 +568,7 @@ function TrainerTeamModal({ trainer, game, onClose }: { trainer: TrainerEntry; g
                   {types.length > 0 && (
                     <div className="flex items-center gap-1 mt-0.5 mb-1.5">
                       {types.map(t => (
-                        <span key={t} className="rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white" style={typeStyle(t)}>{t}</span>
+                        <TypeBadge key={t} type={t} size="sm" className="font-bold uppercase tracking-wide" />
                       ))}
                     </div>
                   )}
@@ -711,9 +713,7 @@ function BadgesTab({
                     {badge.name}
                   </span>
                   {specialty && (
-                    <span className="shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-semibold capitalize text-white" style={typeStyle(specialty)}>
-                      {specialty}
-                    </span>
+                    <TypeBadge type={specialty} size="sm" className="shrink-0" />
                   )}
                 </div>
                 <p className="truncate text-xs text-muted-foreground mt-1">{subtitle}</p>
@@ -1275,13 +1275,7 @@ export function PlaythroughTracker({
           </div>
 
           {active.length === 0 && !isCreating && (
-            <div className="rounded-lg border border-dashed p-6 text-center">
-              <Trophy className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
-              <p className="text-sm font-medium">No active playthroughs</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Start a new run to track your progress.
-              </p>
-            </div>
+            <EmptyState icon={Trophy} title="No active playthroughs" description="Start a new run to track your progress." />
           )}
 
           {active.map((p) => (

@@ -2,12 +2,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Check, Plus, Search, Share2, X } from "lucide-react";
 import { typeStyle } from "@/lib/types";
 import { ALL_TYPES, computeTypeEffectiveness, offensiveCoverage } from "@/lib/type-chart";
-import { useSinglePokemon, usePokemonSummaryList, useItemList, typesForGeneration } from "@/lib/pokeapi";
+import { useSinglePokemon, useItemList, typesForGeneration } from "@/lib/pokeapi";
 import { SPRITES_ROOT, spriteUrl } from "@/lib/games";
 import { cn, formatPokemonName } from "@/lib/utils";
 import { suggestItems } from "@/lib/item-suggester";
 import { Tooltip } from "@/components/ui/tooltip";
 import { SpriteImg } from "@/components/SpriteImg";
+import { PokemonSearch } from "@/components/PokemonSearch";
 
 const ITEM_SPRITES = "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/items";
 
@@ -43,22 +44,7 @@ interface Props {
 export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
   const [copied, setCopied] = useState(false);
   const [activeSlot, setActiveSlot] = useState<number | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
   const searchRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const summaryList = usePokemonSummaryList().data ?? [];
-
-  const suggestions = useMemo(() => {
-    if (!searchQuery.trim()) return [];
-    const q = searchQuery.toLowerCase();
-    const alreadyOnTeam = new Set(team);
-    return summaryList
-      .filter(p => !alreadyOnTeam.has(p.name) && (
-        p.name.includes(q) || formatPokemonName(p.name).toLowerCase().includes(q)
-      ))
-      .slice(0, 8);
-  }, [searchQuery, summaryList, team]);
 
   // Close search when clicking outside
   useEffect(() => {
@@ -66,7 +52,6 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
     const handler = (e: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
         setActiveSlot(null);
-        setSearchQuery("");
       }
     };
     document.addEventListener("mousedown", handler);
@@ -189,7 +174,7 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
                   isActive && !m && "border-primary bg-primary/5",
                   !m && !isActive && "border-muted-foreground/25 cursor-pointer hover:border-primary/50 hover:bg-muted/30",
                 )}
-                onClick={!m && !isActive ? () => { setActiveSlot(i); setSearchQuery(""); setTimeout(() => inputRef.current?.focus(), 0); } : undefined}
+                onClick={!m && !isActive ? () => setActiveSlot(i) : undefined}
               >
                 {m ? (
                   <>
@@ -219,44 +204,20 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
 
         {/* Search input + dropdown — shown below slots when a slot is active */}
         {activeSlot !== null && (
-          <div className="relative">
-            <div className="flex items-center gap-2 rounded-lg border border-primary bg-background px-3 py-2 shadow-sm">
-              <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-              <input
-                ref={inputRef}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search Pokémon…"
-                className="flex-1 bg-transparent text-base sm:text-sm outline-none placeholder:text-muted-foreground"
-                onKeyDown={(e) => { if (e.key === "Escape") { setActiveSlot(null); setSearchQuery(""); } }}
-              />
-              {searchQuery && (
-                <button onClick={() => setSearchQuery("")} className="text-muted-foreground hover:text-foreground">
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              )}
-            </div>
-            {suggestions.length > 0 && (
-              <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-lg border bg-background shadow-xl">
-                <div className="max-h-64 overflow-y-auto py-1">
-                  {suggestions.map(p => (
-                    <button
-                      key={p.name}
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        onAdd(p.name);
-                        setActiveSlot(null);
-                        setSearchQuery("");
-                      }}
-                      className="flex w-full items-center gap-2 px-3 py-1.5 text-sm hover:bg-muted transition-colors"
-                    >
-                      <img src={spriteUrl(p.id)} alt={p.name} className="h-7 w-7 object-contain" />
-                      <span className="flex-1 text-left">{formatPokemonName(p.name)}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+          <div ref={searchRef} className="flex items-center gap-2">
+            <PokemonSearch
+              value={null}
+              onChange={(name) => { if (name) { onAdd(name); } setActiveSlot(null); }}
+              filter={(p) => !team.includes(p.name)}
+              className="flex-1"
+            />
+            <button
+              onClick={() => setActiveSlot(null)}
+              className="shrink-0 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+              aria-label="Cancel"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
         )}
       </div>
