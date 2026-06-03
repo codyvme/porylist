@@ -242,25 +242,27 @@ export function CompareView({ game }: { game: GameOption | null }) {
         <GameFilter />
       </div>
 
+      {/* ── Slot pickers (outside scroll area so focus rings aren't clipped) ── */}
+      <div className="shrink-0 pt-5">
+        <div className="grid grid-cols-3 gap-3">
+          {([0, 1, 2] as const).map((i) => (
+            <PokemonSearch
+              key={i}
+              value={slots[i]?.name ?? null}
+              game={game ?? undefined}
+              maxResults={60}
+              placeholder="Choose Pokémon…"
+              onChange={(name) => setSlot(i, name ? ((list ?? []).find((p) => p.name === name) ?? null) : null)}
+            />
+          ))}
+        </div>
+      </div>
+
       {/* ── Scrollable content ── */}
-      <div className="flex-1 overflow-auto pt-5 pb-8">
+      <div className="flex-1 overflow-auto pb-8">
         {/* Horizontal scroll wrapper for narrow viewports */}
         <div className="overflow-x-auto">
           <div className="min-w-[540px]">
-
-            {/* ── Slot pickers ── */}
-            <div className="grid grid-cols-3 gap-3">
-              {([0, 1, 2] as const).map((i) => (
-                <PokemonSearch
-                  key={i}
-                  value={slots[i]?.name ?? null}
-                  game={game ?? undefined}
-                  maxResults={60}
-                  placeholder="Choose Pokémon…"
-                  onChange={(name) => setSlot(i, name ? ((list ?? []).find((p) => p.name === name) ?? null) : null)}
-                />
-              ))}
-            </div>
 
             {/* ── Identity cards ── */}
             <div className="mt-3 grid grid-cols-3 gap-3">

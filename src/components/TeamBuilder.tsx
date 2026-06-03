@@ -178,7 +178,11 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
               >
                 {m ? (
                   <>
-                    <SpriteImg src={spriteUrl(m.id, undefined)} alt={m.name} size="h-16 w-16" fallbackSrc={`${SPRITES_ROOT}/${m.id}.png`} />
+                    {m.ready ? (
+                      <SpriteImg src={spriteUrl(m.id, undefined)} alt={m.name} size="h-16 w-16" fallbackSrc={`${SPRITES_ROOT}/${m.id}.png`} />
+                    ) : (
+                      <div className="h-16 w-16 skeleton-shimmer rounded-lg" />
+                    )}
                     <span className="max-w-full truncate text-center text-xs font-medium">
                       {formatPokemonName(m.name)}
                     </span>

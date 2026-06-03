@@ -1,4 +1,4 @@
-import { useState, useLayoutEffect, useRef } from "react";
+import { useState, useLayoutEffect, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 interface SpriteImgProps {
@@ -40,6 +40,12 @@ export function SpriteImg({
       setStatus("loaded");
     }
   }, []);
+
+  // Reset when the src prop changes (e.g. loading placeholder id → real id).
+  useEffect(() => {
+    setCurrentSrc(src);
+    setStatus("loading");
+  }, [src]);
 
   const handleError = () => {
     if (fallbackSrc && currentSrc !== fallbackSrc) {
