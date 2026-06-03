@@ -310,7 +310,7 @@ function PokemonOfTheDay({ game }: { game: GameOption | null }) {
               </p>
               <div className="mt-0.5 flex items-center gap-2">
                 <button onClick={() => setModalOpen(true)} className="group inline-flex items-center">
-                  <h2 className="text-2xl font-bold text-primary group-hover:underline underline-offset-2">
+                  <h2 className="text-2xl font-semibold text-primary group-hover:underline underline-offset-2">
                     {formatPokemonName(pokemon.name)}
                   </h2>
                 </button>

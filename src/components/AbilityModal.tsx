@@ -79,7 +79,7 @@ export function AbilityModal({ name, entry, game, onClose }: AbilityModalProps) 
     <Modal onClose={onClose}>
         {/* Header */}
         <div className="flex items-start justify-between gap-4 border-b px-5 py-4">
-          <h2 className="text-xl font-bold">{displayName}</h2>
+          <h2 className="text-xl font-semibold">{displayName}</h2>
           <button
             className="shrink-0 rounded-full p-1 text-muted-foreground hover:text-foreground"
             onClick={onClose}

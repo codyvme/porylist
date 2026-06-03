@@ -208,7 +208,7 @@ function HuntDetail({
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <h2 className="text-xl font-bold">{hunt.speciesName}</h2>
+            <h2 className="text-xl font-semibold">{hunt.speciesName}</h2>
             <div className="mt-1 flex flex-wrap items-center gap-1.5">
               <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
                 {game?.label ?? hunt.gameValue}

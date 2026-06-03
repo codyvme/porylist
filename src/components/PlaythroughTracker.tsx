@@ -515,7 +515,7 @@ function TrainerTeamModal({ trainer, game, onClose }: { trainer: TrainerEntry; g
         <div className="flex items-center justify-between border-b px-5 py-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{trainer.class}</p>
-            <h2 className="text-xl font-bold">{trainer.name}</h2>
+            <h2 className="text-xl font-semibold">{trainer.name}</h2>
           </div>
           <button
             onClick={onClose}

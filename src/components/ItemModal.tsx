@@ -22,7 +22,7 @@ export function ItemModal({ item, onClose }: ItemModalProps) {
         <div className="flex items-center gap-4 border-b px-5 py-4">
           <SpriteImg src={`${SPRITES_BASE}/${item.name}.png`} alt={item.displayName} size="h-12 w-12" />
           <div className="flex-1 min-w-0">
-            <h2 className="text-xl font-bold">{item.displayName}</h2>
+            <h2 className="text-xl font-semibold">{item.displayName}</h2>
             <span className="rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground">
               {item.categoryDisplay}
             </span>

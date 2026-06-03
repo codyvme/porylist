@@ -1066,7 +1066,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                     </span>
                   );
                 })()}
-                <h2 className="text-xl font-bold">{displayName}</h2>
+                <h2 className="text-xl font-semibold">{displayName}</h2>
                 {pokemon && (
                   <CryButton
                     id={pokemon.id}
