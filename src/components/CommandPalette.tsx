@@ -52,17 +52,57 @@ const KIND_META: Record<ResultKind, { label: string; Icon: React.ElementType }> 
   action:  { label: "Action",  Icon: ArrowRight },
 };
 
+/**
+ * Fuzzy scorer — lower is better, -1 means no match.
+ *
+ * Scoring tiers (ascending penalty):
+ *   0  exact match
+ *   1  starts with query
+ *   2  substring match (position-weighted)
+ *   3+ fuzzy match: all query chars appear in order, penalised by gaps
+ *
+ * Consecutive character matches reduce the gap penalty, so "pkch" scores
+ * well against "pikachu" because p→i(gap1)→k(consec)→a(gap1)→c(consec)→h(consec).
+ */
 function score(name: string, displayName: string, q: string): number {
-  // Lower is better; -1 means no match
   if (!q) return 0;
   const n = name.toLowerCase();
   const d = displayName.toLowerCase();
+
+  // Tier 0 — exact
   if (n === q || d === q) return 0;
+  // Tier 1 — prefix
   if (n.startsWith(q) || d.startsWith(q)) return 1;
+  // Tier 2 — substring (position-weighted)
   const ni = n.indexOf(q);
   const di = d.indexOf(q);
-  if (ni === -1 && di === -1) return -1;
-  return 2 + Math.min(ni === -1 ? Infinity : ni, di === -1 ? Infinity : di);
+  if (ni !== -1 || di !== -1) {
+    return 2 + Math.min(ni === -1 ? Infinity : ni, di === -1 ? Infinity : di) * 0.01;
+  }
+
+  // Tier 3 — fuzzy: all query chars must appear in order
+  function fuzzyScore(str: string): number {
+    let qi = 0;
+    let gaps = 0;
+    let consecutive = 0;
+    let lastMatch = -1;
+    for (let si = 0; si < str.length && qi < q.length; si++) {
+      if (str[si] === q[qi]) {
+        consecutive = lastMatch === si - 1 ? consecutive + 1 : 0;
+        gaps += (si - lastMatch - 1) - consecutive; // gap reduced by consecutive bonus
+        lastMatch = si;
+        qi++;
+      }
+    }
+    if (qi < q.length) return Infinity; // not all chars matched
+    return gaps;
+  }
+
+  const fn = fuzzyScore(n);
+  const fd = fuzzyScore(d);
+  const best = Math.min(fn, fd);
+  if (best === Infinity) return -1;
+  return 3 + best * 0.1;
 }
 
 function ResultIcon({ result }: { result: Result }) {
