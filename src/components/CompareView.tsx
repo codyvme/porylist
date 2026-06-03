@@ -138,11 +138,8 @@ function GenderBar({ rate }: { rate: number }) {
 
 function SectionHeader({ title }: { title: string }) {
   return (
-    <div className="mt-6 mb-2 flex items-center gap-2">
-      <h2 className="font-semibold">
-        {title}
-      </h2>
-      <div className="flex-1 border-t border-border" />
+    <div className="mt-6 mb-2">
+      <h2 className="font-semibold">{title}</h2>
     </div>
   );
 }
