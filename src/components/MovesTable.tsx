@@ -33,7 +33,7 @@ function CategoryBadge({ category }: { category: string }) {
 function TypeBadge({ type }: { type: string }) {
   return (
     <span
-      className="inline-block rounded px-1.5 py-0.5 text-xs font-medium capitalize text-white"
+      className="inline-block rounded-full px-2 py-0.5 text-xs font-medium capitalize text-white"
       style={{ backgroundColor: TYPE_COLORS[type] ?? "#A8A8A8" }}
     >
       {type}
