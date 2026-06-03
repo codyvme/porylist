@@ -105,7 +105,7 @@ export function PlaythroughTeamTab({ playthrough, game, onUpdate }: Props) {
   }, []);
 
   return (
-    <div ref={containerRef} className="flex flex-col gap-3 overflow-y-auto pt-3 pb-8">
+    <div ref={containerRef} className="flex flex-col gap-3 overflow-y-auto pt-3 pb-[calc(env(safe-area-inset-bottom)_+_3.5rem)] sm:pb-8">
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs text-muted-foreground">
           Track your current team for this run. Click the pencil to nickname a Pokémon. Powers the route browser's "Picks for your team" suggestions.

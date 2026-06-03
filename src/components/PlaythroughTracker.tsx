@@ -267,7 +267,7 @@ function NewPlaythroughForm({
   ];
 
   return (
-    <div className="flex flex-1 flex-col gap-6 overflow-y-auto px-1">
+    <div className="flex flex-1 flex-col gap-6 overflow-y-auto px-1 pb-[calc(env(safe-area-inset-bottom)_+_3.5rem)] sm:pb-8">
       <div className="flex items-center gap-3">
         <button onClick={onCancel} className="rounded-md p-1.5 hover:bg-muted">
           <ArrowLeft className="h-4 w-4" />
@@ -342,7 +342,7 @@ function EditPlaythroughForm({
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-6 overflow-y-auto px-1">
+    <div className="flex flex-1 flex-col gap-6 overflow-y-auto px-1 pb-[calc(env(safe-area-inset-bottom)_+_3.5rem)] sm:pb-8">
       <div className="flex items-center gap-3">
         <button onClick={onCancel} className="rounded-md p-1.5 hover:bg-muted">
           <ArrowLeft className="h-4 w-4" />
@@ -846,7 +846,7 @@ function RulesTab({ playthrough, onUpdate }: { playthrough: Playthrough; onUpdat
   };
 
   return (
-    <div className="flex flex-col gap-2 overflow-y-auto pt-3 pb-8">
+    <div className="flex flex-col gap-2 overflow-y-auto pt-3 pb-[calc(env(safe-area-inset-bottom)_+_3.5rem)] sm:pb-8">
       <p className="text-xs text-muted-foreground">
         Toggle Nuzlocke clauses for this run. Some clauses affect what the Encounters tab enforces (route burning, species duplicates).
       </p>
@@ -1104,7 +1104,7 @@ function PlaythroughDetail({
           </div>
 
           {tab === "badges" && (
-            <div className="flex-1 overflow-y-auto pt-3 pr-1">
+            <div className="flex-1 overflow-y-auto pt-3 pr-1 pb-[calc(env(safe-area-inset-bottom)_+_3.5rem)] sm:pb-8">
               <BadgesTab playthrough={playthrough} onUpdate={onUpdate} />
             </div>
           )}
@@ -1254,7 +1254,7 @@ export function PlaythroughTracker({
     <div className="flex flex-col px-6 sm:h-full">
       <h1 className={cn("shrink-0 text-xl font-semibold border-b border-border py-3 -mx-6 px-6", showDetail && "hidden sm:block")}>Playthroughs</h1>
 
-      <div className="flex flex-1 sm:min-h-0 sm:overflow-hidden">
+      <div className="flex flex-1 min-w-0 overflow-hidden sm:min-h-0">
         {/* Left panel */}
         <div
           className={cn(
@@ -1335,7 +1335,7 @@ export function PlaythroughTracker({
         {/* Right panel */}
         <div
           className={cn(
-            "flex flex-1 flex-col sm:overflow-y-auto pt-2 pb-3 sm:pt-3 sm:pb-6",
+            "flex flex-1 min-w-0 flex-col sm:overflow-y-auto pt-2 pb-3 sm:pt-3 sm:pb-6",
             runsCollapsed ? "pl-2 sm:pl-4" : "pl-0 sm:pl-6",
             !showDetail && "hidden sm:flex",
           )}

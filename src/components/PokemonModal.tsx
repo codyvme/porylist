@@ -5,24 +5,46 @@ import { useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronLeft, ChevronRight, Loader2, Sparkles, Volume2, X } from "lucide-react";
 
 export function CryButton({ id, generation, className, title: titleProp }: { id: number; generation?: number; className?: string; title?: string }) {
-  const [loading, setLoading] = useState(false);
+  const [ready, setReady] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  function handleClick() {
-    if (loading) return;
+
+  // Preload the audio as soon as the button mounts so it's fully buffered before the user clicks.
+  useEffect(() => {
+    setReady(false);
     const audio = new Audio(cryUrl(id, generation));
-    audioRef.current = audio;
+    audio.preload = "auto";
     audio.volume = 0.5;
+    audioRef.current = audio;
+
+    const onReady = () => setReady(true);
+    const onError = () => setReady(false);
+
     if (audio.readyState >= 4) {
-      audio.play().catch(() => {});
+      setReady(true);
     } else {
-      setLoading(true);
-      audio.addEventListener("canplay", () => { setLoading(false); audio.play().catch(() => {}); }, { once: true });
-      audio.addEventListener("error", () => setLoading(false), { once: true });
+      audio.addEventListener("canplaythrough", onReady, { once: true });
+      audio.addEventListener("error", onError, { once: true });
     }
+
+    return () => {
+      audio.removeEventListener("canplaythrough", onReady);
+      audio.removeEventListener("error", onError);
+      audio.pause();
+      audio.src = "";
+      audioRef.current = null;
+    };
+  }, [id, generation]);
+
+  function handleClick() {
+    const audio = audioRef.current;
+    if (!audio || !ready) return;
+    audio.currentTime = 0;
+    audio.play().catch(() => {});
   }
+
   return (
-    <button onClick={handleClick} disabled={loading} aria-label="Play cry" title={titleProp ?? "Play cry"} className={className}>
-      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Volume2 className="h-4 w-4" />}
+    <button onClick={handleClick} disabled={!ready} aria-label="Play cry" title={titleProp ?? "Play cry"} className={className}>
+      {!ready ? <Loader2 className="h-4 w-4 animate-spin" /> : <Volume2 className="h-4 w-4" />}
     </button>
   );
 }
@@ -674,28 +696,27 @@ function formatEvolutionMethod(detail: EvolutionDetail): string {
   return parts.join(" ");
 }
 
-interface ChainNode {
+interface EvoTreeNode {
   speciesName: string;
   speciesId: number;
-  /** Evolution methods to reach this node (empty for the base stage). */
+  /** Evolution methods to reach this node from its parent (empty for the root). */
   methods: string[];
+  children: EvoTreeNode[];
 }
 
-function buildChainStages(chain: ChainLink, maxDexId: number | null): ChainNode[][] {
-  const stages: ChainNode[][] = [];
-  function traverse(link: ChainLink, depth: number) {
-    const id = extractIdFromUrl(link.species.url);
-    if (maxDexId !== null && id > maxDexId) return;
-    if (!stages[depth]) stages[depth] = [];
-    stages[depth].push({
-      speciesName: link.species.name,
-      speciesId: id,
-      methods: depth === 0 ? [] : [...new Set(link.evolution_details.map(formatEvolutionMethod))],
-    });
-    for (const next of link.evolves_to) traverse(next, depth + 1);
-  }
-  traverse(chain, 0);
-  return stages;
+/** Build a tree preserving actual parent→child relationships. */
+function buildEvolutionTree(link: ChainLink, maxDexId: number | null, isRoot = true): EvoTreeNode | null {
+  const id = extractIdFromUrl(link.species.url);
+  if (maxDexId !== null && id > maxDexId) return null;
+  const children = link.evolves_to
+    .map((e) => buildEvolutionTree(e, maxDexId, false))
+    .filter((n): n is EvoTreeNode => n !== null);
+  return {
+    speciesName: link.species.name,
+    speciesId: id,
+    methods: isRoot ? [] : [...new Set(link.evolution_details.map(formatEvolutionMethod))],
+    children,
+  };
 }
 
 export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokemon, nextPokemon, onOpenInCatchTracker }: PokemonModalProps) {
@@ -847,12 +868,12 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
     return null;
   }, [species, game]);
 
-  const chainStages = useMemo(() => {
+  const evolutionTree = useMemo(() => {
     if (!evolutionChain || !pokemon) return null;
     const maxDex = generation != null ? GEN_MAX_DEX[generation] : null;
-    const stages = buildChainStages(evolutionChain.chain, maxDex ?? null);
-    // Only return stages if there's actually more than one stage (i.e. the Pokémon evolves at all)
-    return stages.length > 1 ? stages : null;
+    const tree = buildEvolutionTree(evolutionChain.chain, maxDex ?? null);
+    // Only show if the Pokémon actually evolves
+    return tree?.children.length ? tree : null;
   }, [evolutionChain, pokemon, generation]);
 
   const activeVGs = useMemo(() => {
@@ -1401,66 +1422,66 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
               })()}
 
               {/* Evolution Chain */}
-              {chainStages && (
-                <div className="border-t px-6 py-5">
-                  <h3 className="mb-4 text-base font-semibold">Evolution Chain</h3>
-                  {/* Horizontal stages with arrows between them */}
-                  <div className="flex items-start gap-2 overflow-x-auto pb-1">
-                    {chainStages.map((stage, stageIdx) => (
-                      <div key={stageIdx} className="flex items-start gap-2">
-                        {/* Arrow between stages */}
-                        {stageIdx > 0 && (
-                          <div className="flex h-full items-center self-center px-1 text-lg text-muted-foreground">→</div>
-                        )}
-                        {/* Each stage: one or more Pokémon stacked vertically (branching) */}
-                        <div className="flex flex-col gap-3">
-                          {stage.map((node) => {
-                            const isCurrent = node.speciesName === pokemon?.species.name;
-                            return isCurrent ? (
-                              <div
-                                key={node.speciesName}
-                                className="flex flex-col items-center gap-1 rounded-lg border-2 border-primary bg-primary/10 px-3 py-2 min-w-[80px]"
-                              >
-                                <SpriteImg
-                                  src={`${SPRITES_ROOT}/other/home/${node.speciesId}.png`}
-                                  alt={node.speciesName}
-                                  size="h-14 w-14"
-                                  fallbackSrc={`${SPRITES_ROOT}/${node.speciesId}.png`}
-                                />
-                                <p className="text-center text-xs font-semibold leading-tight text-primary">
-                                  {formatPokemonName(node.speciesName)}
-                                </p>
-                                {node.methods.map((method) => (
-                                  <p key={method} className="text-center text-[10px] text-muted-foreground leading-tight">{method}</p>
-                                ))}
-                              </div>
-                            ) : (
-                              <button
-                                key={node.speciesName}
-                                className="flex flex-col items-center gap-1 rounded-lg border bg-muted/30 px-3 py-2 text-center transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-w-[80px]"
-                                onClick={() => onNavigate(node.speciesName)}
-                              >
-                                <SpriteImg
-                                  src={`${SPRITES_ROOT}/other/home/${node.speciesId}.png`}
-                                  alt={node.speciesName}
-                                  size="h-14 w-14"
-                                  fallbackSrc={`${SPRITES_ROOT}/${node.speciesId}.png`}
-                                />
-                                <p className="text-xs font-medium leading-tight">
-                                  {formatPokemonName(node.speciesName)}
-                                </p>
-                                {node.methods.map((method) => (
-                                  <p key={method} className="text-center text-[10px] text-muted-foreground leading-tight">{method}</p>
-                                ))}
-                              </button>
-                            );
-                          })}
-                        </div>
+              {evolutionTree && (() => {
+                const renderNode = (node: EvoTreeNode): React.ReactNode => {
+                  const isCurrent = node.speciesName === pokemon?.species.name;
+                  const card = isCurrent ? (
+                    <div className="flex flex-col items-center gap-1 rounded-lg border-2 border-primary bg-primary/10 px-3 py-2 min-w-[80px]">
+                      <SpriteImg
+                        src={`${SPRITES_ROOT}/other/home/${node.speciesId}.png`}
+                        alt={node.speciesName}
+                        size="h-14 w-14"
+                        fallbackSrc={`${SPRITES_ROOT}/${node.speciesId}.png`}
+                      />
+                      <p className="text-center text-xs font-semibold leading-tight text-primary">
+                        {formatPokemonName(node.speciesName)}
+                      </p>
+                      {node.methods.map((m) => (
+                        <p key={m} className="text-center text-[10px] text-muted-foreground leading-tight">{m}</p>
+                      ))}
+                    </div>
+                  ) : (
+                    <button
+                      className="flex flex-col items-center gap-1 rounded-lg border bg-muted/30 px-3 py-2 text-center transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-w-[80px]"
+                      onClick={() => onNavigate(node.speciesName)}
+                    >
+                      <SpriteImg
+                        src={`${SPRITES_ROOT}/other/home/${node.speciesId}.png`}
+                        alt={node.speciesName}
+                        size="h-14 w-14"
+                        fallbackSrc={`${SPRITES_ROOT}/${node.speciesId}.png`}
+                      />
+                      <p className="text-xs font-medium leading-tight">
+                        {formatPokemonName(node.speciesName)}
+                      </p>
+                      {node.methods.map((m) => (
+                        <p key={m} className="text-center text-[10px] text-muted-foreground leading-tight">{m}</p>
+                      ))}
+                    </button>
+                  );
+
+                  if (node.children.length === 0) return card;
+
+                  return (
+                    <div key={node.speciesName} className="flex items-center gap-2">
+                      {card}
+                      <div className="px-1 text-lg text-muted-foreground">→</div>
+                      <div className="flex flex-col gap-3">
+                        {node.children.map((child) => renderNode(child))}
                       </div>
-                    ))}
+                    </div>
+                  );
+                };
+
+                return (
+                  <div className="border-t px-6 py-5">
+                    <h3 className="mb-4 text-base font-semibold">Evolution Chain</h3>
+                    <div className="overflow-x-auto pb-1">
+                      {renderNode(evolutionTree)}
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* Type Effectiveness */}
               {typeEffectiveness && (

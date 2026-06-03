@@ -668,7 +668,7 @@ export function App() {
       persistOptions={{ persister, maxAge: 1000 * 60 * 60 * 24 * 30 }}
     >
       <GameProvider value={{ selectedGame, setSelectedGame }}>
-      <div className="h-screen flex flex-col overflow-hidden bg-background">
+      <div className="h-screen flex flex-col overflow-hidden overscroll-none bg-background">
 
         {/* ── Header ── */}
         <header className="flex-shrink-0 border-b border-[hsl(193_60%_18%/0.6)] bg-[hsl(193_90%_9%)] pt-[env(safe-area-inset-top)]">
@@ -741,7 +741,7 @@ export function App() {
           <IconRail />
 
           <main className={cn(
-            "flex-1 min-h-0 overflow-auto w-full pb-[calc(env(safe-area-inset-bottom)_+_3.5rem)] sm:pb-6 flex flex-col",
+            "flex-1 min-h-0 overflow-auto overscroll-none w-full pb-[calc(env(safe-area-inset-bottom)_+_3.5rem)] sm:pb-6 flex flex-col",
             ["/routes", "/breeding"].includes(location.pathname) && "!pb-0",
           )}>
             <Routes>
