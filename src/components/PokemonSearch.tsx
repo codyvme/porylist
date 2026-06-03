@@ -26,6 +26,8 @@ interface PokemonSearchProps {
   clearable?: boolean;
   /** Extra classes on the root wrapper div. */
   className?: string;
+  /** Focus the input and open the dropdown on mount. */
+  autoFocus?: boolean;
 }
 
 /**
@@ -44,12 +46,20 @@ export function PokemonSearch({
   dropUp = false,
   clearable = true,
   className,
+  autoFocus = false,
 }: PokemonSearchProps) {
   const { data: summaryList = [] } = usePokemonSummaryList();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+
+  // Auto-focus on mount if requested
+  useEffect(() => {
+    if (autoFocus) {
+      inputRef.current?.focus();
+    }
+  }, [autoFocus]);
 
   // Click-outside closes the dropdown
   useEffect(() => {
