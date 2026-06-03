@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { SparkleBurst } from "@/components/SparkleBurst";
-import { ArrowLeft, ChevronDown, ChevronLeft, ChevronRight, Egg, Pencil, Plus, RotateCcw, Settings, Archive, Star, Trash2, Trophy, X } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronLeft, ChevronRight, Dna, Pencil, Plus, RotateCcw, Settings, Archive, Star, Trash2, Trophy, X } from "lucide-react";
 import { PokemonSearch } from "@/components/PokemonSearch";
 import { EmptyState } from "@/components/EmptyState";
 import { Select } from "@/components/ui/select";
@@ -180,7 +180,7 @@ function ProjectCard({
 function PokemonMiniSprite({ species }: { species: string }) {
   const { data: summaryList } = usePokemonSummaryList();
   const entry = summaryList?.find((s) => s.name === species);
-  if (!entry) return <Egg className="h-6 w-6 text-muted-foreground/40" />;
+  if (!entry) return <Dna className="h-6 w-6 text-muted-foreground/40" />;
   return (
     <SpriteImg src={spriteUrl(entry.id, undefined)} alt={species} size="h-10 w-10" />
   );
@@ -1383,7 +1383,7 @@ export function BreedingTracker({ user }: { user: User | null }) {
         </div>
 
         {active.length === 0 && !isCreating && (
-          <EmptyState icon={Egg} title="No active projects" description="Create a project to start tracking your breeding sessions." />
+          <EmptyState icon={Dna} title="No active projects" description="Create a project to start tracking your breeding sessions." />
         )}
 
         {active.map((p) => {
@@ -1471,7 +1471,7 @@ export function BreedingTracker({ user }: { user: User | null }) {
         )}
         {!isCreating && !selected && (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
-            <Egg className="h-12 w-12 text-muted-foreground" />
+            <Dna className="h-12 w-12 text-muted-foreground" />
             <div>
               <p className="font-medium">Select a project</p>
               <p className="mt-1 text-sm text-muted-foreground">or create a new one to get started</p>

@@ -2,7 +2,7 @@ import { useMemo, useState, useEffect, useLayoutEffect, useRef } from "react";
 import { PokemonModal, CryButton } from "@/components/PokemonModal";
 import { Link } from "react-router-dom";
 import {
-  Backpack, Crosshair, Egg, Leaf, List, Scale,
+  Backpack, Crosshair, Dna, Leaf, List, Scale,
   Sparkles, Swords, Trophy, Users, ArrowRight, Skull,
   Settings,
 } from "lucide-react";
@@ -435,7 +435,7 @@ function BreedingSection() {
 
   if (projects.length === 0) return (
     <EmptyState
-      icon={Egg}
+      icon={Dna}
       title="No active breeding projects"
       description={<><Link to="/breeding" className="underline underline-offset-2 hover:text-foreground">Start a project</Link> to track your breeding.</>}
     />
@@ -504,7 +504,7 @@ const TOOL_LINKS = [
   { to: "/catch",    Icon: Crosshair, label: "Catch Calculator", desc: "Simulate catch probabilities" },
   { to: "/compare",  Icon: Scale,     label: "Compare",          desc: "Compare Pokémon side by side" },
   { to: "/team",     Icon: Users,     label: "Team Builder",     desc: "Build and analyze your team" },
-  { to: "/breeding", Icon: Egg,       label: "Breeding Tracker", desc: "Track your breeding projects" },
+  { to: "/breeding", Icon: Dna,       label: "Breeding Tracker", desc: "Track your breeding projects" },
   { to: "/routes",   Icon: Trophy,    label: "Playthroughs",     desc: "Track your game progress" },
 ];
 

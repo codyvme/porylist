@@ -1274,7 +1274,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                                   {a.ability.name.replace(/-/g, " ")}
                                 </button>
                                 {a.is_hidden && (
-                                  <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
+                                  <span className="rounded-full bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
                                     Hidden
                                   </span>
                                 )}
