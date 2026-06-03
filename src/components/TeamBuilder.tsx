@@ -235,7 +235,7 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
           {/* Shared Weaknesses */}
           {sharedWeaknesses.length > 0 && (
             <section>
-              <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <h2 className="mb-3 font-semibold">
                 Shared Weaknesses
               </h2>
               <div className="flex flex-wrap gap-2">
@@ -256,7 +256,7 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
 
           {/* Suggested held items */}
           <section>
-            <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <h2 className="mb-3 font-semibold">
               Suggested Items
             </h2>
             <p className="mb-3 text-xs text-muted-foreground">
@@ -301,7 +301,7 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
 
           {/* Defensive matchups */}
           <section>
-            <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <h2 className="mb-3 font-semibold">
               Defensive Matchups
             </h2>
             <div className="overflow-x-auto">
@@ -367,7 +367,7 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
 
           {/* Offensive coverage */}
           <section>
-            <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <h2 className="mb-3 font-semibold">
               Offensive Coverage <span className="font-normal normal-case">(STAB)</span>
             </h2>
             <div className="flex flex-wrap gap-1.5">

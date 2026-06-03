@@ -181,7 +181,7 @@ export function DamageCalculator() {
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Attacker */}
         <section className="flex flex-col gap-3 rounded-lg border border-border p-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Attacker</h2>
+          <h2 className="font-semibold">Attacker</h2>
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-medium text-muted-foreground">Pokémon</label>
             <PokemonSearch
@@ -220,7 +220,7 @@ export function DamageCalculator() {
 
         {/* Defender */}
         <section className="flex flex-col gap-3 rounded-lg border border-border p-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Defender</h2>
+          <h2 className="font-semibold">Defender</h2>
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-medium text-muted-foreground">Pokémon</label>
             <PokemonSearch
