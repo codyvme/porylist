@@ -31,7 +31,8 @@
     <meta name="twitter:image" content="https://porylist.com/og-image.png" />
 
     <script>
-      if (localStorage.getItem("theme") === "dark") {
+      const theme = localStorage.getItem("theme");
+      if (theme === "dark" || ((!theme || theme === "system") && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
         document.documentElement.classList.add("dark");
       }
     </script>
