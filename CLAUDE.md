@@ -53,11 +53,12 @@ TanStack Query is configured with `staleTime: Infinity` and `gcTime: 30 days` gl
 | `/breeding` | `BreedingTracker` | Breeding project tracker with IV/nature/egg-move goals |
 | `/routes` | `PlaythroughTracker` | Playthrough tracker with badge progress, Nuzlocke rules, and route encounter tables |
 | `/shiny` | `ShinyHuntTracker` | Shiny hunt encounter counter with cumulative probability tracking |
+| `/types` | `TypeChartPage` | Full 18×18 type effectiveness matrix. Generation-aware (Gen 1 / Gen 2–5 / Gen 6+). Row icons are in a sticky-left flex column outside the table; column header icons use `sticky top-0` inside the single `overflow-auto` container. |
 
 Modal components (`PokemonModal`, `MoveModal`, `AbilityModal`) are rendered inside their parent table components, not in App.
 
 **Shared components:**
-- **`CommandPalette`** (`src/components/CommandPalette.tsx`) — ⌘K search with fuzzy matching across Pokémon, moves, abilities, items, and navigation actions.
+- **`CommandPalette`** (`src/components/CommandPalette.tsx`) — ⌘K search with fuzzy matching across Pokémon, moves, abilities, items, and navigation actions. Supports Pokédex number lookup: a query of all digits (e.g. `151` or `#151`) bypasses fuzzy matching and searches by dex ID.
 - **`PokemonSearch`** (`src/components/PokemonSearch.tsx`) — reusable autocomplete input with sprite dropdown, used in CompareView, TeamBuilder, PlaythroughTeamTab, and others.
 - **`SpriteImg`** (`src/components/SpriteImg.tsx`) — sprite image with skeleton shimmer and fallback URL support. Resets when `src` prop changes (prevents stale sprites).
 - **`GameFilter`** (`src/components/GameFilter.tsx`) — game selector dropdown, reads/writes via `GameProvider` context.
@@ -68,7 +69,7 @@ Modal components (`PokemonModal`, `MoveModal`, `AbilityModal`) are rendered insi
 |------|---------|
 | `src/lib/games.ts` | Source of truth for all supported games. `GAMES` array defines `nativeRanges`, `genMax`, `generation`, and `spriteVersion` per game. Also exports `bestFlavorText`, `spriteUrl`, `cryUrl`, and the version/version-group mapping tables used throughout the app. |
 | `src/lib/pokeapi.ts` | All TanStack Query hooks and TypeScript interfaces for PokéAPI data shapes. `usePokemonSummaryList` returns the bundled `src/data/pokemon-summary.json` synchronously (no fetch). `typesForGeneration` resolves historical types using `past_types`. |
-| `src/lib/type-chart.ts` | Gen 6+ type chart. `computeTypeEffectiveness` (defensive) and `offensiveCoverage` (STAB). Does not account for pre-Gen-6 chart differences. |
+| `src/lib/type-chart.ts` | Type chart with generation patches. `computeTypeEffectiveness` (defensive), `offensiveCoverage` (STAB), and `ALL_TYPES` (canonical type order). Handles Gen 1 (no Dark/Steel/Fairy, Ghost→Psychic bug) and Gen 2–5 (no Fairy, Ghost/Dark resist Steel) differences via `resolvedChart`. Used by TypeChartPage, TeamBuilder, and CompareView. |
 | `src/lib/types.ts` | `TYPE_COLORS` map and `typeStyle` helper for inline badge styling. |
 | `src/lib/utils.ts` | `cn` (clsx + tailwind-merge) and `formatPokemonName` (handles Nidoran♀/♂ special cases). |
 | `src/lib/game-context.ts` | React context providing `selectedGame` / `setSelectedGame` to all components without prop drilling. |

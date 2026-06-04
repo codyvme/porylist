@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, List, Swords, Sparkles, Backpack, House, Trophy, Users, Crosshair, Scale, Leaf, Dna, Clock, ArrowRight } from "lucide-react";
+import { Search, List, Swords, Sparkles, Backpack, House, Trophy, Users, Crosshair, Scale, Leaf, Dna, Clock, ArrowRight, Grid3X3 } from "lucide-react";
 import {
   usePokemonSummaryList,
   useMoveList,
@@ -240,6 +240,7 @@ export function CommandPalette({ open, onClose, game }: CommandPaletteProps) {
       { kind: "action", key: "action:nav-catch",     label: "Go to Catch Calculator",  sub: "Navigation", Icon: Crosshair, sortScore: 0, perform: nav("/catch") },
       { kind: "action", key: "action:nav-damage",    label: "Go to Damage Calculator", sub: "Navigation", Icon: Swords,    sortScore: 0, perform: nav("/damage") },
       { kind: "action", key: "action:nav-breeding",  label: "Go to Breeding Tracker",  sub: "Navigation", Icon: Dna,       sortScore: 0, perform: nav("/breeding") },
+      { kind: "action", key: "action:nav-types",     label: "Go to Type Chart",         sub: "Navigation", Icon: Grid3X3,   sortScore: 0, perform: nav("/types") },
     ];
   }, [navigate]);
 
@@ -248,12 +249,24 @@ export function CommandPalette({ open, onClose, game }: CommandPaletteProps) {
     if (!q) return [];
     const out: Result[] = [];
 
+    // Numeric dex-number search: "151" or "#151" → find Pokémon by Pokédex ID
+    const numQ = q.startsWith("#") ? q.slice(1) : q;
+    const isNumericQuery = numQ.length > 0 && /^\d+$/.test(numQ);
+    const numTarget = isNumericQuery ? parseInt(numQ, 10) : -1;
+
     if (pokemon) {
       for (const p of pokemon) {
         const display = formatPokemonName(p.name);
-        const s = score(p.name, display, q);
-        if (s === -1) continue;
         const dexId = speciesIdMap[p.species.name] ?? p.id;
+        let s: number;
+        if (isNumericQuery) {
+          if (dexId === numTarget) s = 0;
+          else if (String(dexId).startsWith(numQ)) s = 1 + dexId * 0.0001;
+          else continue;
+        } else {
+          s = score(p.name, display, q);
+          if (s === -1) continue;
+        }
         out.push({ kind: "pokemon", key: `pokemon:${p.name}`, label: display, sub: `#${String(dexId).padStart(3, "0")} · Pokémon`, sortScore: s, data: p });
       }
     }

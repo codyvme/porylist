@@ -21,10 +21,11 @@ A fast, filterable Pokémon reference and playthrough companion covering all 1,0
   - Wild encounter locations
   - Full move list (Level Up, Egg, TM/HM, Tutor) for the selected game
   - Evolution chain
-- **Moves** — full sortable move list with power, accuracy, PP, type, and category.
+- **Moves** — full sortable move list with power, accuracy, PP, type, and category. Filter by type using visual color-coded chips or by category (Physical/Special/Status).
 - **Abilities** — browse all abilities with effect descriptions.
 - **Natures** — quick reference for nature stat modifiers.
 - **Items** — held items and their effects.
+- **Type Chart** — full 18×18 attacking vs. defending type effectiveness matrix. Generation-aware (adapts to Gen 1 and Gen 2–5 chart differences). Uses type icons for both axes.
 
 ### Tools
 
@@ -38,6 +39,7 @@ A fast, filterable Pokémon reference and playthrough companion covering all 1,0
 
 ### Other
 
+- **Command palette** (⌘K) — fuzzy search across all Pokémon, moves, abilities, items, and navigation actions. Supports Pokédex number lookup (type `151` or `#151` to jump straight to Mew).
 - **Home page** — Pokémon of the Day (deterministic per calendar day, same for all visitors), active playthrough summaries, and quick navigation to all sections.
 - **Catch tracker** — mark Pokémon as caught per game via the Pokéball icon in the table or detail modal; progress persists locally and syncs to your account when signed in.
 - **Dark mode** — defaults to your device preference; toggle in the header.

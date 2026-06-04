@@ -15,7 +15,7 @@ import { ItemsTable } from "@/components/ItemsTable";
 import { CatchCalculator } from "@/components/CatchCalculator";
 import { DamageCalculator } from "@/components/DamageCalculator";
 import { HomePage } from "@/components/HomePage";
-import { BookHeart, CircleHelp, Crosshair, Dna, House, Leaf, List, LogOut, Menu, Moon, MoreHorizontal, Backpack, PanelLeftClose, PanelLeftOpen, Pill, Scale, Search, Settings, Sparkles, Sun, Swords, Trophy, Users, X } from "lucide-react";
+import { BookHeart, CircleHelp, Crosshair, Dna, Grid3X3, House, Leaf, List, LogOut, Menu, Moon, MoreHorizontal, Backpack, PanelLeftClose, PanelLeftOpen, Pill, Scale, Search, Settings, Sparkles, Sun, Swords, Trophy, Users, X } from "lucide-react";
 import { GAMES, SPRITES_ROOT, type GameOption } from "@/lib/games";
 import { Input } from "@/components/ui/input";
 import { Tooltip } from "@/components/ui/tooltip";
@@ -30,6 +30,7 @@ import {
 import type { User, UserProfile } from "@/lib/supabase";
 import { AccountSettingsModal, UserAvatar } from "@/components/AccountSettingsModal";
 import { CommandPalette } from "@/components/CommandPalette";
+import { TypeChartPage } from "@/components/TypeChartPage";
 import { WelcomeModal, shouldShowWelcome, markWelcomed } from "@/components/WelcomeModal";
 import { PWAStatus } from "@/components/PWAStatus";
 import { GameProvider } from "@/lib/game-context";
@@ -323,23 +324,29 @@ function UserMenu({
   );
 }
 
-const NAV_ITEMS = [
-  { to: "/",           label: "Dashboard",         Icon: House         },
-  null, // separator
-  { to: "/abilities",  label: "Abilities",         Icon: Pill          },
-  { to: "/items",      label: "Items",             Icon: Backpack      },
-  { to: "/moves",      label: "Moves",             Icon: Swords        },
-  { to: "/natures",    label: "Natures",           Icon: Leaf          },
-  { to: "/pokedex",    label: "Pokédex",           Icon: BookHeart     },
-  null, // separator
-  { to: "/breeding",   label: "Breeding Tracker",  Icon: Dna           },
-  { to: "/catch",      label: "Catch Calculator",  Icon: Crosshair     },
-  { to: "/compare",    label: "Compare",           Icon: Scale         },
-  { to: "/damage",     label: "Damage Calculator", Icon: Swords        },
-  { to: "/routes",     label: "Playthroughs",      Icon: Trophy        },
-  { to: "/shiny",      label: "Shiny Tracker",     Icon: Sparkles      },
-  { to: "/team",       label: "Team Builder",      Icon: Users         },
-] as const;
+type NavLink_ = { kind: "link"; to: string; label: string; Icon: React.ElementType };
+type NavSection = { kind: "section"; label: string };
+type NavItem = NavLink_ | NavSection;
+const NAV_ITEMS: NavItem[] = [
+  { kind: "link",    to: "/",         label: "Dashboard",         Icon: House         },
+  { kind: "section", label: "Reference" },
+  { kind: "link",    to: "/abilities", label: "Abilities",         Icon: Pill          },
+  { kind: "link",    to: "/items",     label: "Items",             Icon: Backpack      },
+  { kind: "link",    to: "/moves",     label: "Moves",             Icon: Swords        },
+  { kind: "link",    to: "/natures",   label: "Natures",           Icon: Leaf          },
+  { kind: "link",    to: "/pokedex",   label: "Pokédex",           Icon: BookHeart     },
+  { kind: "link",    to: "/types",     label: "Type Chart",        Icon: Grid3X3       },
+  { kind: "section", label: "Tools" },
+  { kind: "link",    to: "/breeding",  label: "Breeding Tracker",  Icon: Dna           },
+  { kind: "link",    to: "/catch",     label: "Catch Calculator",  Icon: Crosshair     },
+  { kind: "link",    to: "/compare",   label: "Compare",           Icon: Scale         },
+  { kind: "link",    to: "/damage",    label: "Damage Calculator", Icon: Swords        },
+  { kind: "link",    to: "/routes",    label: "Playthroughs",      Icon: Trophy        },
+  { kind: "link",    to: "/shiny",     label: "Shiny Tracker",     Icon: Sparkles      },
+  { kind: "link",    to: "/team",      label: "Team Builder",      Icon: Users         },
+];
+
+function isNavSection(item: NavItem): item is NavSection { return item.kind === "section"; }
 
 // ─── Icon Rail (desktop) ──────────────────────────────────────────────────────
 
@@ -383,10 +390,21 @@ function IconRail() {
             style={{ top: indicatorTop, transition: "top 0.25s cubic-bezier(0.4, 0, 0.2, 1)", backgroundColor: "hsl(var(--primary))" }}
           />
         )}
-        {NAV_ITEMS.map((item, i) =>
-          item === null ? (
-            <div key={`sep-${i}`} className="my-1.5 border-t border-black/10 dark:border-white/20" />
-          ) : (
+        {NAV_ITEMS.map((item, i) => {
+          if (isNavSection(item)) {
+            return (
+              <div key={`sec-${i}`} className="mt-3 mb-1">
+                <div className="border-t border-black/10 dark:border-white/20 mb-1.5" />
+                <span className={cn(
+                  "block px-3 text-[10px] font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400 transition-all duration-200 overflow-hidden",
+                  navExpanded ? "max-h-6 opacity-100" : "max-h-0 opacity-0",
+                )}>
+                  {item.label}
+                </span>
+              </div>
+            );
+          }
+          return (
             <Tooltip key={item.to} content={item.label} side="right" className="block w-full" disabled={navExpanded}>
               <NavLink
                 to={item.to}
@@ -405,8 +423,8 @@ function IconRail() {
                 <span className={cn("whitespace-nowrap pr-4 transition-opacity duration-200", navExpanded ? "opacity-100" : "opacity-0")}>{item.label}</span>
               </NavLink>
             </Tooltip>
-          )
-        )}
+          );
+        })}
       </div>
 
       {/* Expand / collapse toggle at bottom */}
@@ -469,10 +487,18 @@ function MobileDrawer({ open, onClose, onOpenAbout }: { open: boolean; onClose: 
         </div>
         {/* Nav items */}
         <nav className="flex flex-1 flex-col py-2">
-          {NAV_ITEMS.map((item, i) =>
-            item === null ? (
-              <div key={`sep-${i}`} className="my-1.5 border-t border-black/10 dark:border-white/20" />
-            ) : (
+          {NAV_ITEMS.map((item, i) => {
+            if (isNavSection(item)) {
+              return (
+                <div key={`sec-${i}`} className="mt-3 mb-1">
+                  <div className="mb-1.5 border-t border-black/10 dark:border-white/20" />
+                  <span className="block px-5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                    {item.label}
+                  </span>
+                </div>
+              );
+            }
+            return (
               <NavLink
                 key={item.to}
                 to={item.to}
@@ -488,8 +514,8 @@ function MobileDrawer({ open, onClose, onOpenAbout }: { open: boolean; onClose: 
                 <item.Icon className="h-4 w-4 shrink-0" />
                 {item.label}
               </NavLink>
-            )
-          )}
+            );
+          })}
         </nav>
         {/* Footer — About moved here on mobile since it no longer fits in the header */}
         <div className="border-t border-border dark:border-[hsl(193_60%_18%/0.6)] py-2">
@@ -757,6 +783,7 @@ export function App() {
                 <PlaythroughTracker navigationTarget={catchTrackerTarget} user={user} />
               } />
               <Route path="/natures" element={<NaturesTable />} />
+              <Route path="/types" element={<TypeChartPage game={selectedGame} />} />
               <Route path="/catch" element={<CatchCalculator game={selectedGame} />} />
               <Route path="/damage" element={<DamageCalculator />} />
               <Route path="/breeding" element={<BreedingTracker user={user} />} />

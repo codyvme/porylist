@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, ChevronsUpDown, Search, X } from "lucide-react";
 import { TYPE_COLORS } from "@/lib/types";
+import { ALL_TYPES } from "@/lib/type-chart";
 import { useMoveList, type MoveListEntry } from "@/lib/pokeapi";
 import { type GameOption } from "@/lib/games";
 import { MoveModal } from "@/components/MoveModal";
@@ -67,10 +68,14 @@ export function MovesTable({ game: selectedGame }: { game: GameOption | null }) 
     else { setSortKey(key); setSortDir("asc"); }
   }
 
-  const types = useMemo(() => {
-    if (!moves) return [];
-    return [...new Set(moves.map((m) => m.type))].sort();
-  }, [moves]);
+  const visibleTypes = useMemo(() => {
+    if (!moves) return [] as string[];
+    const genCap = selectedGame?.generation ?? Infinity;
+    const inGame = new Set(
+      moves.filter((m) => m.generationId <= genCap).map((m) => m.type),
+    );
+    return ALL_TYPES.filter((t) => inGame.has(t));
+  }, [moves, selectedGame]);
 
   const filtered = useMemo(() => {
     if (!moves) return [];
@@ -128,7 +133,6 @@ export function MovesTable({ game: selectedGame }: { game: GameOption | null }) 
       </div>
       {/* Filters */}
       <div className="flex flex-wrap gap-2 pt-2">
-
         <div className="relative min-w-48 flex-1">
           <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
@@ -147,17 +151,15 @@ export function MovesTable({ game: selectedGame }: { game: GameOption | null }) 
             </button>
           )}
         </div>
-
         <Select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
         >
           <option value="">All Types</option>
-          {types.map((t) => (
+          {visibleTypes.map((t) => (
             <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
           ))}
         </Select>
-
         <Select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
