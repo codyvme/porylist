@@ -2,20 +2,21 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Routes, Route, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { persister, queryClient } from "@/lib/query-client";
-import { PokemonTable } from "@/components/PokemonTable";
-import { PlaythroughTracker } from "@/components/PlaythroughTracker";
-import { MovesTable } from "@/components/MovesTable";
-import { AbilitiesTable } from "@/components/AbilitiesTable";
-import { TeamBuilder } from "@/components/TeamBuilder";
-import { BreedingTracker } from "@/components/BreedingTracker";
-import { ShinyHuntTracker } from "@/components/ShinyHuntTracker";
-import { CompareView } from "@/components/CompareView";
-import { NaturesTable } from "@/components/NaturesTable";
-import { ItemsTable } from "@/components/ItemsTable";
-import { CatchCalculator } from "@/components/CatchCalculator";
-import { DamageCalculator } from "@/components/DamageCalculator";
 import { HomePage } from "@/components/HomePage";
-import { BookHeart, CircleHelp, Crosshair, Dna, Grid3X3, House, Leaf, List, LogOut, Menu, Moon, MoreHorizontal, Backpack, PanelLeftClose, PanelLeftOpen, Pill, Scale, Search, Settings, Sparkles, Sun, Swords, Trophy, Users, X } from "lucide-react";
+
+const PokemonTable = React.lazy(() => import("@/components/PokemonTable").then(m => ({ default: m.PokemonTable })));
+const PlaythroughTracker = React.lazy(() => import("@/components/PlaythroughTracker").then(m => ({ default: m.PlaythroughTracker })));
+const MovesTable = React.lazy(() => import("@/components/MovesTable").then(m => ({ default: m.MovesTable })));
+const AbilitiesTable = React.lazy(() => import("@/components/AbilitiesTable").then(m => ({ default: m.AbilitiesTable })));
+const TeamBuilder = React.lazy(() => import("@/components/TeamBuilder").then(m => ({ default: m.TeamBuilder })));
+const BreedingTracker = React.lazy(() => import("@/components/BreedingTracker").then(m => ({ default: m.BreedingTracker })));
+const ShinyHuntTracker = React.lazy(() => import("@/components/ShinyHuntTracker").then(m => ({ default: m.ShinyHuntTracker })));
+const CompareView = React.lazy(() => import("@/components/CompareView").then(m => ({ default: m.CompareView })));
+const NaturesTable = React.lazy(() => import("@/components/NaturesTable").then(m => ({ default: m.NaturesTable })));
+const ItemsTable = React.lazy(() => import("@/components/ItemsTable").then(m => ({ default: m.ItemsTable })));
+const CatchCalculator = React.lazy(() => import("@/components/CatchCalculator").then(m => ({ default: m.CatchCalculator })));
+const DamageCalculator = React.lazy(() => import("@/components/DamageCalculator").then(m => ({ default: m.DamageCalculator })));
+import { BookHeart, CircleHelp, Crosshair, Dna, Grid3X3, House, Leaf, List, LogOut, Menu, Moon, MoreHorizontal, Backpack, PanelLeftClose, PanelLeftOpen, Pill, Scale, Search, Settings, Sparkles, Sun, Swords, Trophy, Users, X, Loader2 } from "lucide-react";
 import { GAMES, SPRITES_ROOT, type GameOption } from "@/lib/games";
 import { Input } from "@/components/ui/input";
 import { Tooltip } from "@/components/ui/tooltip";
@@ -30,7 +31,7 @@ import {
 import type { User, UserProfile } from "@/lib/supabase";
 import { AccountSettingsModal, UserAvatar } from "@/components/AccountSettingsModal";
 import { CommandPalette } from "@/components/CommandPalette";
-import { TypeChartPage } from "@/components/TypeChartPage";
+const TypeChartPage = React.lazy(() => import("@/components/TypeChartPage").then(m => ({ default: m.TypeChartPage })));
 import { WelcomeModal, shouldShowWelcome, markWelcomed } from "@/components/WelcomeModal";
 import { PWAStatus } from "@/components/PWAStatus";
 import { GameProvider } from "@/lib/game-context";
@@ -771,28 +772,36 @@ export function App() {
             "flex-1 min-h-0 overflow-auto overscroll-none w-full pb-[calc(env(safe-area-inset-bottom)_+_3.5rem)] sm:pb-6 flex flex-col",
             ["/routes", "/breeding"].includes(location.pathname) && "!pb-0",
           )}>
-            <Routes>
-              <Route path="/" element={<HomePage game={selectedGame} user={user} />} />
-              <Route path="/pokedex" element={
-                <PokemonTable game={selectedGame} onOpenInCatchTracker={handleOpenInCatchTracker} />
-              } />
-              <Route path="/moves" element={<MovesTable game={selectedGame} />} />
-              <Route path="/abilities" element={<AbilitiesTable game={selectedGame} />} />
-              <Route path="/items" element={<ItemsTable game={selectedGame} />} />
-              <Route path="/routes" element={
-                <PlaythroughTracker navigationTarget={catchTrackerTarget} user={user} />
-              } />
-              <Route path="/natures" element={<NaturesTable />} />
-              <Route path="/types" element={<TypeChartPage game={selectedGame} />} />
-              <Route path="/catch" element={<CatchCalculator game={selectedGame} />} />
-              <Route path="/damage" element={<DamageCalculator />} />
-              <Route path="/breeding" element={<BreedingTracker user={user} />} />
-              <Route path="/shiny" element={<ShinyHuntTracker user={user} />} />
-              <Route path="/compare" element={<CompareView game={selectedGame} />} />
-              <Route path="/team" element={
-                <TeamBuilder team={team} onAdd={addToTeam} onRemove={removeFromTeam} onClear={clearTeam} />
-              } />
-            </Routes>
+            <React.Suspense
+              fallback={
+                <div className="flex h-full flex-1 items-center justify-center p-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              }
+            >
+              <Routes>
+                <Route path="/" element={<HomePage game={selectedGame} user={user} />} />
+                <Route path="/pokedex" element={
+                  <PokemonTable game={selectedGame} onOpenInCatchTracker={handleOpenInCatchTracker} />
+                } />
+                <Route path="/moves" element={<MovesTable game={selectedGame} />} />
+                <Route path="/abilities" element={<AbilitiesTable game={selectedGame} />} />
+                <Route path="/items" element={<ItemsTable game={selectedGame} />} />
+                <Route path="/routes" element={
+                  <PlaythroughTracker navigationTarget={catchTrackerTarget} user={user} />
+                } />
+                <Route path="/natures" element={<NaturesTable />} />
+                <Route path="/types" element={<TypeChartPage game={selectedGame} />} />
+                <Route path="/catch" element={<CatchCalculator game={selectedGame} />} />
+                <Route path="/damage" element={<DamageCalculator />} />
+                <Route path="/breeding" element={<BreedingTracker user={user} />} />
+                <Route path="/shiny" element={<ShinyHuntTracker user={user} />} />
+                <Route path="/compare" element={<CompareView game={selectedGame} />} />
+                <Route path="/team" element={
+                  <TeamBuilder team={team} onAdd={addToTeam} onRemove={removeFromTeam} onClear={clearTeam} />
+                } />
+              </Routes>
+            </React.Suspense>
           </main>
         </div>
 
