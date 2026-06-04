@@ -58,7 +58,15 @@ const STORAGE_KEY = "porylist-dashboard-v1";
 
 function ShinySection() {
   const hunts = useMemo(() => loadHunts(), []);
-  const { data: summaryList = [] } = usePokemonSummaryList();
+  const { data: summaryList } = usePokemonSummaryList();
+  const summaryMap = useMemo(() => {
+    const map = new Map<string, NonNullable<typeof summaryList>[number]>();
+    if (!summaryList) return map;
+    for (const s of summaryList) {
+      map.set(s.name, s);
+    }
+    return map;
+  }, [summaryList]);
   const active = hunts.filter(h => h.status === "active");
 
   if (active.length === 0) return (
@@ -76,7 +84,7 @@ function ShinySection() {
         const generation = game?.generation ?? 6;
         const p = shinyRate(hunt, generation);
         const cumPct = (cumulativeProb(p, hunt.count) * 100).toFixed(1);
-        const entry = summaryList.find(s => s.name === hunt.species);
+        const entry = summaryMap.get(hunt.species);
         return (
           <Link
             key={hunt.id}

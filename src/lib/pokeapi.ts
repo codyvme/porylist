@@ -290,15 +290,14 @@ export function usePokemonSummaryList() {
 export function usePokemonSummaryMap() {
   return useQuery({
     queryKey: ["pokemon-summary-map"],
-    queryFn: () =>
-      import("../data/pokemon-summary.json").then((m) => {
-        const list = m.default as PokemonSummary[];
-        const map = new Map<string, PokemonSummary>();
-        for (const p of list) {
-          map.set(p.name, p);
-        }
-        return map;
-      }),
+    queryFn: async () => {
+      const list = await import("../data/pokemon-summary.json").then((m) => m.default as PokemonSummary[]);
+      const map = new Map<string, PokemonSummary>();
+      for (const p of list) {
+        map.set(p.name, p);
+      }
+      return map;
+    },
     staleTime: Infinity,
     gcTime: Infinity,
   });
