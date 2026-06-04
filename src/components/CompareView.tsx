@@ -401,12 +401,13 @@ export function CompareView({ game }: { game: GameOption | null }) {
                     { label: "Ability 1", test: (a: { slot: number; is_hidden: boolean }) => a.slot === 1 && !a.is_hidden },
                     { label: "Ability 2", test: (a: { slot: number; is_hidden: boolean }) => a.slot === 2 && !a.is_hidden },
                     { label: "Hidden",    test: (a: { slot: number; is_hidden: boolean }) => a.is_hidden },
-                  ] as const).map(({ label, test }, ri) => {
-                    const abilities = slots.map((p) =>
-                      p ? (p.abilities.find(test) ?? null) : null,
-                    );
-                    if (abilities.every((a) => a === null)) return null;
-                    return (
+                  ] as const)
+                    .map(({ label, test }) => ({
+                      label,
+                      abilities: slots.map((p) => (p ? (p.abilities.find(test) ?? null) : null)),
+                    }))
+                    .filter(({ abilities }) => abilities.some((a) => a !== null))
+                    .map(({ label, abilities }, ri) => (
                       <CompareRow key={label} label={label} separator={ri > 0}>
                         {abilities.map((a, i) => (
                           <span key={i} className="text-sm">
@@ -422,8 +423,7 @@ export function CompareView({ game }: { game: GameOption | null }) {
                           </span>
                         ))}
                       </CompareRow>
-                    );
-                  })}
+                    ))}
                 </div>
 
                 {/* ══ Type Matchups ══ */}
@@ -431,10 +431,13 @@ export function CompareView({ game }: { game: GameOption | null }) {
                   title={`Type Matchups${game ? ` · ${game.label}` : ""}`}
                 />
                 <div className="rounded-xl border border-border overflow-hidden">
-                  {MATCHUP_BUCKETS.map((mult, ri) => {
-                    const bucketTypes = slotMatchups.map((m) => typesInBucket(m, mult));
-                    if (bucketTypes.every((t) => t.length === 0)) return null;
-                    return (
+                  {MATCHUP_BUCKETS
+                    .map((mult) => ({
+                      mult,
+                      bucketTypes: slotMatchups.map((m) => typesInBucket(m, mult)),
+                    }))
+                    .filter(({ bucketTypes }) => bucketTypes.some((t) => t.length > 0))
+                    .map(({ mult, bucketTypes }, ri) => (
                       <CompareRow key={mult} label={MATCHUP_LABELS[mult]} separator={ri > 0} alignTop>
                         {bucketTypes.map((types, i) => (
                           <div key={i} className="flex flex-wrap gap-1 py-0.5">
@@ -446,8 +449,7 @@ export function CompareView({ game }: { game: GameOption | null }) {
                           </div>
                         ))}
                       </CompareRow>
-                    );
-                  })}
+                    ))}
                 </div>
 
                 {/* ══ Pokémon Info ══ */}
