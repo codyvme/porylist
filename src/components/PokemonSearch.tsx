@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Search, UserRound, X } from "lucide-react";
 import { cn, formatPokemonName } from "@/lib/utils";
-import { usePokemonSummaryList, type PokemonSummary } from "@/lib/pokeapi";
+import { usePokemonSummaryList, usePokemonSummaryMap, type PokemonSummary } from "@/lib/pokeapi";
 import { spriteUrl, type GameOption } from "@/lib/games";
 import { SpriteImg } from "@/components/SpriteImg";
 
@@ -92,9 +92,10 @@ export function PokemonSearch({
     return list.slice(0, maxResults);
   }, [summaryList, query, filter, maxResults]);
 
+  const { data: summaryMap } = usePokemonSummaryMap();
   const selectedEntry = useMemo(
-    () => summaryList.find((p) => p.name === value) ?? null,
-    [summaryList, value],
+    () => summaryMap?.get(value ?? "") ?? null,
+    [summaryMap, value],
   );
 
   const handleSelect = (name: string | null) => {

@@ -9,7 +9,7 @@ import { cn, formatPokemonName } from "@/lib/utils";
 import { GAMES } from "@/lib/games";
 import { spriteUrl } from "@/lib/games";
 import { SpriteImg } from "@/components/SpriteImg";
-import { usePokemonSummaryList, useMoveList } from "@/lib/pokeapi";
+import { usePokemonSummaryMap, useMoveList } from "@/lib/pokeapi";
 import {
   STATS,
   STAT_LABELS,
@@ -178,8 +178,8 @@ function ProjectCard({
 // ─── Mini Sprite ──────────────────────────────────────────────────────────────
 
 function PokemonMiniSprite({ species }: { species: string }) {
-  const { data: summaryList } = usePokemonSummaryList();
-  const entry = summaryList?.find((s) => s.name === species);
+  const { data: summaryMap } = usePokemonSummaryMap();
+  const entry = summaryMap?.get(species);
   if (!entry) return <Dna className="h-6 w-6 text-muted-foreground/40" />;
   return (
     <SpriteImg src={spriteUrl(entry.id, undefined)} alt={species} size="h-10 w-10" />
@@ -197,7 +197,7 @@ function NewProjectForm({
   onCancel: () => void;
   initialProject?: BreedingProject;
 }) {
-  const { data: summaryList } = usePokemonSummaryList();
+  const { data: summaryMap } = usePokemonSummaryMap();
   const { data: moveList } = useMoveList();
 
   const isEditing = !!initialProject;
@@ -223,9 +223,9 @@ function NewProjectForm({
 
   // Abilities for the selected species
   const speciesAbilities = useMemo(() => {
-    if (!speciesSlug || !summaryList) return null;
-    return summaryList.find((s) => s.name === speciesSlug)?.abilities ?? null;
-  }, [speciesSlug, summaryList]);
+    if (!speciesSlug || !summaryMap) return null;
+    return summaryMap.get(speciesSlug)?.abilities ?? null;
+  }, [speciesSlug, summaryMap]);
   const [eggMoves, setEggMoves] = useState<string[]>(initialProject?.targetEggMoves ?? []);
   const [showMoveDrop, setShowMoveDrop] = useState(false);
 
@@ -1058,8 +1058,8 @@ function ProjectDetail({
     [project, eggData],
   );
 
-  const { data: summaryList } = usePokemonSummaryList();
-  const entry = summaryList?.find((s) => s.name === project.targetSpecies);
+  const { data: summaryMap } = usePokemonSummaryMap();
+  const entry = summaryMap?.get(project.targetSpecies);
   const game = GAMES.find((g) => g.value === project.gameValue);
 
   const handleAddHatch = useCallback(

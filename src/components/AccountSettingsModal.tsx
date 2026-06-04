@@ -3,7 +3,7 @@ import { Check, Download, Mail, Trash2, Upload, X } from "lucide-react";
 import { PokemonSearch } from "@/components/PokemonSearch";
 import { Modal } from "@/components/ui/modal";
 import { cn } from "@/lib/utils";
-import { usePokemonSummaryList } from "@/lib/pokeapi";
+import { usePokemonSummaryMap } from "@/lib/pokeapi";
 import { spriteUrl } from "@/lib/games";
 import { SpriteImg } from "@/components/SpriteImg";
 import {
@@ -36,10 +36,10 @@ export function UserAvatar({
   className?: string;
   size?: number;
 }) {
-  const { data: summaryList } = usePokemonSummaryList();
+  const { data: summaryMap } = usePokemonSummaryMap();
 
   if (profile?.avatarPokemon) {
-    const entry = summaryList?.find((s) => s.name === profile.avatarPokemon);
+    const entry = summaryMap?.get(profile.avatarPokemon);
     const bgColor = profile.avatarBgColor ?? "#0883A4";
     return (
       <div
