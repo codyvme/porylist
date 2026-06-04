@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { ChevronDown, ChevronUp, ChevronsUpDown, Search, X } from "lucide-react";
 import { TYPE_COLORS } from "@/lib/types";
 import { ALL_TYPES } from "@/lib/type-chart";
@@ -7,6 +7,7 @@ import { type GameOption } from "@/lib/games";
 import { MoveModal } from "@/components/MoveModal";
 import { Select } from "@/components/ui/select";
 import { GameFilter } from "@/components/GameFilter";
+import { useSearchParams } from "react-router-dom";
 
 // ── Category badge ─────────────────────────────────────────────────────────────
 
@@ -61,7 +62,25 @@ export function MovesTable({ game: selectedGame }: { game: GameOption | null }) 
   const [categoryFilter, setCategoryFilter] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("id");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
-  const [selected, setSelected] = useState<MoveListEntry | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedMoveName = searchParams.get("move");
+  const selected = moves?.find((m) => m.name === selectedMoveName) ?? null;
+
+  const openMove = useCallback((move: MoveListEntry) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set("move", move.name);
+      return next;
+    });
+  }, [setSearchParams]);
+
+  const closeMove = useCallback(() => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete("move");
+      return next;
+    });
+  }, [setSearchParams]);
 
   function handleSort(key: SortKey) {
     if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -194,7 +213,7 @@ export function MovesTable({ game: selectedGame }: { game: GameOption | null }) 
               <tr
                 key={move.id}
                 className="cursor-pointer hover:bg-muted/40"
-                onClick={() => setSelected(move)}
+                onClick={() => openMove(move)}
               >
                 <td className="hidden sm:table-cell py-1.5 pr-4 tabular-nums text-muted-foreground">{move.id}</td>
                 <td className="py-1.5 pr-4 font-medium text-primary whitespace-nowrap">
@@ -227,7 +246,7 @@ export function MovesTable({ game: selectedGame }: { game: GameOption | null }) 
           name={selected.name}
           entry={selected}
           game={selectedGame}
-          onClose={() => setSelected(null)}
+          onClose={closeMove}
         />
       )}
     </div>

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { ChevronDown, ChevronUp, ChevronsUpDown, Search, X } from "lucide-react";
 import { useItemList, type ItemListEntry } from "@/lib/pokeapi";
 import { type GameOption } from "@/lib/games";
@@ -7,6 +7,7 @@ import { Select } from "@/components/ui/select";
 import { ItemModal } from "@/components/ItemModal";
 import { cn } from "@/lib/utils";
 import { GameFilter } from "@/components/GameFilter";
+import { useSearchParams } from "react-router-dom";
 
 const SPRITES_BASE = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items";
 
@@ -33,7 +34,25 @@ export function ItemsTable({ game: selectedGame }: { game: GameOption | null }) 
   const [categoryFilter, setCategoryFilter] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("id");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
-  const [selected, setSelected] = useState<ItemListEntry | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedItemName = searchParams.get("item");
+  const selected = items?.find((item) => item.name === selectedItemName) ?? null;
+
+  const openItem = useCallback((item: ItemListEntry) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set("item", item.name);
+      return next;
+    });
+  }, [setSearchParams]);
+
+  const closeItem = useCallback(() => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete("item");
+      return next;
+    });
+  }, [setSearchParams]);
 
   function handleSort(key: SortKey) {
     if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -169,7 +188,7 @@ export function ItemsTable({ game: selectedGame }: { game: GameOption | null }) 
               <tr
                 key={item.id}
                 className="cursor-pointer hover:bg-muted/40"
-                onClick={() => setSelected(item)}
+                onClick={() => openItem(item)}
               >
                 <td className="py-1 pr-3">
                   <ItemSprite name={item.name} />
@@ -196,7 +215,7 @@ export function ItemsTable({ game: selectedGame }: { game: GameOption | null }) 
       </div>
 
       {selected && (
-        <ItemModal item={selected} onClose={() => setSelected(null)} />
+        <ItemModal item={selected} onClose={closeItem} />
       )}
     </div>
   );
