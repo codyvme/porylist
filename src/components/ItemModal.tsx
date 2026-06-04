@@ -3,7 +3,7 @@ import type { ItemListEntry } from "@/lib/pokeapi";
 import { SpriteImg } from "@/components/SpriteImg";
 import { Modal } from "@/components/ui/modal";
 
-const SPRITES_BASE = "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/items";
+const SPRITES_BASE = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items";
 
 function formatCost(cost: number): string {
   if (cost === 0) return "Not sold in shops";

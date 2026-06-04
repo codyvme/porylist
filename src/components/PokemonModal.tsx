@@ -1426,7 +1426,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                 const renderNode = (node: EvoTreeNode): React.ReactNode => {
                   const isCurrent = node.speciesName === pokemon?.species.name;
                   const card = isCurrent ? (
-                    <div className="flex flex-col items-center gap-1 rounded-lg border-2 border-primary bg-primary/10 px-3 py-2 min-w-[80px]">
+                    <div key={node.speciesName} className="flex flex-col items-center gap-1 rounded-lg border-2 border-primary bg-primary/10 px-3 py-2 min-w-[80px]">
                       <SpriteImg
                         src={`${SPRITES_ROOT}/other/home/${node.speciesId}.png`}
                         alt={node.speciesName}
@@ -1442,6 +1442,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                     </div>
                   ) : (
                     <button
+                      key={node.speciesName}
                       className="flex flex-col items-center gap-1 rounded-lg border bg-muted/30 px-3 py-2 text-center transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-w-[80px]"
                       onClick={() => onNavigate(node.speciesName)}
                     >

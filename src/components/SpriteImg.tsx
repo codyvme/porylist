@@ -1,5 +1,6 @@
 import { useState, useLayoutEffect, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
+import { Package } from "lucide-react";
 
 interface SpriteImgProps {
   src: string;
@@ -59,6 +60,9 @@ export function SpriteImg({
     <div className={cn("relative flex shrink-0 items-center justify-center", size, className)}>
       {status === "loading" && (
         <div className={cn("absolute skeleton-shimmer rounded", size)} />
+      )}
+      {status === "error" && (
+        <Package className="text-muted-foreground/30 max-h-full w-auto max-w-full" style={{ height: "65%", width: "65%" }} />
       )}
       <img
         ref={imgRef}

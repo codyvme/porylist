@@ -19,7 +19,7 @@ import { AbilityModal } from "@/components/AbilityModal";
 import { ItemModal } from "@/components/ItemModal";
 import { SpriteImg } from "@/components/SpriteImg";
 
-const ITEM_SPRITES = "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/items";
+const ITEM_SPRITES = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items";
 const MAX_RESULTS = 30;
 const RECENTS_KEY = "porylist-palette-recents-v1";
 const RECENTS_MAX = 6;

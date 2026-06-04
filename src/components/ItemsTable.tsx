@@ -8,7 +8,7 @@ import { ItemModal } from "@/components/ItemModal";
 import { cn } from "@/lib/utils";
 import { GameFilter } from "@/components/GameFilter";
 
-const SPRITES_BASE = "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/items";
+const SPRITES_BASE = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items";
 
 type SortKey = "id" | "displayName" | "category" | "cost";
 type SortDir = "asc" | "desc";
