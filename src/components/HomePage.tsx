@@ -470,7 +470,12 @@ function BreedingSection() {
                 onLoad={(e) => { (e.currentTarget as HTMLImageElement).style.display = "block"; }}
                 onError={(e) => {
                   (e.currentTarget as HTMLImageElement).style.display = "none";
-                  (e.currentTarget.parentElement as HTMLElement).innerHTML = `<span class="text-lg">${p.targetSpeciesName[0] ?? "?"}</span>`;
+                  const parent = e.currentTarget.parentElement as HTMLElement;
+                  parent.textContent = "";
+                  const span = document.createElement("span");
+                  span.className = "text-lg";
+                  span.textContent = p.targetSpeciesName[0] ?? "?";
+                  parent.appendChild(span);
                 }}
                 className="hidden h-10 w-10 object-contain"
               />
