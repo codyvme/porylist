@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 import { cn, formatPokemonName } from "@/lib/utils";
 import { GAMES, GAMES_BY_VALUE, spriteUrl } from "@/lib/games";
-import { usePokemonSummaryList } from "@/lib/pokeapi";
+import { usePokemonSummaryMap } from "@/lib/pokeapi";
 import { SpriteImg } from "@/components/SpriteImg";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { PokemonSearch } from "@/components/PokemonSearch";
@@ -89,8 +89,8 @@ function HuntListItem({
   const generation = game?.generation ?? 6;
   const p = shinyRate(hunt, generation);
   const cumPct = (cumulativeProb(p, hunt.count) * 100);
-  const { data: summaryList = [] } = usePokemonSummaryList();
-  const entry = useMemo(() => summaryList.find(s => s.name === hunt.species), [summaryList, hunt.species]);
+  const { data: summaryMap } = usePokemonSummaryMap();
+  const entry = summaryMap?.get(hunt.species);
 
   return (
     <button
@@ -169,8 +169,8 @@ function HuntDetail({
     setEditingNotes(false);
   };
 
-  const { data: summaryList = [] } = usePokemonSummaryList();
-  const entry = useMemo(() => summaryList.find(s => s.name === hunt.species), [summaryList, hunt.species]);
+  const { data: summaryMap } = usePokemonSummaryMap();
+  const entry = summaryMap?.get(hunt.species);
 
   return (
     <>
@@ -500,8 +500,8 @@ function NewHuntForm({
 
 function HuntLogRow({ hunt, onDelete }: { hunt: ShinyHunt; onDelete: (id: string) => void }) {
   const game = GAMES_BY_VALUE[hunt.gameValue];
-  const { data: summaryList = [] } = usePokemonSummaryList();
-  const entry = useMemo(() => summaryList.find(s => s.name === hunt.species), [summaryList, hunt.species]);
+  const { data: summaryMap } = usePokemonSummaryMap();
+  const entry = summaryMap?.get(hunt.species);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   return (
