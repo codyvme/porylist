@@ -246,7 +246,7 @@ function SignInModal({ onClose }: { onClose: () => void }) {
         <h2 className="mb-1 text-lg font-semibold">Sign in to Porylist</h2>
         <p className="mb-5 text-sm text-muted-foreground">
           {sent
-            ? <>We sent a 6-digit code to <strong>{email}</strong>. Enter it below to sign in.</>
+            ? <>We sent an 8-digit code to <strong>{email}</strong>. Enter it below to sign in.</>
             : "Sign in to sync your progress across devices. Your email is only used for authentication and is never shared."}
         </p>
         {sent ? (
@@ -254,8 +254,8 @@ function SignInModal({ onClose }: { onClose: () => void }) {
             <Input
               type="text"
               inputMode="numeric"
-              placeholder="123456"
-              maxLength={6}
+              placeholder="12345678"
+              maxLength={8}
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
               autoFocus
@@ -263,7 +263,7 @@ function SignInModal({ onClose }: { onClose: () => void }) {
             {error && <p className="text-xs text-destructive">{error}</p>}
             <button
               type="submit"
-              disabled={loading || code.trim().length !== 6}
+              disabled={loading || code.trim().length !== 8}
               className="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
             >
               {loading ? "Verifying…" : "Verify code"}
