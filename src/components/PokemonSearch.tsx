@@ -75,21 +75,30 @@ export function PokemonSearch({
   }, [open]);
 
   const results = useMemo(() => {
-    let list = summaryList;
-    if (filter) list = list.filter(filter);
     // Normalize away punctuation/spacing so "mrmime" matches "Mr. Mime", etc.
     const norm = query.toLowerCase().replace(/[^a-z0-9♀♂]/g, "");
-    if (norm) {
-      list = list.filter((p) => {
+    const matched = [];
+
+    // O(n) scan with early exit (break) when we hit maxResults.
+    // Drastically reduces string allocations/comparisons compared to full array .filter().
+    for (const p of summaryList) {
+      if (filter && !filter(p)) continue;
+
+      if (norm) {
         const display = formatPokemonName(p.name).toLowerCase().replace(/[^a-z0-9♀♂]/g, "");
-        return (
+        const isMatch = (
           display.includes(norm) ||
           p.name.replace(/-/g, "").includes(norm) ||
           String(p.id).startsWith(norm)
         );
-      });
+        if (!isMatch) continue;
+      }
+
+      matched.push(p);
+      if (matched.length >= maxResults) break;
     }
-    return list.slice(0, maxResults);
+
+    return matched;
   }, [summaryList, query, filter, maxResults]);
 
   const { data: summaryMap } = usePokemonSummaryMap();
