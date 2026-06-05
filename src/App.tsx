@@ -409,12 +409,20 @@ function IconRail() {
   useEffect(() => {
     const container = navListRef.current;
     if (!container) return;
-    const id = setTimeout(() => {
+    const updateIndicator = () => {
       const active = container.querySelector<HTMLElement>('[aria-current="page"]');
       if (active) setIndicatorTop(active.offsetTop);
-    }, 0);
-    return () => clearTimeout(id);
-  }, [location.pathname]);
+    };
+    updateIndicator();
+    const id = setTimeout(updateIndicator, 50);
+    
+    const ro = new ResizeObserver(updateIndicator);
+    ro.observe(container);
+    return () => {
+      clearTimeout(id);
+      ro.disconnect();
+    };
+  }, [location.pathname, navExpanded]);
 
   return (
     <aside className={cn(
