@@ -32,7 +32,7 @@ function CategoryBadge({ category }: { category: string }) {
 
 // ── Type badge ─────────────────────────────────────────────────────────────────
 
-function TypeBadge({ type }: { type: string }) {
+function LocalTypeBadge({ type }: { type: string }) {
   return (
     <span
       className="inline-block rounded-full px-2 py-0.5 text-xs font-medium capitalize text-white"
@@ -219,7 +219,7 @@ export function MovesTable({ game: selectedGame }: { game: GameOption | null }) 
                 <td className="py-1.5 pr-4 font-medium text-primary whitespace-nowrap">
                   {move.displayName}
                 </td>
-                <td className="py-1.5 pr-4"><TypeBadge type={move.type} /></td>
+                <td className="py-1.5 pr-4"><LocalTypeBadge type={move.type} /></td>
                 <td className="py-1.5 pr-4"><CategoryBadge category={move.category} /></td>
                 <td className="hidden sm:table-cell py-1.5 pr-4 text-right tabular-nums">
                   {move.power ?? <span className="text-muted-foreground">—</span>}

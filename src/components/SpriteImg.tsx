@@ -1,4 +1,4 @@
-import { useState, useLayoutEffect, useEffect, useRef } from "react";
+import { useState, useLayoutEffect, useEffect, useRef, memo } from "react";
 import { cn } from "@/lib/utils";
 import { Package } from "lucide-react";
 
@@ -21,7 +21,7 @@ interface SpriteImgProps {
  * Shows shimmer → fades in on load. Silently hides the img on error
  * (or retries fallbackSrc first if provided).
  */
-export function SpriteImg({
+export const SpriteImg = memo(function SpriteImg({
   src,
   alt,
   size = "h-10 w-10",
@@ -79,4 +79,4 @@ export function SpriteImg({
       />
     </div>
   );
-}
+});
