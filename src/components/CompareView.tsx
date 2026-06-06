@@ -103,7 +103,7 @@ function typesInBucket(matchup: Record<string, number> | null, mult: number): st
 
 // ── Type badge ────────────────────────────────────────────────────────────────
 
-function TypeBadge({ type }: { type: string }) {
+function LocalTypeBadge({ type }: { type: string }) {
   return (
     <span
       className="inline-block rounded-full px-2 py-0.5 text-xs font-medium capitalize text-white"
@@ -283,7 +283,7 @@ export function CompareView({ game }: { game: GameOption | null }) {
                           </p>
                         </div>
                         <div className="flex flex-wrap justify-center gap-1">
-                          {types?.map((t) => <TypeBadge key={t} type={t} />)}
+                          {types?.map((t) => <LocalTypeBadge key={t} type={t} />)}
                         </div>
                       </>
                     ) : (
@@ -442,7 +442,7 @@ export function CompareView({ game }: { game: GameOption | null }) {
                         {bucketTypes.map((types, i) => (
                           <div key={i} className="flex flex-wrap gap-1 py-0.5">
                             {slots[i] === null ? null : types.length > 0 ? (
-                              types.map((t) => <TypeBadge key={t} type={t} />)
+                              types.map((t) => <LocalTypeBadge key={t} type={t} />)
                             ) : (
                               <span className="text-xs text-muted-foreground">—</span>
                             )}

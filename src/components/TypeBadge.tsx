@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { cn } from "@/lib/utils";
 import { typeStyle } from "@/lib/types";
 
@@ -15,7 +16,7 @@ const SIZES = {
 } as const;
 
 /** Colored type pill (e.g. "Fire", "Water"). Single source of truth for type badge styling. */
-export function TypeBadge({ type, size = "md", className }: TypeBadgeProps) {
+export const TypeBadge = memo(function TypeBadge({ type, size = "md", className }: TypeBadgeProps) {
   return (
     <span
       className={cn(
@@ -28,4 +29,4 @@ export function TypeBadge({ type, size = "md", className }: TypeBadgeProps) {
       {type}
     </span>
   );
-}
+});
