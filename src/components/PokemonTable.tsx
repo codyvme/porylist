@@ -774,20 +774,37 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
       cell: ({ getValue, row }) => {
         const name = row.original.name;
         return (
-          <div className="flex items-center gap-2">
-            <button
-              className="rounded-sm text-left font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              onClick={() => openModalRef.current(name)}
-            >
-              {formatPokemonName(getValue())}
-            </button>
-            {!row.original.isLoading && (
-              <div className="hidden group-hover:flex">
-                <CryButton
-                  id={row.original.id}
-                  generation={selectedGame?.generation}
-                  className="flex items-center justify-center rounded-full p-1 text-muted-foreground/60 hover:bg-muted hover:text-foreground transition-colors"
-                />
+          <div className="flex flex-col gap-0.5 min-w-0">
+            <div className="flex items-center gap-2">
+              <button
+                className="rounded-sm text-left font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                onClick={() => openModalRef.current(name)}
+              >
+                {formatPokemonName(getValue())}
+              </button>
+              {!row.original.isLoading && (
+                <div className="hidden group-hover:flex">
+                  <CryButton
+                    id={row.original.id}
+                    generation={selectedGame?.generation}
+                    className="flex items-center justify-center rounded-full p-1 text-muted-foreground/60 hover:bg-muted hover:text-foreground transition-colors"
+                  />
+                </div>
+              )}
+            </div>
+            {/* Type badges visible on mobile only — the Types column handles desktop */}
+            {!row.original.isLoading && row.original.types.length > 0 && (
+              <div className="flex flex-wrap gap-1 sm:hidden">
+                {(row.original.types as string[]).map((t: string) => (
+                  <Badge
+                    key={t}
+                    variant="default"
+                    className="capitalize !px-1.5 !py-0 !text-[10px] !leading-4"
+                    style={typeStyle(t)}
+                  >
+                    {t}
+                  </Badge>
+                ))}
               </div>
             )}
           </div>

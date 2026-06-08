@@ -427,7 +427,7 @@ function IconRail() {
   return (
     <aside className={cn(
       "hidden sm:flex flex-col shrink-0 border-r py-2 overflow-x-hidden overflow-y-auto transition-all duration-200",
-      "border-border bg-gradient-to-b from-[hsl(193_40%_90%)] to-[hsl(220_30%_85%)]",
+      "border-border bg-gradient-to-b from-[hsl(193_35%_85%)] to-[hsl(220_28%_79%)]",
       "dark:border-[hsl(193_60%_18%/0.6)] dark:bg-gradient-to-b dark:from-[hsl(193_70%_14%)] dark:to-[hsl(230_50%_5%)]",
       navExpanded ? "w-52" : "w-14",
     )}>
@@ -445,7 +445,7 @@ function IconRail() {
               <div key={`sec-${i}`} className="mt-3 mb-1">
                 <div className="border-t border-black/10 dark:border-white/20 mb-1.5" />
                 <span className={cn(
-                  "block px-3 text-[10px] font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400 transition-all duration-200 overflow-hidden",
+                  "block px-3.5 text-[11px] font-bold uppercase tracking-wider text-slate-500/80 dark:text-slate-400/80 transition-all duration-200 overflow-hidden",
                   navExpanded ? "max-h-6 opacity-100" : "max-h-0 opacity-0",
                 )}>
                   {item.label}
@@ -541,7 +541,7 @@ function MobileDrawer({ open, onClose, onOpenAbout }: { open: boolean; onClose: 
               return (
                 <div key={`sec-${i}`} className="mt-3 mb-1">
                   <div className="mb-1.5 border-t border-black/10 dark:border-white/20" />
-                  <span className="block px-5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                  <span className="block px-5 text-[11px] font-bold uppercase tracking-wider text-slate-500/80 dark:text-slate-400/80">
                     {item.label}
                   </span>
                 </div>
@@ -836,6 +836,7 @@ export function App() {
                 </div>
               }
             >
+              <div key={location.pathname} className="flex flex-1 flex-col animate-fade-in">
               <Routes>
                 <Route path="/" element={<HomePage game={selectedGame} user={user} />} />
                 <Route path="/pokedex" element={
@@ -858,6 +859,7 @@ export function App() {
                   <TeamBuilder team={team} onAdd={addToTeam} onRemove={removeFromTeam} onClear={clearTeam} />
                 } />
               </Routes>
+              </div>
             </React.Suspense>
           </main>
         </div>

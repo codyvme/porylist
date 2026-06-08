@@ -281,8 +281,9 @@ function ResultCard({
 }) {
   if (!attacker || !defender || !move) {
     return (
-      <div className="rounded-lg border border-dashed py-12 text-center text-sm text-muted-foreground">
-        Pick an attacker, defender, and move to see damage.
+      <div className="rounded-lg border border-dashed px-6 py-10 text-center">
+        <p className="text-sm text-muted-foreground">Pick an attacker, defender, and move to see damage.</p>
+        <p className="mt-2 text-xs text-muted-foreground/60">Results show the min–max damage range across all RNG rolls.</p>
       </div>
     );
   }

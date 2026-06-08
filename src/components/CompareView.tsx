@@ -298,8 +298,9 @@ export function CompareView({ game }: { game: GameOption | null }) {
 
             {/* ── Empty state ── */}
             {!anyFilled && (
-              <div className="mt-14 flex flex-col items-center gap-3 text-center text-muted-foreground">
-                <p className="text-sm">Choose up to 3 Pokémon above to compare them.</p>
+              <div className="mt-10 flex flex-col items-center gap-2 text-center">
+                <p className="text-sm text-muted-foreground">Choose up to 3 Pokémon above to compare stats, types, and matchups.</p>
+                <p className="text-xs text-muted-foreground/60">You can compare 1, 2, or all 3 slots — winners are highlighted in each stat row.</p>
               </div>
             )}
 

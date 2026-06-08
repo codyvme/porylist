@@ -198,8 +198,9 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
       </div>
 
       {team.length === 0 ? (
-        <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed py-16 text-center text-sm text-muted-foreground">
-          Click a slot above to search for a Pokémon and build your team.
+        <div className="flex flex-1 flex-col items-center justify-center gap-3 rounded-lg border border-dashed py-16 text-center">
+          <p className="text-sm text-muted-foreground">Click any slot above to add a Pokémon.</p>
+          <p className="text-xs text-muted-foreground/60">Defensive matchups and STAB coverage appear once your team is built.</p>
         </div>
       ) : (
         <div className="flex flex-col gap-8">
