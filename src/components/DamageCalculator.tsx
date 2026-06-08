@@ -210,7 +210,7 @@ export function DamageCalculator() {
             formatOption={(v) => (v ? (itemLookup[v as string] ?? (v as string)) : "— None —")}
           />
 
-          <div className="flex flex-wrap gap-3 text-xs">
+          <div className="flex flex-wrap gap-3 py-0.5 text-xs">
             <Toggle label="Critical hit" checked={critical} onChange={setCritical} />
             <Toggle label="Burned (physical halves)" checked={burned} onChange={setBurned} />
           </div>
@@ -249,8 +249,11 @@ export function DamageCalculator() {
               options={["none", "sun", "rain", "sand", "snow"]}
               formatOption={(v) => (v as string).replace(/^./, (c) => c.toUpperCase())}
             />
-            <div className="flex items-end">
-              <Toggle label="Screen up" checked={screen} onChange={setScreen} />
+            <div className="flex flex-col gap-1.5">
+              <span className="text-xs font-medium text-muted-foreground invisible select-none" aria-hidden="true">–</span>
+              <div className="flex h-9 items-center">
+                <Toggle label="Screen up" checked={screen} onChange={setScreen} />
+              </div>
             </div>
           </div>
 
