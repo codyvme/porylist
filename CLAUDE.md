@@ -95,7 +95,7 @@ The app is a fully configured Progressive Web App via `vite-plugin-pwa`. The ser
 ### Conventions
 
 - **Path alias**: `@` → `./src` (configured in both `vite.config.ts` and `tsconfig.app.json`)
-- **Styling**: Tailwind CSS with shadcn/ui primitives in `src/components/ui/`. Use `cn()` for conditional class merging. Dark mode is class-based (`dark` on `<html>`). Font is Figtree (Google Fonts).
+- **Styling**: Tailwind CSS with shadcn/ui primitives in `src/components/ui/`. Use `cn()` for conditional class merging. Dark mode is class-based (`dark` on `<html>`). Font is Onest (Google Fonts).
 - **Button color**: Buttons use `--btn-primary` (porylist red) via CSS utility overrides in `src/index.css`, kept separate from `--primary` (teal) which drives links, focus rings, and active states.
 - **TypeScript**: Strict mode with `noUnusedLocals` and `noUnusedParameters` enforced — unused imports will fail `typecheck`.
 - **Game-aware rendering**: Always use `typesForGeneration(pokemon, game.generation)` when displaying types in a game context, not `pokemon.types` directly. Similarly use `bestFlavorText` from `src/lib/games.ts` for flavor text lookup.
