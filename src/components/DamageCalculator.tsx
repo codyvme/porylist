@@ -408,7 +408,7 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
   return (
     <label className="flex items-center gap-2 cursor-pointer select-none">
       <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="h-4 w-4" />
-      <span className="text-muted-foreground">{label}</span>
+      <span className="text-xs text-muted-foreground">{label}</span>
     </label>
   );
 }
