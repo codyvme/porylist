@@ -1361,7 +1361,7 @@ export function BreedingTracker({ user }: { user: User | null }) {
 
   return (
     <div className="flex h-full flex-col px-6">
-      <h1 className="shrink-0 flex items-center gap-2 text-xl font-semibold border-b border-border py-3 -mx-6 px-6"><Dna className="h-5 w-5 shrink-0" />Breeding Tracker</h1>
+      <h1 className="shrink-0 text-xl font-semibold border-b border-border py-3 -mx-6 px-6">Breeding Tracker</h1>
       <div className="flex flex-1 min-h-0 gap-0 overflow-hidden">
       {/* Left panel: project list */}
       <div

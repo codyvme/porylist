@@ -1,7 +1,7 @@
 import React, { startTransition, useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Routes, Route, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
-import { persister, queryClient } from "@/lib/query-client";
+import { dehydrateOptions, persister, queryClient } from "@/lib/query-client";
 import { HomePage } from "@/components/HomePage";
 
 const PokemonTable = React.lazy(() => import("@/components/PokemonTable").then(m => ({ default: m.PokemonTable })));
@@ -390,7 +390,7 @@ function IconRail() {
   return (
     <aside className={cn(
       "hidden sm:flex flex-col shrink-0 border-r py-2 overflow-x-hidden overflow-y-auto transition-all duration-200",
-      "border-border bg-[hsl(192_55%_93%)]",
+      "border-border bg-[hsl(197_24%_95%)]",
       "dark:border-[hsl(193_60%_18%/0.6)] dark:bg-[hsl(193_55%_9%)]",
       navExpanded ? "w-52" : "w-14",
     )}>
@@ -725,7 +725,7 @@ export function App() {
   return (
     <PersistQueryClientProvider
       client={queryClient}
-      persistOptions={{ persister, maxAge: 1000 * 60 * 60 * 24 * 30 }}
+      persistOptions={{ persister, maxAge: 1000 * 60 * 60 * 24 * 30, dehydrateOptions }}
     >
       <GameProvider value={useMemo(() => ({ selectedGame, setSelectedGame }), [selectedGame])}>
       <div className="h-screen flex flex-col overflow-hidden overscroll-none bg-background">

@@ -10,7 +10,7 @@ import { type GameOption, spriteUrl } from "@/lib/games";
 import { computeTypeEffectiveness } from "@/lib/type-chart";
 import { TYPE_COLORS } from "@/lib/types";
 import { formatPokemonName, cn } from "@/lib/utils";
-import { Plus, Scale } from "lucide-react";
+import { Plus } from "lucide-react";
 import { GameFilter } from "@/components/GameFilter";
 import { SpriteImg } from "@/components/SpriteImg";
 import { PokemonSearch, type PokemonSearchHandle } from "@/components/PokemonSearch";
@@ -240,7 +240,7 @@ export function CompareView({ game }: { game: GameOption | null }) {
     <div className="flex h-full flex-col px-6">
       {/* ── Page header ── */}
       <div className="shrink-0 flex items-center gap-3 border-b border-border py-3 -mx-6 px-6">
-        <h1 className="flex items-center gap-2 flex-1 text-xl font-semibold"><Scale className="h-5 w-5 shrink-0" />Compare</h1>
+        <h1 className="flex-1 text-xl font-semibold">Compare</h1>
         <GameFilter />
       </div>
 

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Check, Plus, Search, Share2, Users, X } from "lucide-react";
+import { Check, Plus, Search, Share2, X } from "lucide-react";
 import { typeStyle } from "@/lib/types";
 import { ALL_TYPES, computeTypeEffectiveness, offensiveCoverage } from "@/lib/type-chart";
 import { useSinglePokemon, typesForGeneration } from "@/lib/pokeapi";
@@ -109,7 +109,7 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
     <div className="flex flex-col gap-6 px-6 pb-6">
       {/* Page header */}
       <div className="shrink-0 flex items-center gap-3 border-b border-border py-3 -mx-6 px-6">
-        <h1 className="flex items-center gap-2 flex-1 text-xl font-semibold"><Users className="h-5 w-5 shrink-0" />Team Builder</h1>
+        <h1 className="flex-1 text-xl font-semibold">Team Builder</h1>
         {team.length > 0 && (
           <>
             <button
@@ -214,7 +214,7 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
                 {sharedWeaknesses.map(({ type, count }) => (
                   <span key={type} className="flex items-center gap-1.5">
                     <span
-                      className="rounded-full px-2 py-0.5 text-xs font-semibold capitalize"
+                      className="rounded px-2 py-0.5 text-xs font-semibold capitalize"
                       style={typeStyle(type)}
                     >
                       {type}
@@ -302,7 +302,7 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
                 <span
                   key={t}
                   className={cn(
-                    "rounded-full px-2 py-0.5 text-xs font-semibold capitalize transition-opacity",
+                    "rounded px-2 py-0.5 text-xs font-semibold capitalize transition-opacity",
                     covered.has(t) ? "opacity-100" : "opacity-20",
                   )}
                   style={typeStyle(t)}
@@ -324,7 +324,7 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
                     {uncovered.map(t => (
                       <span
                         key={t}
-                        className="rounded-full px-2 py-0.5 text-xs font-semibold capitalize"
+                        className="rounded px-2 py-0.5 text-xs font-semibold capitalize"
                         style={typeStyle(t)}
                       >
                         {t}

@@ -620,10 +620,10 @@ export function ShinyHuntTracker({ user }: { user: User | null }) {
   return (
     <div className="flex flex-col px-6 sm:h-full">
       <h1 className={cn(
-        "shrink-0 flex items-center gap-2 text-xl font-semibold border-b border-border py-3 -mx-6 px-6",
+        "shrink-0 text-xl font-semibold border-b border-border py-3 -mx-6 px-6",
         showDetail && "hidden sm:block",
       )}>
-        <Sparkles className="h-5 w-5 shrink-0" />Shiny Tracker
+        Shiny Tracker
       </h1>
 
       <div className="flex flex-1 sm:min-h-0 sm:overflow-hidden">

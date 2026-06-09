@@ -128,8 +128,32 @@ export interface PokemonSummary {
   stats: Array<{ base_stat: number; stat: { name: string } }>;
   abilities: Array<{ ability: { name: string }; is_hidden: boolean; slot: number }>;
   species: { name: string };
-  /** moveName → sorted array of generation numbers the move is available in */
-  moves: Record<string, number[]>;
+  /** Species facts inlined at build time (shared across a species' forms). */
+  capture_rate: number;
+  egg_groups: string[];
+  is_legendary: boolean;
+  is_mythical: boolean;
+  is_baby: boolean;
+  evolves_from: string | null;
+}
+
+/** pokemonName → moveName → sorted generation numbers the move is available in. */
+export type PokemonMoveGensMap = Record<string, Record<string, number[]>>;
+
+/**
+ * Lazy-loaded move availability data for the Pokédex "Learns Move" filter.
+ * Split out of the summary bundle because it is ~2/3 of the bytes and only
+ * this one filter needs it. Pass `enabled: false` until the filter UI opens.
+ */
+export function usePokemonMoveGens(enabled: boolean) {
+  return useQuery({
+    queryKey: ["pokemon-move-gens"],
+    enabled,
+    queryFn: () =>
+      import("../data/pokemon-moves.json").then((m) => m.default as PokemonMoveGensMap),
+    staleTime: Infinity,
+    gcTime: Infinity,
+  });
 }
 
 export interface PokemonSpecies {
@@ -150,35 +174,6 @@ export interface PokemonSpecies {
     version: { name: string; url: string };
   }>;
   evolution_chain: { url: string };
-}
-
-export type PokemonSpeciesMap = Record<string, PokemonSpecies>;
-
-export function useAllPokemonSpecies(names: string[]) {
-  const queryClient = useQueryClient();
-  return useQuery({
-    queryKey: ["pokemon-species-all", [...names].sort().join(",")],
-    enabled: names.length > 0,
-    staleTime: Infinity,
-    gcTime: 1000 * 60 * 60 * 24 * 30,
-    queryFn: async () => {
-      const results = await Promise.allSettled(
-        names.map((name) =>
-          queryClient.fetchQuery<PokemonSpecies>({
-            queryKey: ["pokemon-species", name],
-            queryFn: () => fetchJson<PokemonSpecies>(`${BASE}/pokemon-species/${name}`),
-            staleTime: Infinity,
-          }),
-        ),
-      );
-      const map: PokemonSpeciesMap = {};
-      for (let i = 0; i < names.length; i++) {
-        const r = results[i];
-        if (r.status === "fulfilled") map[names[i]] = r.value;
-      }
-      return map;
-    },
-  });
 }
 
 export interface EvolutionDetail {
@@ -329,15 +324,6 @@ export interface PokemonForm {
 }
 
 export type PokemonFormDataMap = Record<string, PokemonForm>;
-
-export function useAllPokemonEntries() {
-  return useQuery({
-    queryKey: ["pokemon-all-entries"],
-    queryFn: () =>
-      fetchJson<PokemonListResponse>(`${BASE}/pokemon?limit=10000&offset=0`),
-    staleTime: Infinity,
-  });
-}
 
 export function useFormDetails(names: string[]) {
   const queryClient = useQueryClient();

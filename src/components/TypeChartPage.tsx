@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { Grid3X3 } from "lucide-react";
 import { GameFilter } from "@/components/GameFilter";
 import { Tooltip } from "@/components/ui/tooltip";
 import { ALL_TYPES, computeTypeEffectiveness } from "@/lib/type-chart";
@@ -49,7 +48,7 @@ export function TypeChartPage({ game }: { game: GameOption | null }) {
     <div className="flex min-h-0 flex-1 flex-col gap-3 px-6">
       {/* Header */}
       <div className="shrink-0 flex items-center gap-3 border-b border-border py-3 -mx-6 px-6">
-        <h1 className="flex items-center gap-2 flex-1 text-xl font-semibold"><Grid3X3 className="h-5 w-5 shrink-0" />Type Chart</h1>
+        <h1 className="flex-1 text-xl font-semibold">Type Chart</h1>
         <GameFilter />
       </div>
 

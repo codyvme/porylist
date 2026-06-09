@@ -364,7 +364,7 @@ function EncounterCard({ enc, method, isCaught, spriteVersion, game, caughtKey, 
           </span>
           {enc.heldItems?.length > 0 && (
             <span className="block truncate text-xs text-muted-foreground">
-              🎒 {enc.heldItems.map((h) => formatItemName(h.item)).join(", ")}
+              Holds {enc.heldItems.map((h) => formatItemName(h.item)).join(", ")}
             </span>
           )}
         </div>
@@ -510,7 +510,7 @@ function LocationDetail({ location, selectedVersion, spriteVersion, game, caught
       />
       {allCaught ? (
         <p className="py-8 text-center text-sm text-muted-foreground">
-          You've caught everything here! 🎉
+          Everything here has been caught.
         </p>
       ) : (
         byMethod.map(([method, { label, encounters }]) => (

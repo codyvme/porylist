@@ -1066,13 +1066,13 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
         <div
           className="relative z-10 w-full max-w-4xl rounded-xl border bg-background overflow-hidden"
           style={types[0] ? {
-            boxShadow: `0 0 0 1px ${TYPE_COLORS[types[0]]}30, 0 25px 60px ${TYPE_COLORS[types[0]]}30, 0 8px 24px rgba(0,0,0,0.4)`,
-          } : { boxShadow: "0 25px 60px rgba(0,0,0,0.4)" }}
+            boxShadow: `0 0 0 1px ${TYPE_COLORS[types[0]]}30, 0 8px 24px rgba(0,0,0,0.35)`,
+          } : { boxShadow: "0 8px 24px rgba(0,0,0,0.35)" }}
         >
           {/* Header */}
           <div
             className="flex flex-col border-b sm:flex-row sm:items-center sm:justify-between"
-            style={types[0] ? { background: `linear-gradient(135deg, ${TYPE_COLORS[types[0]]}40 0%, ${TYPE_COLORS[types[0]]}10 50%, transparent 100%)` } : undefined}
+            style={types[0] ? { backgroundColor: `${TYPE_COLORS[types[0]]}1A` } : undefined}
           >
             {/* Row 1: identity + close */}
             <div className="flex items-center gap-2 px-4 py-3 sm:min-w-0 sm:flex-1 sm:gap-6 sm:px-6 sm:py-4">

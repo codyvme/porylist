@@ -15,15 +15,13 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useVirtualizer, type VirtualItem } from "@tanstack/react-virtual";
-import { ArrowDown, ArrowUp, BookHeart, ChevronDown, ChevronRight, ChevronsUpDown, ListFilter, Loader2, Search, SlidersHorizontal, Volume2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, ChevronsUpDown, ListFilter, Loader2, Search, SlidersHorizontal, Volume2, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
-  extractIdFromUrl,
   typesForGeneration,
-  useAllPokemonEntries,
-  useAllPokemonSpecies,
   useFormDetails,
   usePokemonFormData,
+  usePokemonMoveGens,
   usePokemonSummaryList,
   useVersionExclusives,
   VERSION_GROUP_TO_GEN,
@@ -86,8 +84,6 @@ interface Row {
   isBaby: boolean | null;
   isMono: boolean;
   isNoEvolution: boolean | null;
-  /** Compact move filter data: moveName → generation numbers */
-  moveGens: Record<string, number[]>;
 }
 
 type DisplayRow =
@@ -210,7 +206,7 @@ const typesColumn = columnHelper.accessor("types", {
           <Badge
             key={t}
             variant="default"
-            className="type-badge capitalize !px-2"
+            className="capitalize !px-2"
             style={typeStyle(t)}
           >
             {t}
@@ -229,11 +225,6 @@ function buildRow(
   summary: PokemonSummary,
   spriteVersion: string | undefined,
   generation: number | undefined,
-  captureRate: number | null,
-  eggGroups: string[] | null,
-  isLegendary: boolean | null,
-  isMythical: boolean | null,
-  isBaby: boolean | null,
   isNoEvolution: boolean | null,
 ): Row {
   const types = typesForGeneration(summary, generation);
@@ -251,14 +242,13 @@ function buildRow(
     speed: statByName(summary, "speed"),
     height: summary.height,
     weight: summary.weight,
-    captureRate,
-    eggGroups,
-    isLegendary,
-    isMythical,
-    isBaby,
+    captureRate: summary.capture_rate ?? null,
+    eggGroups: summary.egg_groups?.map((g) => g.replace(/-/g, " ")) ?? null,
+    isLegendary: summary.is_legendary ?? null,
+    isMythical: summary.is_mythical ?? null,
+    isBaby: summary.is_baby ?? null,
     isMono: types.length === 1,
     isNoEvolution,
-    moveGens: summary.moves,
   };
 }
 
@@ -400,7 +390,7 @@ const MemoizedVirtualRow = React.memo(({
                           <Badge
                             key={t}
                             variant="default"
-                            className="type-badge capitalize !px-2"
+                            className="capitalize !px-2"
                             style={typeStyle(t)}
                           >
                             {t}
@@ -494,8 +484,6 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
   }, []);
   const summaryList = dataReady ? summaryQuery.data : undefined;
 
-  const allEntriesQuery = useAllPokemonEntries();
-
   const [search, setSearch] = useState("");
   const [exclusiveVersion, setExclusiveVersion] = useState<string>("");
   const deferredGame = useDeferredValue(gameProp);
@@ -536,34 +524,32 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
   const openModalRef = useRef(openModal);
   openModalRef.current = openModal;
 
-  // Build a map from base pokemon name → alternate form names
+  // Build a map from base pokemon name → alternate form names. The bundled
+  // summary contains every form entry (id > 1025), so this needs no fetch.
   const formsMap = useMemo(() => {
-    if (!allEntriesQuery.data || !summaryList?.length) return {} as Record<string, string[]>;
-    const baseNames = summaryList.map((s) => s.name);
+    if (!summaryList?.length) return {} as Record<string, string[]>;
 
     // Some base Pokémon have a default-form suffix (e.g. deoxys-normal, giratina-altered).
     // Build a species-name → base-pokemon-name lookup so forms like "deoxys-attack" can
     // still be matched to "deoxys-normal" via the shared species name "deoxys".
     const speciesToBase: Record<string, string> = {};
+    const baseNameSet = new Set<string>();
     for (const s of summaryList) {
+      baseNameSet.add(s.name);
       if (s.species.name !== s.name && !speciesToBase[s.species.name]) {
         speciesToBase[s.species.name] = s.name;
       }
     }
 
-    // Build a set for O(1) lookups — avoids the O(n_forms × n_baseNames) nested
-    // loop that was hammering the main thread on every Pokédex mount.
-    const baseNameSet = new Set(baseNames);
     const map: Record<string, string[]> = {};
-    for (const entry of allEntriesQuery.data.results) {
-      const id = extractIdFromUrl(entry.url);
-      if (id <= 1025) continue;
+    for (const entry of summaryList) {
+      if (entry.id <= 1025) continue;
       // Probe longest prefix first: "mr-mime-galar" → try "mr-mime" before "mr"
       const parts = entry.name.split("-");
       let bestBase: string | null = null;
       for (let i = parts.length - 1; i >= 1; i--) {
         const candidate = parts.slice(0, i).join("-");
-        if (baseNameSet.has(candidate)) { bestBase = candidate; break; }
+        if (candidate !== entry.name && baseNameSet.has(candidate)) { bestBase = candidate; break; }
       }
       // Fallback: match via species prefix (handles deoxys-attack → deoxys-normal, etc.)
       if (!bestBase) {
@@ -578,7 +564,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
       }
     }
     return map;
-  }, [allEntriesQuery.data, summaryList]);
+  }, [summaryList]);
 
   // Filter forms by the current game's generation using suffix heuristics
   const availableFormsMap = useMemo(() => {
@@ -640,6 +626,12 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
   const [showNoEvolution, setShowNoEvolution] = useState(false);
   const [moveFilter, setMoveFilter] = useState("");
   const deferredMoveFilter = useDeferredValue(moveFilter);
+  const [filterOpen, setFilterOpen] = useState(false);
+
+  // Move availability is ~2/3 of the Pokédex data by weight — only load it
+  // once the filter UI opens (or a move filter is already active).
+  const moveGensQuery = usePokemonMoveGens(filterOpen || deferredMoveFilter.trim() !== "");
+  const moveGensData = moveGensQuery.data;
 
   // Reset exclusive version when game is deselected
   useEffect(() => {
@@ -654,56 +646,34 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
     });
   }, []);
 
-  const captureRateVisible = columnVisibility["captureRate"] !== false;
-  const eggGroupVisible = columnVisibility["eggGroups"] !== false;
-
-  // Derive unique species names from summary data.
-  const speciesNames = useMemo(
-    () => summaryList ? [...new Set(summaryList.map((s) => s.species.name))] : [],
-    [summaryList],
-  );
-
-  // Always prefetch species once main details are loaded — cached forever, so
-  // legendary/mythical filters and species columns feel instant.
-  const speciesQuery = useAllPokemonSpecies(speciesNames);
-  const speciesMap = speciesQuery.data;
-
+  // Species that something evolves from — used for the "No Evolution" filter.
   const evolutionTargets = useMemo(() => {
-    if (!speciesMap) return null;
+    if (!summaryList) return null;
     const targets = new Set<string>();
-    for (const species of Object.values(speciesMap)) {
-      if (species.evolves_from_species) targets.add(species.evolves_from_species.name);
+    for (const s of summaryList) {
+      if (s.evolves_from) targets.add(s.evolves_from);
     }
     return targets;
-  }, [speciesMap]);
+  }, [summaryList]);
 
   const allMoveNames = useMemo(() => {
-    if (!summaryList) return [] as string[];
+    if (!moveGensData) return [] as string[];
     const names = new Set<string>();
-    for (const pkmn of summaryList) {
-      for (const moveName of Object.keys(pkmn.moves)) names.add(moveName);
+    for (const moves of Object.values(moveGensData)) {
+      for (const moveName of Object.keys(moves)) names.add(moveName);
     }
     return [...names].sort();
-  }, [summaryList]);
+  }, [moveGensData]);
 
   const allRows = useMemo<Row[]>(
     () =>
       (summaryList ?? []).map((summary) => {
-        const speciesName = summary.species.name;
-        const species = speciesMap?.[speciesName];
-        const captureRate = captureRateVisible ? (species?.capture_rate ?? null) : null;
-        const eggGroups = eggGroupVisible
-          ? (species?.egg_groups.map((g) => g.name.replace(/-/g, " ")) ?? null)
+        const isNoEvolution = evolutionTargets != null
+          ? summary.evolves_from === null && !evolutionTargets.has(summary.species.name)
           : null;
-        const isLegendary = species != null ? species.is_legendary : null;
-        const isMythical = species != null ? species.is_mythical : null;
-        const isBaby = species != null ? species.is_baby : null;
-        const isNoEvolution = species != null && evolutionTargets != null
-          ? species.evolves_from_species === null && !evolutionTargets.has(speciesName)
-          : null;
-        return buildRow(summary, spriteVersion, generation, captureRate, eggGroups, isLegendary, isMythical, isBaby, isNoEvolution);
+        return buildRow(summary, spriteVersion, generation, isNoEvolution);
       }),
-    [summaryList, speciesMap, captureRateVisible, eggGroupVisible, spriteVersion, generation, evolutionTargets],
+    [summaryList, spriteVersion, generation, evolutionTargets],
   );
 
   const data = useMemo<Row[]>(() => {
@@ -722,7 +692,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
     if (selectedTypes.size > 0) {
       result = result.filter((r) => r.types.some((t) => selectedTypes.has(t)));
     }
-    if ((showLegendary || showMythical || showBaby) && speciesMap != null) {
+    if (showLegendary || showMythical || showBaby) {
       result = result.filter((r) =>
         (showLegendary && r.isLegendary) || (showMythical && r.isMythical) || (showBaby && r.isBaby),
       );
@@ -730,7 +700,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
     if (showMono) {
       result = result.filter((r) => r.isLoading || r.isMono);
     }
-    if (showNoEvolution && speciesMap != null && evolutionTargets != null) {
+    if (showNoEvolution) {
       result = result.filter((r) => r.isNoEvolution === true);
     }
 
@@ -743,17 +713,17 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
         result = result.filter((r) => idSet.has(r.id));
       }
     }
-    if (deferredMoveFilter.trim()) {
+    if (deferredMoveFilter.trim() && moveGensData) {
       const moveName = deferredMoveFilter.trim().toLowerCase().replace(/\s+/g, "-");
       result = result.filter((r) => {
-        const gens = r.moveGens[moveName];
+        const gens = moveGensData[r.name]?.[moveName];
         if (!gens) return false;
         if (!selectedGame) return true;
         return gens.includes(selectedGame.generation);
       });
     }
     return result;
-  }, [allRows, selectedGame, deferredSearch, selectedTypes, showLegendary, showMythical, showBaby, showMono, showNoEvolution, speciesMap, evolutionTargets, gameProp, deferredMoveFilter, deferredExclusiveVersion, versionExclusivesData]);
+  }, [allRows, selectedGame, deferredSearch, selectedTypes, showLegendary, showMythical, showBaby, showMono, showNoEvolution, gameProp, deferredMoveFilter, moveGensData, deferredExclusiveVersion, versionExclusivesData]);
 
 
   const showRegional = false;
@@ -987,7 +957,6 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
     return () => document.removeEventListener("mousedown", handler);
   }, [colsOpen]);
 
-  const [filterOpen, setFilterOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!filterOpen) return;
@@ -1124,7 +1093,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
   return (
     <div className="flex h-full flex-col gap-3 px-6">
       <div className="shrink-0 flex items-center gap-3 border-b border-border py-3 -mx-6 px-6">
-        <h1 className="flex items-center gap-2 flex-1 text-xl font-semibold"><BookHeart className="h-5 w-5 shrink-0" />Pokédex</h1>
+        <h1 className="flex-1 text-xl font-semibold">Pokédex</h1>
         <GameFilter />
       </div>
       <div className="flex flex-wrap items-center gap-2 pt-2">

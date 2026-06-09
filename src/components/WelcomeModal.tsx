@@ -61,7 +61,7 @@ export function WelcomeModal({ onClose, onOpenPalette }: WelcomeModalProps) {
           <X className="h-4 w-4" />
         </button>
 
-        <h2 className="text-lg font-semibold">Welcome to Porylist 👋</h2>
+        <h2 className="text-lg font-semibold">Welcome to Porylist</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Three quick things to know before you dive in:
         </p>

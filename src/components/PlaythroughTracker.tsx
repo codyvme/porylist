@@ -508,7 +508,7 @@ function TrainerTeamModal({ trainer, game, onClose }: { trainer: TrainerEntry; g
     <div className={cn("fixed inset-0 z-50 flex items-center justify-center p-4", isSubModalOpen && "hidden")} onClick={onClose}>
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
       <div
-        className="relative z-10 w-full max-w-2xl max-h-[80vh] overflow-y-auto rounded-2xl border bg-background shadow-2xl"
+        className="relative z-10 w-full max-w-2xl max-h-[80vh] overflow-y-auto rounded-xl border bg-background shadow-xl"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
@@ -540,7 +540,7 @@ function TrainerTeamModal({ trainer, game, onClose }: { trainer: TrainerEntry; g
                 className="flex items-start gap-3 rounded-xl border p-3"
                 style={primaryColor ? {
                   borderColor: `${primaryColor}40`,
-                  background: `linear-gradient(135deg, ${primaryColor}18 0%, transparent 60%)`,
+                  backgroundColor: `${primaryColor}10`,
                 } : undefined}
               >
                 {/* Sprite */}
@@ -1252,7 +1252,7 @@ export function PlaythroughTracker({
 
   return (
     <div className="flex flex-col px-6 sm:h-full">
-      <h1 className={cn("shrink-0 flex items-center gap-2 text-xl font-semibold border-b border-border py-3 -mx-6 px-6", showDetail && "hidden sm:block")}><Trophy className="h-5 w-5 shrink-0" />Playthroughs</h1>
+      <h1 className={cn("shrink-0 text-xl font-semibold border-b border-border py-3 -mx-6 px-6", showDetail && "hidden sm:block")}>Playthroughs</h1>
 
       <div className="flex flex-1 min-w-0 overflow-hidden sm:min-h-0">
         {/* Left panel */}

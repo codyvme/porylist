@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { ChevronDown, Crosshair } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { cn, formatPokemonName } from "@/lib/utils";
 import { spriteUrl } from "@/lib/games";
 import { usePokemonSummaryList, usePokemonSpecies } from "@/lib/pokeapi";
@@ -19,13 +19,13 @@ import {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const STATUS_OPTIONS: { value: StatusCondition; label: string; emoji: string }[] = [
-  { value: "none",      label: "No status",  emoji: "—"  },
-  { value: "sleep",     label: "Sleep",      emoji: "💤" },
-  { value: "freeze",    label: "Freeze",     emoji: "🧊" },
-  { value: "paralysis", label: "Paralysis",  emoji: "⚡" },
-  { value: "burn",      label: "Burn",       emoji: "🔥" },
-  { value: "poison",    label: "Poison",     emoji: "☠️" },
+const STATUS_OPTIONS: { value: StatusCondition; label: string }[] = [
+  { value: "none",      label: "No status" },
+  { value: "sleep",     label: "Sleep"     },
+  { value: "freeze",    label: "Freeze"    },
+  { value: "paralysis", label: "Paralysis" },
+  { value: "burn",      label: "Burn"      },
+  { value: "poison",    label: "Poison"    },
 ];
 
 function pctColor(p: number): string {
@@ -197,7 +197,7 @@ export function CatchCalculator({ game }: { game: GameOption | null }) {
   return (
     <div className="flex flex-col px-4 sm:px-6 pb-8">
       <div className="shrink-0 flex items-center gap-3 border-b border-border py-3 -mx-4 sm:-mx-6 px-4 sm:px-6 mb-5">
-        <h1 className="flex items-center gap-2 flex-1 text-xl font-semibold"><Crosshair className="h-5 w-5 shrink-0" />Catch Calculator</h1>
+        <h1 className="flex-1 text-xl font-semibold">Catch Calculator</h1>
         <GameFilter />
       </div>
 
@@ -269,18 +269,18 @@ export function CatchCalculator({ game }: { game: GameOption | null }) {
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium">Status Condition</label>
             <div className="flex flex-wrap gap-2">
-              {STATUS_OPTIONS.map(({ value: v, label, emoji }) => (
+              {STATUS_OPTIONS.map(({ value: v, label }) => (
                 <button
                   key={v}
                   onClick={() => setStatus(v)}
                   className={cn(
-                    "flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                    "rounded-md border px-3 py-1 text-xs font-medium transition-colors",
                     status === v
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border text-muted-foreground hover:border-primary/40 hover:bg-muted",
                   )}
                 >
-                  <span>{emoji}</span>{label}
+                  {label}
                 </button>
               ))}
             </div>
@@ -460,7 +460,7 @@ export function CatchCalculator({ game }: { game: GameOption | null }) {
 
           {systemNote && (
             <p className="text-xs text-muted-foreground rounded-lg border border-dashed px-3 py-2 leading-relaxed">
-              ⚠️ {systemNote}
+              {systemNote}
             </p>
           )}
         </div>

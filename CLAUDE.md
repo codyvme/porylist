@@ -21,13 +21,13 @@ There is no test suite. `npm run typecheck` is the primary code-correctness chec
 
 Data comes from three sources:
 
-1. **Bundled static imports** — `src/data/pokemon-summary.json` and `src/data/egg-parents.json` are imported directly by Vite. They become content-hashed chunks cached permanently by the browser — zero network cost on repeat visits.
+1. **Bundled static imports** — `src/data/pokemon-summary.json`, `src/data/pokemon-moves.json`, and `src/data/egg-parents.json` are imported directly by Vite. They become content-hashed chunks cached permanently by the browser — zero network cost on repeat visits. The summary includes species facts (catch rate, egg groups, legendary/mythical/baby flags, evolves-from) inlined at build time, so the Pokédex needs no per-Pokémon species fetches; move availability is split into `pokemon-moves.json` and lazy-loaded only when the Pokédex "Learns Move" filter opens.
 2. **Cloudflare Pages** (`/data/...`) — small pre-built JSONs committed to the repo and served by Pages: `moves.json`, `abilities.json`, `version-exclusives.json`, and `route-data/{gameValue}.json`.
 3. **PokéAPI** (`https://pokeapi.co/api/v2`) — on-demand fetches for per-Pokémon detail pages (species, evolution chains, move/ability modals, form data). These are lazy and only triggered when a user opens a modal or expands a form row.
 
 Sprites are served from jsDelivr's PokeAPI mirror: `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon`. The `SPRITES_ROOT` constant in `src/lib/games.ts` is the single source of truth for the base URL.
 
-TanStack Query is configured with `staleTime: Infinity` and `gcTime: 30 days` globally (`src/lib/query-client.ts`). The entire cache is persisted to `localStorage` under the key `porylist-cache-v7` via `@tanstack/query-sync-storage-persister`. **Bump this key whenever the data shape changes** to force clients to re-fetch.
+TanStack Query is configured with `staleTime: Infinity` and `gcTime: 30 days` globally (`src/lib/query-client.ts`). The cache is persisted to `localStorage` under the key `porylist-cache-v9` via `@tanstack/query-sync-storage-persister`, except queries backed by bundled static imports (see `dehydrateOptions` in `src/lib/query-client.ts`) — persisting those would waste localStorage quota on data already in the JS bundle. **Bump this key whenever the data shape changes** to force clients to re-fetch.
 
 ### Application structure
 
@@ -83,7 +83,7 @@ Scripts in `scripts/` run with Node and populate static data files committed to 
 - `fetch-data.mjs` — downloads and strips PokéAPI data into `public/data/pokemon/`; resumable, supports per-type `--force=<type>` flag
 - `compute-route-data.mjs` — inverts per-Pokémon encounter data into per-game route files at `public/data/route-data/{gameValue}.json`
 - `build-move-ability-lists.mjs` — builds `public/data/moves.json` and `public/data/abilities.json`
-- `build-pokemon-summary.mjs` — compiles all per-Pokémon JSON into `src/data/pokemon-summary.json` (bundled by Vite)
+- `build-pokemon-summary.mjs` — compiles all per-Pokémon JSON (plus species facts from `public/data/pokemon-species/`) into `src/data/pokemon-summary.json`, and move availability into `src/data/pokemon-moves.json` (both bundled by Vite)
 - `build-egg-data.mjs` — outputs `src/data/egg-parents.json` (bundled by Vite)
 
 After running scripts, commit the updated files — Cloudflare Pages serves them directly. There is no upload step (R2 has been removed).

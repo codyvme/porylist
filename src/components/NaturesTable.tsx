@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Leaf } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // ── Data ──────────────────────────────────────────────────────────────────────
@@ -86,7 +85,7 @@ export function NaturesTable() {
     <div className="flex h-full flex-col px-6">
       {/* ── Header ── */}
       <div className="shrink-0 flex items-center border-b border-border py-3 -mx-6 px-6">
-        <h1 className="flex items-center gap-2 text-xl font-semibold"><Leaf className="h-5 w-5 shrink-0" />Natures</h1>
+        <h1 className="text-xl font-semibold">Natures</h1>
       </div>
 
       <div className="flex-1 overflow-auto pt-5 pb-8">

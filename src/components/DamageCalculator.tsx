@@ -1,5 +1,5 @@
 import { useMemo, useState, useRef, useEffect } from "react";
-import { Search, X, Swords } from "lucide-react";
+import { Search, X } from "lucide-react";
 import {
   usePokemonSummaryList,
   useMoveList,
@@ -170,7 +170,7 @@ export function DamageCalculator() {
   return (
     <div className="flex flex-col gap-5 px-4 sm:px-6 pb-8">
       <div className="shrink-0 flex items-center gap-3 border-b border-border py-3 -mx-4 sm:-mx-6 px-4 sm:px-6">
-        <h1 className="flex items-center gap-2 flex-1 text-xl font-semibold"><Swords className="h-5 w-5 shrink-0" />Damage Calculator</h1>
+        <h1 className="flex-1 text-xl font-semibold">Damage Calculator</h1>
         <GameFilter />
       </div>
 

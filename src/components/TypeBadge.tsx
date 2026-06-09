@@ -20,7 +20,7 @@ export const TypeBadge = memo(function TypeBadge({ type, size = "md", className 
   return (
     <span
       className={cn(
-        "inline-block rounded-full text-center font-semibold capitalize text-white",
+        "inline-block rounded text-center font-semibold capitalize text-white",
         SIZES[size],
         className,
       )}

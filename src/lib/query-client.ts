@@ -14,6 +14,22 @@ export const queryClient = new QueryClient({
 
 export const persister = createSyncStoragePersister({
   storage: typeof window !== "undefined" ? window.localStorage : undefined,
-  key: "porylist-cache-v8",
+  key: "porylist-cache-v9",
   throttleTime: 1000,
 });
+
+/**
+ * Queries backed by bundled static imports resolve instantly from the JS
+ * chunk — persisting their multi-MB payloads to localStorage wastes quota
+ * and makes every cache write serialize megabytes of redundant JSON.
+ */
+const BUNDLED_QUERY_KEYS = new Set([
+  "pokemon-summary-list",
+  "pokemon-summary-map",
+  "pokemon-move-gens",
+]);
+
+export const dehydrateOptions = {
+  shouldDehydrateQuery: (query: { queryKey: readonly unknown[]; state: { status: string } }) =>
+    query.state.status === "success" && !BUNDLED_QUERY_KEYS.has(query.queryKey[0] as string),
+};

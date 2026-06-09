@@ -2,7 +2,7 @@ import { useMemo, useState, useEffect, useLayoutEffect, useRef } from "react";
 import { PokemonModal, CryButton } from "@/components/PokemonModal";
 import { Link } from "react-router-dom";
 import {
-  Backpack, Crosshair, Dna, House, Leaf, List, Scale,
+  Backpack, Crosshair, Dna, Leaf, List, Scale,
   Sparkles, Swords, Trophy, Users, ArrowRight, Skull,
   Settings,
 } from "lucide-react";
@@ -260,7 +260,7 @@ function PokemonOfTheDay({ game }: { game: GameOption | null }) {
       )}
       <div
         className="rounded-xl border overflow-hidden"
-        style={{ background: `linear-gradient(135deg, ${typeColor}18 0%, transparent 60%)` }}
+        style={{ backgroundColor: `${typeColor}10` }}
       >
         <div className="flex flex-col sm:flex-row gap-4 p-5">
           <div className="flex shrink-0 flex-col items-center gap-3">
@@ -273,7 +273,7 @@ function PokemonOfTheDay({ game }: { game: GameOption | null }) {
                 ? `${SPRITES_ROOT}/versions/${game!.spriteVersion}/shiny/${pokemon.id}.png`
                 : `${SPRITES_ROOT}/other/home/shiny/${pokemon.id}.png`;
               return (
-                <div key={pokemon.id} className="relative h-36 w-36 animate-bounce-in">
+                <div key={pokemon.id} className="relative h-36 w-36 animate-fade-in">
                   {!spriteLoaded && <div className="absolute inset-0 skeleton-shimmer rounded-lg" />}
                   <img
                     ref={heroImgRef}
@@ -331,7 +331,7 @@ function PokemonOfTheDay({ game }: { game: GameOption | null }) {
                 {pokemon.types.map((t) => (
                   <span
                     key={t.type.name}
-                    className="rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize text-white"
+                    className="rounded px-2.5 py-0.5 text-xs font-semibold capitalize text-white"
                     style={typeStyle(t.type.name)}
                   >
                     {t.type.name}
@@ -595,7 +595,7 @@ export function HomePage({ game, user }: { game: GameOption | null; user: User |
 
       {/* Header */}
       <div className="flex items-center justify-between shrink-0 border-b border-border py-3 -mx-4 sm:-mx-6 px-4 sm:px-6 -mt-4">
-        <h1 className="flex items-center gap-2 text-xl font-semibold"><House className="h-5 w-5 shrink-0" />Dashboard</h1>
+        <h1 className="text-xl font-semibold">Dashboard</h1>
         <ModuleToggle config={moduleConfig} onChange={toggleModule} />
       </div>
 

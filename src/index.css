@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --background: 193 27% 97%;
+    --background: 197 18% 97.5%;
     --foreground: 222 47% 11%;
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
@@ -12,16 +12,16 @@
     --popover-foreground: 222 47% 11%;
     --primary: 192 89% 45%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 193 20% 92%;
+    --secondary: 197 14% 93%;
     --secondary-foreground: 222 47% 11%;
-    --muted: 193 20% 92%;
+    --muted: 197 14% 93%;
     --muted-foreground: 215 25% 43%;
-    --accent: 193 20% 92%;
+    --accent: 197 14% 93%;
     --accent-foreground: 222 47% 11%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 193 25% 87%;
-    --input: 193 25% 87%;
+    --border: 197 16% 88%;
+    --input: 197 16% 88%;
     --ring: 192 89% 45%;
     --porygon-red: 346 57% 47%;
     --btn-primary: 346 57% 47%;
@@ -148,13 +148,6 @@
   100% { background-position: 200% 0; }
 }
 
-@keyframes bounce-in {
-  0%   { transform: scale(0.35) translateY(10px); opacity: 0; }
-  55%  { transform: scale(1.06); opacity: 1; }
-  75%  { transform: scale(0.96); }
-  100% { transform: scale(1); opacity: 1; }
-}
-
 @keyframes stat-fill {
   from { width: 0; }
 }
@@ -191,9 +184,6 @@
   .animate-palette-in {
     animation: palette-in 0.15s ease-out both;
   }
-  .animate-bounce-in {
-    animation: bounce-in 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  }
   .animate-stat-fill {
     animation: stat-fill 0.8s ease-out both;
   }
@@ -216,16 +206,6 @@
     background-size: 200% 100%;
     animation: shimmer 1.5s ease-in-out infinite;
   }
-
-  /* Type badge hover scale + brighten */
-  .type-badge {
-    display: inline-block;
-    transition: transform 0.15s ease, filter 0.15s ease;
-  }
-  .type-badge:hover {
-    transform: scale(1.1);
-    filter: brightness(1.2) saturate(1.15);
-  }
 }
 
 .sparkle-particle {
@@ -246,11 +226,6 @@
     background: hsl(var(--muted));
   }
 
-  /* Sprite entrance: drop the bounce, keep a quick fade */
-  .animate-bounce-in {
-    animation: fade-in 0.15s ease-out both;
-  }
-
   /* Stat bars: appear instantly */
   .animate-stat-fill {
     animation: none;
@@ -264,10 +239,5 @@
   /* Sparkle burst: skip entirely */
   .sparkle-particle {
     display: none;
-  }
-
-  /* Type badge: no scale on hover */
-  .type-badge:hover {
-    transform: none;
   }
 }
