@@ -87,8 +87,8 @@ export function TypeChartPage({ game }: { game: GameOption | null }) {
             {types.map((atkType, atkIdx) => (
               <Tooltip key={atkType} content={atkType.charAt(0).toUpperCase() + atkType.slice(1)} side="right">
                 <div className={cn(
-                  "h-7 w-7 rounded-sm transition-colors",
-                  hovered?.row === atkIdx && "bg-primary/15",
+                  "h-7 w-7 rounded-sm transition-opacity",
+                  hovered !== null && hovered.row !== atkIdx && "opacity-25",
                 )}>
                   <img src={typeIconUrl(atkType)} alt={atkType} className="block h-7 w-7" />
                 </div>
@@ -97,15 +97,15 @@ export function TypeChartPage({ game }: { game: GameOption | null }) {
           </div>
 
           {/* Table — column headers sticky to top */}
-          <table style={{ borderCollapse: "separate", borderSpacing: "2px" }}>
+          <table style={{ borderCollapse: "separate", borderSpacing: "2px" }} onMouseLeave={() => setHovered(null)}>
             <thead>
               <tr>
                 {types.map((defType, defIdx) => (
                   <th key={defType} className="sticky top-0 z-10 bg-background p-0 pb-1 align-bottom">
                     <Tooltip content={defType.charAt(0).toUpperCase() + defType.slice(1)}>
                       <div className={cn(
-                        "mx-auto h-7 w-7 rounded-sm transition-colors",
-                        hovered?.col === defIdx && "bg-primary/15",
+                        "mx-auto h-7 w-7 rounded-sm transition-opacity",
+                        hovered !== null && hovered.col !== defIdx && "opacity-25",
                       )}>
                         <img src={typeIconUrl(defType)} alt={defType} className="h-7 w-7" />
                       </div>
@@ -127,7 +127,6 @@ export function TypeChartPage({ game }: { game: GameOption | null }) {
                     return (
                       <td key={defIdx} className="p-0"
                         onMouseEnter={() => setHovered({ row: atkIdx, col: defIdx })}
-                        onMouseLeave={() => setHovered(null)}
                       >
                         <div
                           className={cn(
@@ -139,9 +138,9 @@ export function TypeChartPage({ game }: { game: GameOption | null }) {
                                 : isWeak
                                   ? "bg-red-500 text-white"
                                   : "bg-muted/30 text-muted-foreground/30",
-                            // Highlight row/col: brighten normal cells, add ring to coloured cells
-                            isHighlighted && !isSuper && !isWeak && !isImmune && "bg-muted/60 text-muted-foreground/60",
-                            isActive && "ring-2 ring-primary/50 ring-inset z-10",
+                            // Dim everything outside the cross; brighten neutral cells inside it
+                            hovered !== null && !isHighlighted && "opacity-25",
+                            isHighlighted && !isSuper && !isWeak && !isImmune && "bg-muted text-muted-foreground",
                           )}
                         >
                           {isImmune ? "0" : isSuper ? "2" : isWeak ? "½" : "·"}
