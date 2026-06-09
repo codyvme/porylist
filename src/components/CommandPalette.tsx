@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
-import { Search, List, Swords, Sparkles, Backpack, House, Trophy, Users, Crosshair, Scale, Leaf, Dna, Clock, ArrowRight, Grid3X3 } from "lucide-react";
+import { Search, BookHeart, Swords, Pill, Backpack, House, Trophy, Users, Crosshair, Scale, Leaf, Dna, Clock, ArrowRight, Grid3X3 } from "lucide-react";
 import {
   usePokemonSummaryList,
   useMoveList,
@@ -25,6 +26,7 @@ const RECENTS_KEY = "porylist-palette-recents-v1";
 const RECENTS_MAX = 6;
 
 type ResultKind = "pokemon" | "move" | "ability" | "item" | "action";
+type KindFilter = "all" | ResultKind;
 
 type EntityResult =
   | { kind: "pokemon"; key: string; label: string; sub: string; sortScore: number; data: PokemonSummary }
@@ -45,9 +47,9 @@ type ActionResult = {
 type Result = EntityResult | ActionResult;
 
 const KIND_META: Record<ResultKind, { label: string; Icon: React.ElementType }> = {
-  pokemon: { label: "Pokémon", Icon: List },
+  pokemon: { label: "Pokémon", Icon: BookHeart },
   move:    { label: "Move",    Icon: Swords },
-  ability: { label: "Ability", Icon: Sparkles },
+  ability: { label: "Ability", Icon: Pill },
   item:    { label: "Item",    Icon: Backpack },
   action:  { label: "Action",  Icon: ArrowRight },
 };
@@ -105,24 +107,59 @@ function score(name: string, displayName: string, q: string): number {
   return 3 + best * 0.1;
 }
 
-function ResultIcon({ result }: { result: Result }) {
+/**
+ * Returns the set of character indices in `label` that match `query`.
+ * Prefers substring runs; falls back to fuzzy individual characters.
+ */
+function matchIndices(label: string, query: string): Set<number> {
+  if (!query) return new Set();
+  const l = label.toLowerCase();
+  const q = query.toLowerCase();
+
+  // Substring: highlight the whole matching run
+  const idx = l.indexOf(q);
+  if (idx !== -1) {
+    const s = new Set<number>();
+    for (let i = idx; i < idx + q.length; i++) s.add(i);
+    return s;
+  }
+
+  // Fuzzy: walk through and collect matched char indices
+  const s = new Set<number>();
+  let qi = 0;
+  for (let si = 0; si < l.length && qi < q.length; si++) {
+    if (l[si] === q[qi]) { s.add(si); qi++; }
+  }
+  return qi === q.length ? s : new Set();
+}
+
+function HighlightedLabel({ label, query }: { label: string; query: string }) {
+  const highlighted = useMemo(() => matchIndices(label, query), [label, query]);
+  if (!query || highlighted.size === 0) return <>{label}</>;
+  return (
+    <>
+      {Array.from(label).map((char, i) =>
+        highlighted.has(i)
+          ? <span key={i} className="text-primary font-bold">{char}</span>
+          : <span key={i}>{char}</span>
+      )}
+    </>
+  );
+}
+
+function ResultIcon({ result, active }: { result: Result; active: boolean }) {
   if (result.kind === "pokemon") {
     return <SpriteImg src={spriteUrl(result.data.id)} alt="" size="h-8 w-8" />;
   }
   if (result.kind === "item") {
     return <SpriteImg src={`${ITEM_SPRITES}/${result.data.name}.png`} alt="" size="h-7 w-7" />;
   }
-  if (result.kind === "action") {
-    const { Icon } = result;
-    return (
-      <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted text-muted-foreground">
-        <Icon className="h-4 w-4" />
-      </div>
-    );
-  }
-  const { Icon } = KIND_META[result.kind];
+  const Icon = result.kind === "action" ? result.Icon : KIND_META[result.kind].Icon;
   return (
-    <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted text-muted-foreground">
+    <div className={cn(
+      "flex h-8 w-8 items-center justify-center rounded-md transition-colors",
+      active ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground",
+    )}>
       <Icon className="h-4 w-4" />
     </div>
   );
@@ -152,9 +189,19 @@ interface CommandPaletteProps {
   game: GameOption | null;
 }
 
+const KIND_FILTER_LABELS: Record<KindFilter, string> = {
+  all:     "All",
+  pokemon: "Pokémon",
+  move:    "Moves",
+  ability: "Abilities",
+  item:    "Items",
+  action:  "Actions",
+};
+
 export function CommandPalette({ open, onClose, game }: CommandPaletteProps) {
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
+  const [kindFilter, setKindFilter] = useState<KindFilter>("all");
   const [recents, setRecents] = useState<string[]>(loadRecents);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -167,11 +214,12 @@ export function CommandPalette({ open, onClose, game }: CommandPaletteProps) {
 
   const [selected, setSelected] = useState<EntityResult | null>(null);
 
-  // Reset query each time the palette is opened
+  // Reset state each time the palette is opened
   useEffect(() => {
     if (open) {
       setQuery("");
       setActiveIndex(0);
+      setKindFilter("all");
       setRecents(loadRecents());
       requestAnimationFrame(() => inputRef.current?.focus());
     }
@@ -229,9 +277,9 @@ export function CommandPalette({ open, onClose, game }: CommandPaletteProps) {
     const nav = (to: string) => () => navigate(to);
     return [
       { kind: "action", key: "action:nav-dashboard", label: "Go to Dashboard",         sub: "Navigation", Icon: House,     sortScore: 0, perform: nav("/") },
-      { kind: "action", key: "action:nav-pokedex",   label: "Go to Pokédex",           sub: "Navigation", Icon: List,      sortScore: 0, perform: nav("/pokedex") },
+      { kind: "action", key: "action:nav-pokedex",   label: "Go to Pokédex",           sub: "Navigation", Icon: BookHeart, sortScore: 0, perform: nav("/pokedex") },
       { kind: "action", key: "action:nav-moves",     label: "Go to Moves",             sub: "Navigation", Icon: Swords,    sortScore: 0, perform: nav("/moves") },
-      { kind: "action", key: "action:nav-abilities", label: "Go to Abilities",         sub: "Navigation", Icon: Sparkles,  sortScore: 0, perform: nav("/abilities") },
+      { kind: "action", key: "action:nav-abilities", label: "Go to Abilities",         sub: "Navigation", Icon: Pill,      sortScore: 0, perform: nav("/abilities") },
       { kind: "action", key: "action:nav-items",     label: "Go to Items",             sub: "Navigation", Icon: Backpack,  sortScore: 0, perform: nav("/items") },
       { kind: "action", key: "action:nav-natures",   label: "Go to Natures",           sub: "Navigation", Icon: Leaf,      sortScore: 0, perform: nav("/natures") },
       { kind: "action", key: "action:nav-routes",    label: "Go to Playthroughs",      sub: "Navigation", Icon: Trophy,    sortScore: 0, perform: nav("/routes") },
@@ -244,7 +292,8 @@ export function CommandPalette({ open, onClose, game }: CommandPaletteProps) {
     ];
   }, [navigate]);
 
-  const searchResults = useMemo<Result[]>(() => {
+  // All matching results for the query, uncapped and unfiltered by kind (used for counts)
+  const allSearchResults = useMemo<Result[]>(() => {
     const q = query.trim().toLowerCase();
     if (!q) return [];
     const out: Result[] = [];
@@ -299,8 +348,25 @@ export function CommandPalette({ open, onClose, game }: CommandPaletteProps) {
     }
 
     out.sort((a, b) => a.sortScore - b.sortScore || a.label.localeCompare(b.label));
-    return out.slice(0, MAX_RESULTS);
+    return out;
   }, [query, pokemon, moves, abilities, items, speciesIdMap, quickActions]);
+
+  // Per-kind counts for the filter pills
+  const kindCounts = useMemo<Partial<Record<KindFilter, number>>>(() => {
+    const counts: Partial<Record<KindFilter, number>> = { all: allSearchResults.length };
+    for (const r of allSearchResults) {
+      counts[r.kind] = (counts[r.kind] ?? 0) + 1;
+    }
+    return counts;
+  }, [allSearchResults]);
+
+  // The results actually shown — kind-filtered and capped
+  const searchResults = useMemo<Result[]>(() => {
+    const filtered = kindFilter === "all"
+      ? allSearchResults
+      : allSearchResults.filter((r) => r.kind === kindFilter);
+    return filtered.slice(0, MAX_RESULTS);
+  }, [allSearchResults, kindFilter]);
 
   const recentResults = useMemo<EntityResult[]>(() => {
     const out: EntityResult[] = [];
@@ -324,7 +390,7 @@ export function CommandPalette({ open, onClose, game }: CommandPaletteProps) {
 
   const flatResults = useMemo(() => sections.flatMap((s) => s.results), [sections]);
 
-  useEffect(() => { setActiveIndex(0); }, [query]);
+  useEffect(() => { setActiveIndex(0); }, [query, kindFilter]);
 
   // Keep active row in view
   useEffect(() => {
@@ -352,21 +418,26 @@ export function CommandPalette({ open, onClose, game }: CommandPaletteProps) {
 
   if (!open && !selected) return null;
 
+  const isSearching = Boolean(query.trim());
+  // Which kind filters have results (always show "all")
+  const visibleFilters: KindFilter[] = ["all", ...((["pokemon", "move", "ability", "item", "action"] as const).filter((k) => (kindCounts[k] ?? 0) > 0))];
+
   // Walking index across all sections so each row gets a globally unique data-index
   let walkingIndex = -1;
 
   return (
     <>
-      {open && (
+      {open && createPortal(
         <div
-          className="fixed inset-0 z-[60] flex items-start justify-center bg-black/60 p-4 pt-[15vh]"
+          className="fixed inset-0 z-[60] flex items-start justify-center bg-black/60 backdrop-blur-sm p-4 pt-[15vh]"
           onClick={onClose}
         >
           <div
-            className="w-full max-w-xl overflow-hidden rounded-xl border border-border bg-background shadow-2xl"
+            className="animate-palette-in w-full max-w-xl overflow-hidden rounded-xl border border-border bg-background shadow-2xl"
             onClick={(e) => e.stopPropagation()}
             onKeyDown={handleKeyDown}
           >
+            {/* Search input */}
             <div className="flex items-center gap-3 border-b border-border px-4">
               <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
               <input
@@ -382,15 +453,43 @@ export function CommandPalette({ open, onClose, game }: CommandPaletteProps) {
               </kbd>
             </div>
 
+            {/* Kind filter pills — only when searching */}
+            {isSearching && visibleFilters.length > 2 && (
+              <div className="flex gap-1.5 overflow-x-auto border-b border-border px-3 py-2 scrollbar-none">
+                {visibleFilters.map((kind) => {
+                  const count = kindCounts[kind] ?? 0;
+                  const active = kindFilter === kind;
+                  return (
+                    <button
+                      key={kind}
+                      onClick={() => setKindFilter(kind)}
+                      className={cn(
+                        "shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+                        active
+                          ? "bg-primary/15 text-primary ring-1 ring-inset ring-primary/30"
+                          : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground",
+                      )}
+                    >
+                      {KIND_FILTER_LABELS[kind]}
+                      <span className={cn("ml-1 tabular-nums", active ? "text-primary/70" : "text-muted-foreground/70")}>
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Results list */}
             <div ref={listRef} className="max-h-[50vh] overflow-y-auto py-1">
               {flatResults.length === 0 ? (
                 <div className="px-4 py-8 text-center text-sm text-muted-foreground">
-                  {query.trim() ? "No results" : "Start typing to search…"}
+                  {isSearching ? "No results" : "Start typing to search…"}
                 </div>
               ) : (
                 sections.map((section, sIdx) => (
                   <div key={section.heading}>
-                    {!query.trim() && (
+                    {!isSearching && (
                       <div className={cn(
                         "flex items-center gap-1.5 px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground",
                         sIdx > 0 && "mt-1 border-t border-border pt-3",
@@ -403,6 +502,7 @@ export function CommandPalette({ open, onClose, game }: CommandPaletteProps) {
                       walkingIndex += 1;
                       const i = walkingIndex;
                       const { Icon } = KIND_META[r.kind];
+                      const isActive = i === activeIndex;
                       return (
                         <button
                           key={r.key}
@@ -410,16 +510,24 @@ export function CommandPalette({ open, onClose, game }: CommandPaletteProps) {
                           onMouseEnter={() => setActiveIndex(i)}
                           onClick={() => handleSelect(r)}
                           className={cn(
-                            "flex w-full items-center gap-3 px-3 py-2 text-left",
-                            i === activeIndex ? "bg-muted" : "bg-transparent",
+                            "flex w-full items-center gap-3 rounded-md px-3 py-2 text-left transition-colors",
+                            isActive ? "bg-primary/[0.08]" : "hover:bg-muted/50",
                           )}
                         >
-                          <ResultIcon result={r} />
+                          <ResultIcon result={r} active={isActive} />
                           <div className="min-w-0 flex-1">
-                            <div className="truncate text-sm font-medium text-foreground">{r.label}</div>
+                            <div className="truncate text-sm font-medium text-foreground">
+                              {isSearching
+                                ? <HighlightedLabel label={r.label} query={query.trim()} />
+                                : r.label
+                              }
+                            </div>
                             <div className="truncate text-xs text-muted-foreground">{r.sub}</div>
                           </div>
-                          <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                          <Icon className={cn(
+                            "h-3.5 w-3.5 shrink-0 transition-colors",
+                            isActive ? "text-primary/60" : "text-muted-foreground",
+                          )} />
                         </button>
                       );
                     })}
@@ -428,6 +536,7 @@ export function CommandPalette({ open, onClose, game }: CommandPaletteProps) {
               )}
             </div>
 
+            {/* Footer */}
             <div className="flex items-center justify-between gap-2 border-t border-border px-3 py-2 text-[11px] text-muted-foreground">
               <div className="flex items-center gap-2">
                 <kbd className="rounded border border-border px-1 py-0.5">↑↓</kbd>
@@ -435,12 +544,17 @@ export function CommandPalette({ open, onClose, game }: CommandPaletteProps) {
                 <kbd className="rounded border border-border px-1 py-0.5">↵</kbd>
                 <span>open</span>
               </div>
-              {query.trim() && (
-                <span>{flatResults.length} result{flatResults.length === 1 ? "" : "s"}</span>
+              {isSearching && (
+                <span>
+                  {flatResults.length}
+                  {kindFilter !== "all" && allSearchResults.length !== flatResults.length && ` of ${kindCounts.all}`}
+                  {" "}result{flatResults.length === 1 ? "" : "s"}
+                </span>
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
 
       {selected?.kind === "pokemon" && (

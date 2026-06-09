@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { SparkleBurst } from "@/components/SparkleBurst";
 import { SpriteImg } from "@/components/SpriteImg";
 import { useNavigate } from "react-router-dom";
@@ -1051,7 +1052,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
     { id: "tutor",    label: "Move Tutor",  count: filteredMoves.tutor.length },
   ];
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex min-h-full items-start justify-center px-4 py-8">
         {/* Backdrop */}
@@ -1711,6 +1712,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

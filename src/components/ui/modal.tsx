@@ -1,4 +1,5 @@
-import type { ReactNode } from "react";
+import { type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import { useEscapeKey } from "@/lib/hooks";
 
@@ -9,18 +10,18 @@ interface ModalProps {
   maxWidth?: string;
   /** Extra classes for the inner panel (e.g. "max-h-[90vh] flex flex-col"). */
   className?: string;
-  /** Blur the backdrop. Default: false */
+  /** Blur the backdrop. Default: true */
   blur?: boolean;
 }
 
 /**
  * Centered modal dialog with a click-outside + Escape-to-close backdrop.
- * Renders an overlay and an inner panel; supply the header/body as children.
+ * Portals to document.body so backdrop-filter blurs all page content uniformly.
  */
-export function Modal({ onClose, children, maxWidth = "max-w-lg", className, blur = false }: ModalProps) {
+export function Modal({ onClose, children, maxWidth = "max-w-lg", className, blur = true }: ModalProps) {
   useEscapeKey(onClose);
 
-  return (
+  return createPortal(
     <div
       className={cn(
         "fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4",
@@ -34,6 +35,7 @@ export function Modal({ onClose, children, maxWidth = "max-w-lg", className, blu
       >
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

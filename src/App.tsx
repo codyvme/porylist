@@ -393,7 +393,7 @@ function IconRail() {
       "dark:border-[hsl(193_60%_18%/0.6)] dark:bg-gradient-to-b dark:from-[hsl(193_70%_14%)] dark:to-[hsl(230_50%_5%)]",
       navExpanded ? "w-52" : "w-14",
     )}>
-      <div ref={navListRef} className="relative flex flex-col">
+      <div ref={navListRef} className="relative flex flex-col pt-1">
         {/* Sliding active indicator */}
         {indicatorTop !== null && (
           <div
@@ -405,7 +405,7 @@ function IconRail() {
           if (isNavSection(item)) {
             return (
               <div key={`sec-${i}`} className="mt-3 mb-1">
-                <div className="border-t border-black/10 dark:border-white/20 mb-1.5" />
+                <div className="border-t border-black/10 dark:border-white/20 mb-2" />
                 <span className={cn(
                   "block px-3.5 text-[11px] font-bold uppercase tracking-wider text-slate-500/80 dark:text-slate-400/80 transition-all duration-200 overflow-hidden",
                   navExpanded ? "max-h-6 opacity-100" : "max-h-0 opacity-0",
@@ -502,7 +502,7 @@ function MobileDrawer({ open, onClose, onOpenAbout }: { open: boolean; onClose: 
             if (isNavSection(item)) {
               return (
                 <div key={`sec-${i}`} className="mt-3 mb-1">
-                  <div className="mb-1.5 border-t border-black/10 dark:border-white/20" />
+                  <div className="mb-2 border-t border-black/10 dark:border-white/20" />
                   <span className="block px-5 text-[11px] font-bold uppercase tracking-wider text-slate-500/80 dark:text-slate-400/80">
                     {item.label}
                   </span>
@@ -528,7 +528,7 @@ function MobileDrawer({ open, onClose, onOpenAbout }: { open: boolean; onClose: 
             );
           })}
           <div className="mt-3 mb-1">
-            <div className="mb-1.5 border-t border-black/10 dark:border-white/20" />
+            <div className="mb-2 border-t border-black/10 dark:border-white/20" />
           </div>
           <button
             onClick={() => { onClose(); onOpenAbout(); }}
