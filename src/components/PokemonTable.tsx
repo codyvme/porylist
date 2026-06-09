@@ -1233,7 +1233,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
                     key={t}
                     onClick={() => toggleType(t)}
                     className={cn(
-                      "rounded-full border-0 px-2.5 py-0.5 text-xs font-semibold capitalize transition-opacity",
+                      "rounded-md border-0 px-2 py-0.5 text-xs font-semibold capitalize transition-opacity",
                       selectedTypes.has(t) ? "opacity-100 ring-2 ring-white/40 ring-offset-1 ring-offset-background" : "opacity-40 hover:opacity-70",
                     )}
                     style={typeStyle(t)}

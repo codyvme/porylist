@@ -23,7 +23,7 @@ function CategoryBadge({ category }: { category: string }) {
   if (!s) return <span className="text-xs capitalize text-muted-foreground">{category}</span>;
   return (
     <span
-      className="inline-block rounded-full px-2 py-0.5 text-xs font-medium text-white"
+      className="inline-block rounded-md px-2 py-0.5 text-xs font-semibold text-white"
       style={{ backgroundColor: s.bg }}
     >
       {s.label}
@@ -36,7 +36,7 @@ function CategoryBadge({ category }: { category: string }) {
 function LocalTypeBadge({ type }: { type: string }) {
   return (
     <span
-      className="inline-block rounded-full px-2 py-0.5 text-xs font-medium capitalize text-white"
+      className="inline-block rounded-md px-2 py-0.5 text-xs font-semibold capitalize text-white"
       style={{ backgroundColor: TYPE_COLORS[type] ?? "#A8A8A8" }}
     >
       {type}

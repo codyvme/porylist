@@ -603,7 +603,7 @@ function TrainerTeamModal({ trainer, game, onClose }: { trainer: TrainerEntry; g
                           >
                             {m.type && (
                               <span
-                                className="w-14 shrink-0 rounded-full py-0.5 text-center text-[9px] font-bold uppercase tracking-wide text-white"
+                                className="w-14 shrink-0 rounded-md py-0.5 text-center text-[9px] font-bold uppercase tracking-wide text-white"
                                 style={{ backgroundColor: moveColor ?? undefined }}
                               >
                                 {m.type}

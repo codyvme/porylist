@@ -237,7 +237,7 @@ function VersionBadge({ version }: { version: string }) {
   if (!hex) return <span className="text-xs text-muted-foreground">{formatVersionName(version)}</span>;
   return (
     <span
-      className="inline-block rounded-full px-2 py-0.5 text-xs font-medium"
+      className="inline-block rounded-md px-2 py-0.5 text-xs font-medium"
       style={{ backgroundColor: `#${hex}`, color: versionTextColor(hex) }}
     >
       {formatVersionName(version)}
@@ -426,7 +426,7 @@ function DamageCategoryBadge({ category }: { category: string }) {
   const bg = CATEGORY_COLORS[category] ?? CATEGORY_COLORS.status;
   return (
     <span
-      className="rounded-full px-2 py-0.5 text-xs font-medium capitalize text-white"
+      className="rounded-md px-2 py-0.5 text-xs font-semibold capitalize text-white"
       style={{ backgroundColor: bg }}
     >
       {category}
