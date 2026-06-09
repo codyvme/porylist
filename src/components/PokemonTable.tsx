@@ -484,7 +484,11 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
   onOpenInCatchTracker?: (gameValue: string, locationKey: string) => void;
 }) {
   const summaryQuery = usePokemonSummaryList();
-  const summaryList = summaryQuery.data;
+  // Delay expensive per-row computation until after the first paint so the
+  // nav indicator animation gets its frame before any heavy work begins.
+  const [dataReady, setDataReady] = useState(false);
+  useEffect(() => { setDataReady(true); }, []);
+  const summaryList = dataReady ? summaryQuery.data : undefined;
 
   const allEntriesQuery = useAllPokemonEntries();
 
@@ -543,26 +547,25 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
       }
     }
 
+    // Build a set for O(1) lookups — avoids the O(n_forms × n_baseNames) nested
+    // loop that was hammering the main thread on every Pokédex mount.
+    const baseNameSet = new Set(baseNames);
     const map: Record<string, string[]> = {};
     for (const entry of allEntriesQuery.data.results) {
       const id = extractIdFromUrl(entry.url);
       if (id <= 1025) continue;
+      // Probe longest prefix first: "mr-mime-galar" → try "mr-mime" before "mr"
+      const parts = entry.name.split("-");
       let bestBase: string | null = null;
-      for (const baseName of baseNames) {
-        if (
-          entry.name.startsWith(baseName + "-") &&
-          (!bestBase || baseName.length > bestBase.length)
-        ) {
-          bestBase = baseName;
-        }
+      for (let i = parts.length - 1; i >= 1; i--) {
+        const candidate = parts.slice(0, i).join("-");
+        if (baseNameSet.has(candidate)) { bestBase = candidate; break; }
       }
       // Fallback: match via species prefix (handles deoxys-attack → deoxys-normal, etc.)
       if (!bestBase) {
-        for (const [speciesName, baseName] of Object.entries(speciesToBase)) {
-          if (entry.name.startsWith(speciesName + "-")) {
-            bestBase = baseName;
-            break;
-          }
+        for (let i = parts.length - 1; i >= 1; i--) {
+          const candidate = parts.slice(0, i).join("-");
+          if (speciesToBase[candidate]) { bestBase = speciesToBase[candidate]; break; }
         }
       }
       if (bestBase) {
@@ -1098,7 +1101,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
     return positions;
   }, [displayRows]);
 
-  if (summaryQuery.isLoading) {
+  if (!dataReady || summaryQuery.isLoading) {
     return (
       <div className="flex items-center justify-center py-24 text-muted-foreground">
         Loading Pokémon…
