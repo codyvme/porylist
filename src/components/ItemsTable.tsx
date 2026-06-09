@@ -1,23 +1,17 @@
 import { useMemo, useState, useCallback } from "react";
-import { ChevronDown, ChevronUp, ChevronsUpDown, Search, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { useItemList, type ItemListEntry } from "@/lib/pokeapi";
 import { type GameOption } from "@/lib/games";
 import { SpriteImg } from "@/components/SpriteImg";
 import { Select } from "@/components/ui/select";
 import { ItemModal } from "@/components/ItemModal";
-import { cn } from "@/lib/utils";
 import { GameFilter } from "@/components/GameFilter";
+import { SortableTh, type SortDir } from "@/components/ui/sortable-th";
 import { useSearchParams } from "react-router-dom";
 
 const SPRITES_BASE = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items";
 
 type SortKey = "id" | "displayName" | "category" | "cost";
-type SortDir = "asc" | "desc";
-
-function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
-  if (!active) return <ChevronsUpDown className="h-3 w-3 opacity-30" />;
-  return dir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />;
-}
 
 function ItemSprite({ name }: { name: string }) {
   return <SpriteImg src={`${SPRITES_BASE}/${name}.png`} alt={name} size="h-8 w-8" />;
@@ -106,18 +100,7 @@ export function ItemsTable({ game: selectedGame }: { game: GameOption | null }) 
   }
 
   const Th = ({ col, label, className }: { col: SortKey; label: string; className?: string }) => (
-    <th
-      className={cn(
-        "pb-2 pr-4 text-left text-xs font-medium text-muted-foreground cursor-pointer select-none hover:text-foreground whitespace-nowrap",
-        className,
-      )}
-      onClick={() => handleSort(col)}
-    >
-      <span className="flex items-center gap-1">
-        {label}
-        <SortIcon active={sortKey === col} dir={sortDir} />
-      </span>
-    </th>
+    <SortableTh col={col} label={label} sortKey={sortKey} sortDir={sortDir} onSort={handleSort} className={className} />
   );
 
   return (

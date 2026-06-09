@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { Search, UserRound, X } from "lucide-react";
 import { cn, formatPokemonName } from "@/lib/utils";
 import { usePokemonSummaryList, usePokemonSummaryMap, type PokemonSummary } from "@/lib/pokeapi";
@@ -30,11 +30,15 @@ interface PokemonSearchProps {
   autoFocus?: boolean;
 }
 
+export interface PokemonSearchHandle {
+  focus: () => void;
+}
+
 /**
  * Shared Pokémon autocomplete search input with sprite dropdown.
  * Shows the selected Pokémon's name when closed; clears to search on focus.
  */
-export function PokemonSearch({
+export const PokemonSearch = forwardRef<PokemonSearchHandle, PokemonSearchProps>(function PokemonSearch({
   value,
   onChange,
   placeholder = "Search Pokémon…",
@@ -47,12 +51,16 @@ export function PokemonSearch({
   clearable = true,
   className,
   autoFocus = false,
-}: PokemonSearchProps) {
+}, ref) {
   const { data: summaryList = [] } = usePokemonSummaryList();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+
+  useImperativeHandle(ref, () => ({
+    focus() { inputRef.current?.focus(); },
+  }));
 
   // Auto-focus on mount if requested
   useEffect(() => {
@@ -188,4 +196,4 @@ export function PokemonSearch({
       )}
     </div>
   );
-}
+});

@@ -7,13 +7,14 @@ import {
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
+  type Cell,
   type ColumnDef,
   type SortingState,
   type VisibilityState,
   type Row as TableRow,
   useReactTable,
 } from "@tanstack/react-table";
-import { useVirtualizer } from "@tanstack/react-virtual";
+import { useVirtualizer, type VirtualItem } from "@tanstack/react-virtual";
 import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, ChevronsUpDown, ListFilter, Loader2, Search, SlidersHorizontal, Volume2, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -26,6 +27,7 @@ import {
   usePokemonSummaryList,
   useVersionExclusives,
   VERSION_GROUP_TO_GEN,
+  type Pokemon,
   type PokemonFormDataMap,
   type PokemonSummary,
 } from "@/lib/pokeapi";
@@ -264,8 +266,8 @@ function buildRow(
 const MemoizedVirtualRow = React.memo(({
   vRow, dRow, gridTemplate, isGen1, generation, columnVisibility, formDetailsMap, formDataMap, openModal
 }: {
-  vRow: any; dRow: any; gridTemplate: string; isGen1: boolean; generation: number | undefined;
-  columnVisibility: any; formDetailsMap: any; formDataMap: any; openModal: (name: string) => void;
+  vRow: VirtualItem; dRow: DisplayRow; gridTemplate: string; isGen1: boolean; generation: number | undefined;
+  columnVisibility: VisibilityState; formDetailsMap: Record<string, Pokemon> | undefined; formDataMap: PokemonFormDataMap | undefined; openModal: (name: string) => void;
 }) => {
  if (dRow.kind === "gen-divider") {
                 return (
@@ -298,7 +300,7 @@ const MemoizedVirtualRow = React.memo(({
                   >
                     {/* Hover overlay — semi-transparent so type tint stays visible */}
                     <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-black/5 dark:bg-white/5" />
-                    {row.getVisibleCells().map((cell: any) => (
+                    {row.getVisibleCells().map((cell: Cell<Row, unknown>) => (
                       <div
                         key={cell.id}
                         className="flex items-center px-3 py-3 text-sm"

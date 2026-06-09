@@ -1,18 +1,13 @@
 import { useMemo, useState, useCallback } from "react";
-import { ChevronDown, ChevronUp, ChevronsUpDown, Search, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { useAbilityList, type AbilityListEntry } from "@/lib/pokeapi";
 import { type GameOption } from "@/lib/games";
 import { AbilityModal } from "@/components/AbilityModal";
 import { useSearchParams } from "react-router-dom";
 import { GameFilter } from "@/components/GameFilter";
+import { SortableTh, type SortDir } from "@/components/ui/sortable-th";
 
 type SortKey = "id" | "displayName";
-type SortDir = "asc" | "desc";
-
-function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
-  if (!active) return <ChevronsUpDown className="h-3 w-3 opacity-30" />;
-  return dir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />;
-}
 
 export function AbilitiesTable({ game: selectedGame }: { game: GameOption | null }) {
   const { data: abilities, isLoading } = useAbilityList();
@@ -69,15 +64,7 @@ export function AbilitiesTable({ game: selectedGame }: { game: GameOption | null
   }
 
   const Th = ({ col, label, className }: { col: SortKey; label: string; className?: string }) => (
-    <th
-      className={`pb-2 pr-4 text-left text-xs font-medium text-muted-foreground cursor-pointer select-none hover:text-foreground whitespace-nowrap ${className ?? ""}`}
-      onClick={() => handleSort(col)}
-    >
-      <span className="flex items-center gap-1">
-        {label}
-        <SortIcon active={sortKey === col} dir={sortDir} />
-      </span>
-    </th>
+    <SortableTh col={col} label={label} sortKey={sortKey} sortDir={sortDir} onSort={handleSort} className={className} />
   );
 
   return (

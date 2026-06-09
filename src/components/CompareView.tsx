@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   usePokemonSummaryList,
@@ -10,9 +10,10 @@ import { type GameOption, spriteUrl } from "@/lib/games";
 import { computeTypeEffectiveness } from "@/lib/type-chart";
 import { TYPE_COLORS } from "@/lib/types";
 import { formatPokemonName, cn } from "@/lib/utils";
+import { Plus } from "lucide-react";
 import { GameFilter } from "@/components/GameFilter";
 import { SpriteImg } from "@/components/SpriteImg";
-import { PokemonSearch } from "@/components/PokemonSearch";
+import { PokemonSearch, type PokemonSearchHandle } from "@/components/PokemonSearch";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -176,6 +177,10 @@ function CompareRow({
 export function CompareView({ game }: { game: GameOption | null }) {
   const { data: list } = usePokemonSummaryList();
   const [searchParams, setSearchParams] = useSearchParams();
+  const searchRef0 = useRef<PokemonSearchHandle>(null);
+  const searchRef1 = useRef<PokemonSearchHandle>(null);
+  const searchRef2 = useRef<PokemonSearchHandle>(null);
+  const searchRefs = [searchRef0, searchRef1, searchRef2];
 
   // Parse slot names from URL (?compare=pikachu,charizard,blastoise)
   const [slotNames, setSlotNames] = useState<[string | null, string | null, string | null]>(() => {
@@ -245,6 +250,7 @@ export function CompareView({ game }: { game: GameOption | null }) {
           {([0, 1, 2] as const).map((i) => (
             <PokemonSearch
               key={i}
+              ref={searchRefs[i]}
               value={slots[i]?.name ?? null}
               game={game ?? undefined}
               maxResults={60}
@@ -287,9 +293,13 @@ export function CompareView({ game }: { game: GameOption | null }) {
                         </div>
                       </>
                     ) : (
-                      <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-border">
-                        <span className="text-xl text-muted-foreground">?</span>
-                      </div>
+                      <button
+                        onClick={() => searchRefs[i].current?.focus()}
+                        className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-border text-muted-foreground transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        aria-label={`Choose Pokémon for slot ${i + 1}`}
+                      >
+                        <Plus className="h-6 w-6" />
+                      </button>
                     )}
                   </div>
                 );

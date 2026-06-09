@@ -1,5 +1,5 @@
 import { useMemo, useState, useCallback } from "react";
-import { ChevronDown, ChevronUp, ChevronsUpDown, Search, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { TYPE_COLORS } from "@/lib/types";
 import { ALL_TYPES } from "@/lib/type-chart";
 import { useMoveList, type MoveListEntry } from "@/lib/pokeapi";
@@ -8,6 +8,7 @@ import { MoveModal } from "@/components/MoveModal";
 import { Select } from "@/components/ui/select";
 import { GameFilter } from "@/components/GameFilter";
 import { useSearchParams } from "react-router-dom";
+import { SortableTh, type SortDir } from "@/components/ui/sortable-th";
 
 // ── Category badge ─────────────────────────────────────────────────────────────
 
@@ -46,12 +47,6 @@ function LocalTypeBadge({ type }: { type: string }) {
 // ── Sortable column header ─────────────────────────────────────────────────────
 
 type SortKey = "id" | "displayName" | "type" | "category" | "power" | "accuracy" | "pp";
-type SortDir = "asc" | "desc";
-
-function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
-  if (!active) return <ChevronsUpDown className="h-3 w-3 opacity-30" />;
-  return dir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />;
-}
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
@@ -133,15 +128,7 @@ export function MovesTable({ game: selectedGame }: { game: GameOption | null }) 
   }
 
   const Th = ({ col, label, right, className }: { col: SortKey; label: string; right?: boolean; className?: string }) => (
-    <th
-      className={`pb-2 pr-4 text-xs font-medium text-muted-foreground cursor-pointer select-none hover:text-foreground whitespace-nowrap ${right ? "text-right" : "text-left"} ${className ?? ""}`}
-      onClick={() => handleSort(col)}
-    >
-      <span className={`flex items-center gap-1 ${right ? "justify-end" : ""}`}>
-        {label}
-        <SortIcon active={sortKey === col} dir={sortDir} />
-      </span>
-    </th>
+    <SortableTh col={col} label={label} sortKey={sortKey} sortDir={sortDir} onSort={handleSort} right={right} className={className} />
   );
 
   return (
@@ -199,7 +186,7 @@ export function MovesTable({ game: selectedGame }: { game: GameOption | null }) 
               <Th col="id" label="#" className="hidden sm:table-cell" />
               <Th col="displayName" label="Name" />
               <Th col="type" label="Type" />
-              <Th col="category" label="Cat." />
+              <Th col="category" label="Category" />
               <Th col="power" label="Power" right className="hidden sm:table-cell" />
               <Th col="accuracy" label="Acc." right className="hidden sm:table-cell" />
               <Th col="pp" label="PP" right className="hidden sm:table-cell" />
