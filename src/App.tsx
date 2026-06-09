@@ -430,8 +430,8 @@ function IconRail() {
                 className={({ isActive }) => cn(
                   "flex h-11 w-full items-center border-l-2 border-transparent text-sm transition-colors",
                   isActive
-                    ? "bg-black/5 font-semibold text-foreground dark:bg-white/10 dark:text-white"
-                    : "font-medium text-muted-foreground hover:bg-black/5 hover:text-foreground dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-slate-200",
+                    ? "bg-primary/10 font-semibold text-primary dark:bg-primary/20 dark:text-white"
+                    : "font-medium text-muted-foreground hover:bg-primary/[0.07] hover:text-foreground dark:text-slate-400 dark:hover:bg-primary/15 dark:hover:text-slate-200",
                 )}
                 aria-label={item.label}
               >
@@ -450,7 +450,7 @@ function IconRail() {
         <Tooltip content={navExpanded ? "Collapse" : "Expand"} side="right" disabled={navExpanded}>
           <button
             onClick={() => setNavExpanded((v) => !v)}
-            className="flex h-11 w-full items-center border-l-2 border-transparent text-sm transition-colors text-muted-foreground hover:bg-black/5 hover:text-foreground dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-slate-200"
+            className="flex h-11 w-full items-center border-l-2 border-transparent text-sm transition-colors text-muted-foreground hover:bg-primary/[0.07] hover:text-foreground dark:text-slate-400 dark:hover:bg-primary/15 dark:hover:text-slate-200"
             aria-label={navExpanded ? "Collapse navigation" : "Expand navigation"}
           >
             <span className="flex w-14 shrink-0 items-center justify-center">
