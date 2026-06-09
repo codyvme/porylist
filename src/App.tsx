@@ -390,8 +390,8 @@ function IconRail() {
   return (
     <aside className={cn(
       "hidden sm:flex flex-col shrink-0 border-r py-2 overflow-x-hidden overflow-y-auto transition-all duration-200",
-      "border-border bg-gradient-to-b from-[hsl(192_40%_93%)] to-[hsl(220_18%_90%)]",
-      "dark:border-[hsl(193_60%_18%/0.6)] dark:bg-gradient-to-b dark:from-[hsl(193_70%_14%)] dark:to-[hsl(230_50%_5%)]",
+      "border-border bg-[hsl(192_55%_93%)]",
+      "dark:border-[hsl(193_60%_18%/0.6)] dark:bg-[hsl(193_55%_9%)]",
       navExpanded ? "w-52" : "w-14",
     )}>
       <div ref={navListRef} className="relative flex flex-col pt-1">
