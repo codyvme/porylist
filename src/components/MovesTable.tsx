@@ -1,5 +1,5 @@
 import { useMemo, useState, useCallback } from "react";
-import { Search, X } from "lucide-react";
+import { Search, X, Swords } from "lucide-react";
 import { TYPE_COLORS } from "@/lib/types";
 import { ALL_TYPES } from "@/lib/type-chart";
 import { useMoveList, type MoveListEntry } from "@/lib/pokeapi";
@@ -134,7 +134,7 @@ export function MovesTable({ game: selectedGame }: { game: GameOption | null }) 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3 px-6">
       <div className="shrink-0 flex items-center gap-3 border-b border-border py-3 -mx-6 px-6">
-        <h1 className="flex-1 text-xl font-semibold">Moves</h1>
+        <h1 className="flex items-center gap-2 flex-1 text-xl font-semibold"><Swords className="h-5 w-5 shrink-0" />Moves</h1>
         <GameFilter />
       </div>
       {/* Filters */}

@@ -2,7 +2,7 @@ import { useMemo, useState, useEffect, useLayoutEffect, useRef } from "react";
 import { PokemonModal, CryButton } from "@/components/PokemonModal";
 import { Link } from "react-router-dom";
 import {
-  Backpack, Crosshair, Dna, Leaf, List, Scale,
+  Backpack, Crosshair, Dna, House, Leaf, List, Scale,
   Sparkles, Swords, Trophy, Users, ArrowRight, Skull,
   Settings,
 } from "lucide-react";
@@ -595,7 +595,7 @@ export function HomePage({ game, user }: { game: GameOption | null; user: User |
 
       {/* Header */}
       <div className="flex items-center justify-between shrink-0 border-b border-border py-3 -mx-4 sm:-mx-6 px-4 sm:px-6 -mt-4">
-        <h1 className="text-xl font-semibold">Dashboard</h1>
+        <h1 className="flex items-center gap-2 text-xl font-semibold"><House className="h-5 w-5 shrink-0" />Dashboard</h1>
         <ModuleToggle config={moduleConfig} onChange={toggleModule} />
       </div>
 

@@ -277,7 +277,7 @@ export function CommandPalette({ open, onClose, game }: CommandPaletteProps) {
     const nav = (to: string) => () => navigate(to);
     return [
       { kind: "action", key: "action:nav-dashboard", label: "Go to Dashboard",         sub: "Navigation", Icon: House,     sortScore: 0, perform: nav("/") },
-      { kind: "action", key: "action:nav-pokedex",   label: "Go to Pokédex",           sub: "Navigation", Icon: BookHeart, sortScore: 0, perform: nav("/pokedex") },
+      { kind: "action", key: "action:nav-pokedex",   label: "Go to Pokédex",           sub: "Navigation", Icon: BookHeart,   sortScore: 0, perform: nav("/pokedex") },
       { kind: "action", key: "action:nav-moves",     label: "Go to Moves",             sub: "Navigation", Icon: Swords,    sortScore: 0, perform: nav("/moves") },
       { kind: "action", key: "action:nav-abilities", label: "Go to Abilities",         sub: "Navigation", Icon: Pill,      sortScore: 0, perform: nav("/abilities") },
       { kind: "action", key: "action:nav-items",     label: "Go to Items",             sub: "Navigation", Icon: Backpack,  sortScore: 0, perform: nav("/items") },
@@ -285,7 +285,7 @@ export function CommandPalette({ open, onClose, game }: CommandPaletteProps) {
       { kind: "action", key: "action:nav-routes",    label: "Go to Playthroughs",      sub: "Navigation", Icon: Trophy,    sortScore: 0, perform: nav("/routes") },
       { kind: "action", key: "action:nav-team",      label: "Go to Team Builder",      sub: "Navigation", Icon: Users,     sortScore: 0, perform: nav("/team") },
       { kind: "action", key: "action:nav-compare",   label: "Go to Compare",           sub: "Navigation", Icon: Scale,     sortScore: 0, perform: nav("/compare") },
-      { kind: "action", key: "action:nav-catch",     label: "Go to Catch Calculator",  sub: "Navigation", Icon: Crosshair, sortScore: 0, perform: nav("/catch") },
+      { kind: "action", key: "action:nav-catch",     label: "Go to Catch Calculator",  sub: "Navigation", Icon: Crosshair,   sortScore: 0, perform: nav("/catch") },
       { kind: "action", key: "action:nav-damage",    label: "Go to Damage Calculator", sub: "Navigation", Icon: Swords,    sortScore: 0, perform: nav("/damage") },
       { kind: "action", key: "action:nav-breeding",  label: "Go to Breeding Tracker",  sub: "Navigation", Icon: Dna,       sortScore: 0, perform: nav("/breeding") },
       { kind: "action", key: "action:nav-types",     label: "Go to Type Chart",         sub: "Navigation", Icon: Grid3X3,   sortScore: 0, perform: nav("/types") },

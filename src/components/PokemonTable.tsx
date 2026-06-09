@@ -15,7 +15,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useVirtualizer, type VirtualItem } from "@tanstack/react-virtual";
-import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, ChevronsUpDown, ListFilter, Loader2, Search, SlidersHorizontal, Volume2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, BookHeart, ChevronDown, ChevronRight, ChevronsUpDown, ListFilter, Loader2, Search, SlidersHorizontal, Volume2, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   extractIdFromUrl,
@@ -1117,7 +1117,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
   return (
     <div className="flex h-full flex-col gap-3 px-6">
       <div className="shrink-0 flex items-center gap-3 border-b border-border py-3 -mx-6 px-6">
-        <h1 className="flex-1 text-xl font-semibold">Pokédex</h1>
+        <h1 className="flex items-center gap-2 flex-1 text-xl font-semibold"><BookHeart className="h-5 w-5 shrink-0" />Pokédex</h1>
         <GameFilter />
       </div>
       <div className="flex flex-wrap items-center gap-2 pt-2">
