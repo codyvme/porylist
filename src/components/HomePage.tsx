@@ -190,13 +190,15 @@ function ModuleToggle({
 
 const STAT_LABELS: Record<string, string> = {
   hp: "HP", attack: "Atk", defense: "Def",
-  "special-attack": "SpA", "special-defense": "SpD", speed: "Spe",
+  "special-attack": "Sp. Atk", "special-defense": "Sp. Def", speed: "Spd",
 };
 
 function statColor(val: number): string {
+  if (val >= 150) return "bg-teal-500";
   if (val >= 100) return "bg-green-500";
-  if (val >= 60)  return "bg-yellow-500";
-  return "bg-red-400";
+  if (val >= 80)  return "bg-yellow-400";
+  if (val >= 50)  return "bg-orange-400";
+  return "bg-red-500";
 }
 
 function PokemonOfTheDay({ game }: { game: GameOption | null }) {
@@ -273,19 +275,19 @@ function PokemonOfTheDay({ game }: { game: GameOption | null }) {
                 ? `${SPRITES_ROOT}/versions/${game!.spriteVersion}/shiny/${pokemon.id}.png`
                 : `${SPRITES_ROOT}/other/home/shiny/${pokemon.id}.png`;
               return (
-                <div key={pokemon.id} className="relative h-36 w-36 animate-fade-in">
+                <div key={pokemon.id} className="relative h-48 w-48 animate-fade-in">
                   {!spriteLoaded && <div className="absolute inset-0 skeleton-shimmer rounded-lg" />}
                   <img
                     ref={heroImgRef}
                     src={normalSrc}
                     alt={formatPokemonName(pokemon.name)}
                     onLoad={() => setSpriteLoaded(true)}
-                    className={cn("absolute inset-0 h-36 w-36 object-contain drop-shadow-sm transition-opacity duration-200", showShiny ? "opacity-0" : "opacity-100")}
+                    className={cn("absolute inset-0 h-48 w-48 object-bottom object-contain drop-shadow-sm transition-opacity duration-200", showShiny ? "opacity-0" : "opacity-100")}
                   />
                   <img
                     src={shinySrc}
                     alt={`${formatPokemonName(pokemon.name)} shiny`}
-                    className={cn("absolute inset-0 h-36 w-36 object-contain drop-shadow-sm transition-opacity duration-200", showShiny ? "opacity-100" : "opacity-0")}
+                    className={cn("absolute inset-0 h-48 w-48 object-contain drop-shadow-sm transition-opacity duration-200", showShiny ? "opacity-100" : "opacity-0")}
                   />
                 </div>
               );
@@ -316,7 +318,7 @@ function PokemonOfTheDay({ game }: { game: GameOption | null }) {
               <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
                 Pokémon of the Day
               </p>
-              <div className="mt-0.5 flex items-center gap-2">
+              <div className="mt-0.5 flex flex-wrap items-center gap-2.5">
                 <button onClick={() => setModalOpen(true)} className="group inline-flex items-center">
                   <h2 className="text-2xl font-semibold text-primary group-hover:underline underline-offset-2">
                     {formatPokemonName(pokemon.name)}
@@ -324,38 +326,20 @@ function PokemonOfTheDay({ game }: { game: GameOption | null }) {
                 </button>
                 <CryButton
                   id={pokemon.id}
-                  className="text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                  className="shrink-0 rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors disabled:opacity-50"
                 />
-              </div>
-              <div className="mt-1.5 flex flex-wrap gap-1.5">
-                {pokemon.types.map((t) => (
-                  <span
-                    key={t.type.name}
-                    className="rounded px-2.5 py-0.5 text-xs font-semibold capitalize text-white"
-                    style={typeStyle(t.type.name)}
-                  >
-                    {t.type.name}
-                  </span>
-                ))}
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-              {pokemon.stats.map((s, i) => (
-                <div key={s.stat.name} className="flex items-center gap-2">
-                  <span className="w-8 shrink-0 text-[11px] font-semibold text-muted-foreground">
-                    {STAT_LABELS[s.stat.name] ?? s.stat.name}
-                  </span>
-                  <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
-                    <div
-                      className={cn("h-full rounded-full animate-stat-fill", statColor(s.base_stat))}
-                      style={{ width: `${Math.min(100, (s.base_stat / 255) * 100)}%`, animationDelay: `${i * 60}ms` }}
-                    />
-                  </div>
-                  <span className="w-6 shrink-0 text-right text-[11px] tabular-nums text-muted-foreground">
-                    {s.base_stat}
-                  </span>
+                <div className="flex shrink-0 items-center gap-1.5">
+                  {pokemon.types.map((t) => (
+                    <span
+                      key={t.type.name}
+                      className="rounded px-2 py-0.5 text-xs font-semibold capitalize text-white"
+                      style={typeStyle(t.type.name)}
+                    >
+                      {t.type.name}
+                    </span>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
             {flavorText && (
               <blockquote className="border-l-[3px] border-primary/50 pl-3">
@@ -364,6 +348,30 @@ function PokemonOfTheDay({ game }: { game: GameOption | null }) {
                 </p>
               </blockquote>
             )}
+            <div className="space-y-1.5">
+              {pokemon.stats.map((s, i) => (
+                <div key={s.stat.name} className="flex items-center gap-2">
+                  <span className="w-16 shrink-0 text-right text-xs text-muted-foreground">
+                    {STAT_LABELS[s.stat.name] ?? s.stat.name}
+                  </span>
+                  <span className="w-8 shrink-0 text-right font-mono text-sm tabular-nums">
+                    {s.base_stat}
+                  </span>
+                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
+                    <div
+                      className={cn("h-full rounded-full animate-stat-fill", statColor(s.base_stat))}
+                      style={{ width: `${Math.min(100, (s.base_stat / 255) * 100)}%`, animationDelay: `${i * 60}ms` }}
+                    />
+                  </div>
+                </div>
+              ))}
+              <div className="flex items-center gap-2 pt-1">
+                <span className="w-16 shrink-0 text-right text-xs font-semibold text-muted-foreground">BST</span>
+                <span className="w-8 shrink-0 text-right font-mono text-sm font-bold tabular-nums">
+                  {pokemon.stats.reduce((sum, s) => sum + s.base_stat, 0)}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
