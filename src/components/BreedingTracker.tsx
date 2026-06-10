@@ -1360,8 +1360,8 @@ export function BreedingTracker({ user }: { user: User | null }) {
   const showDetail = (selected || isCreating || isEditing);
 
   return (
-    <div className="flex h-full flex-col px-6">
-      <h1 className="shrink-0 text-xl font-semibold border-b border-border py-3 -mx-6 px-6">Breeding Tracker</h1>
+    <div className="flex h-full flex-col px-4 sm:px-6">
+      <h1 className="shrink-0 text-xl font-semibold border-b border-border py-3 -mx-4 sm:-mx-6 px-4 sm:px-6">Breeding Tracker</h1>
       <div className="flex flex-1 min-h-0 gap-0 overflow-hidden">
       {/* Left panel: project list */}
       <div
@@ -1372,7 +1372,7 @@ export function BreedingTracker({ user }: { user: User | null }) {
         )}
       >
         <div className="flex items-center justify-between">
-          <h2 className="font-semibold">Projects</h2>
+          <h2 className="text-base font-semibold">Projects</h2>
           <button
             onClick={() => { setIsCreating(true); setIsEditing(false); setSelectedId(null); }}
             className="flex items-center gap-1 rounded-md bg-primary px-2.5 py-1.5 text-xs font-medium text-primary-foreground"

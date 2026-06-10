@@ -560,7 +560,7 @@ function CaughtModal({ caughtList, spriteVersion, onOpen, onToggleCaught, caught
         {/* Header */}
         <div className="flex flex-shrink-0 items-center gap-3 border-b px-4 py-3">
           <div className="shrink-0">
-            <h2 className="font-semibold">Caught Pokémon</h2>
+            <h2 className="text-base font-semibold">Caught Pokémon</h2>
             <p className="text-xs text-muted-foreground">{filtered.length} caught</p>
           </div>
           <div className="relative flex-1">
@@ -649,7 +649,7 @@ function MissingModal({ title, missing, spriteVersion, onOpen, onToggleCaught, c
         {/* Header */}
         <div className="flex flex-shrink-0 items-center gap-3 border-b px-4 py-3">
           <div className="shrink-0">
-            <h2 className="font-semibold">{title}</h2>
+            <h2 className="text-base font-semibold">{title}</h2>
             <p className="text-xs text-muted-foreground">{filtered.length} remaining</p>
           </div>
           <div className="relative flex-1">
@@ -981,8 +981,8 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
   const [showCaughtModal, setShowCaughtModal] = useState(false);
 
   return (
-    <div className={cn("flex flex-col gap-4 px-6", embedded ? "sm:h-full" : "h-full")}>
-      {!embedded && <h1 className="shrink-0 text-xl font-semibold border-b border-border py-3 -mx-6 px-6">Catch Tracker</h1>}
+    <div className={cn("flex flex-col gap-3 px-4 sm:px-6", embedded ? "sm:h-full" : "h-full")}>
+      {!embedded && <h1 className="shrink-0 text-xl font-semibold border-b border-border py-3 -mx-4 sm:-mx-6 px-4 sm:px-6">Catch Tracker</h1>}
       {/* Controls row — only rendered when there's something to show */}
       {actualVersions.length > 1 && !lockedVersion && (
         <div className="flex flex-wrap items-center gap-4">
@@ -1211,7 +1211,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
               {selectedLocation && (
                 <div className="p-4">
                   <div className="mb-4 flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
-                    <h2 className="text-base font-semibold">{selectedLocation.label}</h2>
+                    <h2 className="text-lg font-semibold">{selectedLocation.label}</h2>
                     <div className="flex shrink-0 items-center gap-2">
                       {locationProgress && (
                         <span className="text-xs text-muted-foreground">

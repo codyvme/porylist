@@ -105,6 +105,45 @@ The app is a fully configured Progressive Web App via `vite-plugin-pwa`. The ser
 - **Game-aware rendering**: Always use `typesForGeneration(pokemon, game.generation)` when displaying types in a game context, not `pokemon.types` directly. Similarly use `bestFlavorText` from `src/lib/games.ts` for flavor text lookup.
 - **Catch state key**: Caught Pokémon are stored by Pokémon `name` (PokéAPI slug, e.g. `"pikachu"`) not by ID, under a `gameValue` key (e.g. `"red-blue-yellow"`).
 
+## Design system
+
+Any new page, component, or design change MUST use the canonical patterns below — do not invent new size/weight/tracking combos or new spacing values for roles that already have one. If a deliberate exception is needed, add it to the exception lists here in the same PR.
+
+### Typography scale
+
+All text styling uses these canonical Tailwind class combinations. Layout classes (`mb-*`, `flex`, `truncate`) may be added, but the type classes must match exactly.
+
+| Role | Element | Classes |
+|------|---------|---------|
+| Page title | `h1` | `text-xl font-semibold` |
+| Content-modal / entity title (Pokémon, move, ability, item, trainer) | `h2` | `text-xl font-semibold` |
+| Detail-pane title (selected hunt/project/playthrough/location) | `h2` | `text-lg font-semibold` |
+| Dialog & form-view title (About, Sign in, confirm, "New X" / "Edit X") | `h2` | `text-lg font-semibold` |
+| Section / panel title | `h2`/`h3` | `text-base font-semibold` |
+| Eyebrow label (uppercase section/group label) | any | `text-xs font-semibold uppercase tracking-wide text-muted-foreground` (color may be swapped, e.g. `text-primary`; nav uses slate) |
+| Form field label | `label` | `text-sm font-medium` |
+| Compact form label (dense inline forms, e.g. EncountersTab) | `label` | `text-xs font-medium text-muted-foreground` |
+| Checkbox/toggle label | `label` | `flex cursor-pointer items-center gap-2 text-sm` |
+| Table column header | `th` | `text-xs font-medium text-muted-foreground` (see `SortableTh`) |
+| Hero result number (calculators) | any | `text-4xl font-bold tabular-nums` |
+
+Deliberate exceptions: the brand wordmark in the header (`text-2xl font-bold tracking-tight`), the Pokémon-of-the-Day display name (`text-2xl font-semibold`), and the shiny-hunt counter (`text-5xl font-bold tabular-nums tracking-tight`).
+
+### Spacing & layout
+
+Every page follows the same shell recipe:
+
+- **Page gutter**: the page root sets `px-4 sm:px-6`. Nothing else sets horizontal page padding.
+- **Page header bar**: full-bleed via negative margins that mirror the gutter:
+  `shrink-0 flex items-center gap-3 border-b border-border py-3 -mx-4 sm:-mx-6 px-4 sm:px-6`
+  (tracker pages put these classes directly on the `h1`). The `h1` takes `flex-1` to push `GameFilter`/actions right.
+- **Full-bleed children** deeper in a page must use the matching `-mx-4 sm:-mx-6`, never a fixed `-mx-6`.
+- **Bottom padding**: pages do NOT add `pb-*` to their root — the `<main>` scroll container in `App.tsx` provides it (`/routes` and `/breeding` opt out with `sm:!pb-0` and manage their own panel padding).
+- **Header → content offset**: table & tracker pages use 12px (`gap-3` on the page root, or `pt-3` on tracker panels); tool/dashboard pages (Home, Team, Catch, Damage, Compare, Natures) use 20px (`gap-5` on the root, or `pt-5` on the scroll area). The root `gap` is also the rhythm between top-level sections.
+- **Cards**: `p-3` compact tile (quick links), `p-4` standard section/form card, `p-5` featured/result card. Rounded: `rounded-lg` for in-flow cards, `rounded-xl` for hero/result cards and modal panels.
+- **Modals**: simple dialogs use `p-6` on the panel; structured modals use a `px-6 py-4` header bar with a separately padded scrollable body.
+- **Forms**: label ↔ control gap is `gap-1.5`; between fields use `gap-4` (single-column form) or `gap-6` (two-column grid, e.g. BreedingTracker); compact inline forms (EncountersTab) use grid `gap-3`.
+
 ### Environment variables
 
 Required for Supabase auth and catch sync (app is read-only without them):

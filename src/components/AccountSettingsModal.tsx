@@ -248,7 +248,7 @@ export function AccountSettingsModal({
     <Modal onClose={onClose} className="flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="flex shrink-0 items-center justify-between border-b px-6 py-4">
-          <h2 className="text-base font-semibold">Account Settings</h2>
+          <h2 className="text-lg font-semibold">Account Settings</h2>
           <button onClick={onClose} className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
             <X className="h-4 w-4" />
           </button>

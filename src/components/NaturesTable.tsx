@@ -82,9 +82,9 @@ export function NaturesTable() {
   const hasFilter = highlightBoost !== null || highlightReduce !== null;
 
   return (
-    <div className="flex h-full flex-col px-6">
+    <div className="flex h-full flex-col px-4 sm:px-6">
       {/* ── Header ── */}
-      <div className="shrink-0 flex items-center border-b border-border py-3 -mx-6 px-6">
+      <div className="shrink-0 flex items-center border-b border-border py-3 -mx-4 sm:-mx-6 px-4 sm:px-6">
         <h1 className="text-xl font-semibold">Natures</h1>
       </div>
 

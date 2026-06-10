@@ -263,11 +263,10 @@ const MemoizedVirtualRow = React.memo(({
                 return (
                   <div
                     key={dRow.label}
-                    className="absolute left-0 top-0 w-full flex items-center gap-3 px-4 border-b bg-muted/20"
+                    className="absolute left-0 top-0 w-full flex items-center border-b"
                     style={{ transform: `translateY(${vRow.start}px)`, height: 36 }}
                   >
-                    <div className="h-px flex-1 bg-border" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap">
+                    <span className="sticky left-4 pr-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground whitespace-nowrap">
                       {dRow.label}
                     </span>
                     <div className="h-px flex-1 bg-border" />
@@ -1063,17 +1062,6 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
     overscan: 8,
   });
 
-  // Pre-compute the pixel offset of every gen-divider within the virtual list.
-  const genDividerPositions = useMemo(() => {
-    let y = 0;
-    const positions: { label: string; top: number }[] = [];
-    for (const row of displayRows) {
-      if (row.kind === "gen-divider") positions.push({ label: row.label, top: y });
-      y += row.kind === "gen-divider" ? 36 : 81;
-    }
-    return positions;
-  }, [displayRows]);
-
   if (!dataReady || summaryQuery.isLoading) {
     return (
       <div className="flex items-center justify-center py-24 text-muted-foreground">
@@ -1091,8 +1079,8 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
   }
 
   return (
-    <div className="flex h-full flex-col gap-3 px-6">
-      <div className="shrink-0 flex items-center gap-3 border-b border-border py-3 -mx-6 px-6">
+    <div className="flex flex-1 min-h-0 flex-col gap-3 px-4 sm:px-6">
+      <div className="shrink-0 flex items-center gap-3 border-b border-border py-3 -mx-4 sm:-mx-6 px-4 sm:px-6">
         <h1 className="flex-1 text-xl font-semibold">Pokédex</h1>
         <GameFilter />
       </div>
@@ -1280,7 +1268,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
       <div className="flex-1 min-h-0 overflow-hidden rounded-md border">
         <div
           ref={scrollRef}
-          className="h-full overflow-auto"
+          className="h-full overflow-auto pb-[calc(env(safe-area-inset-bottom)_+_3.5rem)] sm:pb-6"
         >
           <div
             style={{
@@ -1317,32 +1305,6 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
               );
             })}
           </div>
-          {/* Sticky generation label — height:0 so it takes up no layout space.
-              Switches exactly when a divider's bottom edge scrolls past the column header.
-              scrollRef.current.scrollTop is current because TanStack Virtual re-renders on scroll. */}
-          {(() => {
-            const scrollTop = scrollRef.current?.scrollTop ?? 0;
-            // The virtual list starts 48px below the top of the scroll container (column header).
-            // A gen-divider (36px tall) is fully hidden behind the header when:
-            //   scrollTop >= divider.top + 36
-            let label: string | null = null;
-            for (const { label: l, top } of genDividerPositions) {
-              if (scrollTop >= top + 36) label = l;
-              else break;
-            }
-            if (!label) return null;
-            return (
-              <div className="sticky z-10 pointer-events-none" style={{ top: 48, height: 0, overflow: "visible" }}>
-                <div className="flex items-center gap-3 px-4 bg-background border-b" style={{ height: 36 }}>
-                  <div className="h-px flex-1 bg-border" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap">
-                    {label}
-                  </span>
-                  <div className="h-px flex-1 bg-border" />
-                </div>
-              </div>
-            );
-          })()}
           {displayRows.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-2 py-24 text-center">
               <p className="text-base font-medium">No Pokémon found</p>
@@ -1374,7 +1336,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
           </div>
         </div>
       </div>
-      <div className="flex items-center justify-between text-sm text-muted-foreground">
+      <div className="flex items-center justify-between pb-4 text-sm text-muted-foreground">
         <span>{tableRows.length.toLocaleString()} result{tableRows.length === 1 ? "" : "s"}</span>
         <span />
       </div>

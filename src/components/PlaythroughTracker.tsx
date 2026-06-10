@@ -514,7 +514,7 @@ function TrainerTeamModal({ trainer, game, onClose }: { trainer: TrainerEntry; g
         {/* Header */}
         <div className="flex items-center justify-between border-b px-5 py-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{trainer.class}</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{trainer.class}</p>
             <h2 className="text-xl font-semibold">{trainer.name}</h2>
           </div>
           <button
@@ -568,13 +568,13 @@ function TrainerTeamModal({ trainer, game, onClose }: { trainer: TrainerEntry; g
                   {types.length > 0 && (
                     <div className="flex items-center gap-1 mt-0.5 mb-1.5">
                       {types.map(t => (
-                        <TypeBadge key={t} type={t} size="sm" className="font-bold uppercase tracking-wide" />
+                        <TypeBadge key={t} type={t} size="sm" />
                       ))}
                     </div>
                   )}
                   {mon.ability && (
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      <span className="font-bold">Ability: </span>
+                      <span className="font-semibold">Ability: </span>
                       <button onClick={() => openAbility(mon.ability!)} className="text-primary hover:underline transition-colors">
                         {formatSlug(mon.ability)}
                       </button>
@@ -582,7 +582,7 @@ function TrainerTeamModal({ trainer, game, onClose }: { trainer: TrainerEntry; g
                   )}
                   {mon.heldItem && (
                     <p className="text-xs text-muted-foreground">
-                      <span className="font-bold">Item: </span>
+                      <span className="font-semibold">Item: </span>
                       {itemBySlug.get(mon.heldItem) ? (
                         <button onClick={() => openItem(mon.heldItem!)} className="text-primary hover:underline transition-colors">
                           {formatSlug(mon.heldItem)}
@@ -752,7 +752,7 @@ function BadgesTab({
         {/* Elite Four & Champion */}
         {eliteFour.length > 0 && (
           <>
-            <p className="mt-4 mb-1 px-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            <p className="mt-4 mb-1 px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Elite Four &amp; Champion
             </p>
             {eliteFour.map((trainer) => (
@@ -819,7 +819,7 @@ function PokedexTab({
   );
 
   return (
-    <div className="flex flex-col -mx-6 -mt-1 sm:mt-0 sm:flex-1 sm:min-h-0">
+    <div className="flex flex-col -mx-4 sm:-mx-6 -mt-1 sm:mt-0 sm:flex-1 sm:min-h-0">
       <RouteBrowser
         caught={caughtForBrowser}
         onToggleCaught={handleToggleCaught}
@@ -965,7 +965,7 @@ function PlaythroughDetail({
         {/* Name + info */}
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-base font-semibold truncate sm:text-lg">{playthrough.name}</h2>
+            <h2 className="text-lg font-semibold truncate">{playthrough.name}</h2>
             {playthrough.nuzlocke.enabled && (
               <span className="shrink-0 flex items-center gap-1 text-xs text-red-500 dark:text-red-400">
                 <Skull className="h-3 w-3" />Nuzlocke
@@ -1251,8 +1251,8 @@ export function PlaythroughTracker({
   const showDetail = selected || isCreating;
 
   return (
-    <div className="flex flex-col px-6 sm:h-full">
-      <h1 className={cn("shrink-0 text-xl font-semibold border-b border-border py-3 -mx-6 px-6", showDetail && "hidden sm:block")}>Playthroughs</h1>
+    <div className="flex flex-col px-4 sm:px-6 sm:h-full">
+      <h1 className={cn("shrink-0 text-xl font-semibold border-b border-border py-3 -mx-4 sm:-mx-6 px-4 sm:px-6", showDetail && "hidden sm:block")}>Playthroughs</h1>
 
       <div className="flex flex-1 min-w-0 overflow-hidden sm:min-h-0">
         {/* Left panel */}
@@ -1264,7 +1264,7 @@ export function PlaythroughTracker({
           )}
         >
           <div className="flex items-center justify-between">
-            <h2 className="font-semibold">Runs</h2>
+            <h2 className="text-base font-semibold">Runs</h2>
             <button
               onClick={() => { setIsCreating(true); setSelectedId(null); }}
               className="flex items-center gap-1 rounded-md bg-primary px-2.5 py-1.5 text-xs font-medium text-primary-foreground"

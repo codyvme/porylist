@@ -408,7 +408,7 @@ function IconRail() {
               <div key={`sec-${i}`} className="mt-3 mb-1">
                 <div className="border-t border-black/10 dark:border-white/20 mb-2" />
                 <span className={cn(
-                  "block px-3.5 text-[11px] font-bold uppercase tracking-wider text-slate-500/80 dark:text-slate-400/80 transition-all duration-200 overflow-hidden",
+                  "block px-3.5 text-xs font-semibold uppercase tracking-wide text-slate-500/80 dark:text-slate-400/80 transition-all duration-200 overflow-hidden",
                   navExpanded ? "max-h-6 opacity-100" : "max-h-0 opacity-0",
                 )}>
                   {item.label}
@@ -511,7 +511,7 @@ function MobileDrawer({ open, onClose, onOpenAbout }: { open: boolean; onClose: 
               return (
                 <div key={`sec-${i}`} className="mt-3 mb-1">
                   <div className="mb-2 border-t border-black/10 dark:border-white/20" />
-                  <span className="block px-5 text-[11px] font-bold uppercase tracking-wider text-slate-500/80 dark:text-slate-400/80">
+                  <span className="block px-5 text-xs font-semibold uppercase tracking-wide text-slate-500/80 dark:text-slate-400/80">
                     {item.label}
                   </span>
                 </div>
@@ -802,7 +802,10 @@ export function App() {
           <IconRail />
 
           <main className={cn(
-            "flex-1 min-h-0 overflow-auto overscroll-none w-full pb-[calc(env(safe-area-inset-bottom)_+_3.5rem)] sm:pb-6 flex flex-col",
+            "flex-1 min-h-0 overscroll-none w-full flex flex-col",
+            location.pathname === "/pokedex"
+              ? "overflow-hidden"
+              : "overflow-auto pb-[calc(env(safe-area-inset-bottom)_+_3.5rem)] sm:pb-6",
             ["/routes", "/breeding"].includes(location.pathname) && "sm:!pb-0",
           )}>
             <React.Suspense
@@ -812,7 +815,7 @@ export function App() {
                 </div>
               }
             >
-              <div key={location.pathname} className="flex flex-1 flex-col animate-fade-in">
+              <div key={location.pathname} className="flex flex-1 min-h-0 flex-col animate-fade-in">
               <Routes>
                 <Route path="/" element={<HomePage game={selectedGame} user={user} />} />
                 <Route path="/pokedex" element={

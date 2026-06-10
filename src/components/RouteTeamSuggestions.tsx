@@ -111,7 +111,7 @@ export function RouteTeamSuggestions({ routePokemonNames, game, onOpen, teamOver
 
   return (
     <div className="mb-4 rounded-lg border border-primary/30 bg-primary/5 p-3">
-      <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-primary">
+      <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-primary">
         <Users className="h-3 w-3" />
         Picks for your team
       </div>

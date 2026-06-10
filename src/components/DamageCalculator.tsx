@@ -58,7 +58,7 @@ function MovePicker({
 
   return (
     <div ref={ref} className="relative flex flex-col gap-1.5">
-      <label className="text-xs font-medium text-muted-foreground">Move</label>
+      <label className="text-sm font-medium">Move</label>
       <div className="relative">
         <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <input
@@ -168,7 +168,7 @@ export function DamageCalculator() {
   }, [defender, defenderLevel]);
 
   return (
-    <div className="flex flex-col gap-5 px-4 sm:px-6 pb-8">
+    <div className="flex flex-col gap-5 px-4 sm:px-6">
       <div className="shrink-0 flex items-center gap-3 border-b border-border py-3 -mx-4 sm:-mx-6 px-4 sm:px-6">
         <h1 className="flex-1 text-xl font-semibold">Damage Calculator</h1>
         <GameFilter />
@@ -181,9 +181,9 @@ export function DamageCalculator() {
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Attacker */}
         <section className="flex flex-col gap-3 rounded-lg border border-border p-4">
-          <h2 className="font-semibold">Attacker</h2>
+          <h2 className="text-base font-semibold">Attacker</h2>
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Pokémon</label>
+            <label className="text-sm font-medium">Pokémon</label>
             <PokemonSearch
               value={attacker?.name ?? null}
               onChange={(name) => setAttacker(name ? pokemonList.find((p) => p.name === name) ?? null : null)}
@@ -210,7 +210,7 @@ export function DamageCalculator() {
             formatOption={(v) => (v ? (itemLookup[v as string] ?? (v as string)) : "— None —")}
           />
 
-          <div className="flex flex-wrap gap-3 py-0.5 text-xs">
+          <div className="flex flex-wrap gap-3 py-0.5">
             <Toggle label="Critical hit" checked={critical} onChange={setCritical} />
             <Toggle label="Burned (physical halves)" checked={burned} onChange={setBurned} />
           </div>
@@ -220,9 +220,9 @@ export function DamageCalculator() {
 
         {/* Defender */}
         <section className="flex flex-col gap-3 rounded-lg border border-border p-4">
-          <h2 className="font-semibold">Defender</h2>
+          <h2 className="text-base font-semibold">Defender</h2>
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Pokémon</label>
+            <label className="text-sm font-medium">Pokémon</label>
             <PokemonSearch
               value={defender?.name ?? null}
               onChange={(name) => setDefender(name ? pokemonList.find((p) => p.name === name) ?? null : null)}
@@ -250,7 +250,7 @@ export function DamageCalculator() {
               formatOption={(v) => (v as string).replace(/^./, (c) => c.toUpperCase())}
             />
             <div className="flex flex-col gap-1.5">
-              <span className="text-xs font-medium text-muted-foreground invisible select-none" aria-hidden="true">–</span>
+              <span className="text-sm font-medium invisible select-none" aria-hidden="true">–</span>
               <div className="flex h-9 items-center">
                 <Toggle label="Screen up" checked={screen} onChange={setScreen} />
               </div>
@@ -305,11 +305,11 @@ function ResultCard({
     <section className="rounded-xl border border-border bg-card p-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             {formatPokemonName(attacker.name)}'s {move.displayName} vs. {formatPokemonName(defender.name)}
           </p>
           <div className="mt-1 flex flex-wrap items-baseline gap-2">
-            <span className="text-3xl font-bold">{result.minDamage}–{result.maxDamage}</span>
+            <span className="text-4xl font-bold tabular-nums">{result.minDamage}–{result.maxDamage}</span>
             <span className="text-sm text-muted-foreground">
               ({minPct.toFixed(1)}% – {maxPct.toFixed(1)}%)
             </span>
@@ -365,8 +365,8 @@ function ResultCard({
 
 function NumberField({ label, value, onChange, min, max }: { label: string; value: number; onChange: (n: number) => void; min: number; max: number }) {
   return (
-    <label className="flex flex-col gap-1 text-xs">
-      <span className="font-medium text-muted-foreground">{label}</span>
+    <label className="flex flex-col gap-1.5">
+      <span className="text-sm font-medium">{label}</span>
       <input
         type="number"
         min={min}
@@ -389,8 +389,8 @@ function SelectField<T extends string | number>({
   formatOption?: (v: T) => string;
 }) {
   return (
-    <label className="flex flex-col gap-1 text-xs">
-      <span className="font-medium text-muted-foreground">{label}</span>
+    <label className="flex flex-col gap-1.5">
+      <span className="text-sm font-medium">{label}</span>
       <select
         value={value}
         onChange={(e) => {
@@ -409,9 +409,9 @@ function SelectField<T extends string | number>({
 
 function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (b: boolean) => void }) {
   return (
-    <label className="flex items-center gap-2 cursor-pointer select-none">
+    <label className="flex cursor-pointer items-center gap-2 text-sm select-none">
       <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="h-4 w-4" />
-      <span className="text-xs text-muted-foreground">{label}</span>
+      <span>{label}</span>
     </label>
   );
 }

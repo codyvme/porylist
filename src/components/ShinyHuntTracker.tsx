@@ -208,7 +208,7 @@ function HuntDetail({
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <h2 className="text-xl font-semibold">{hunt.speciesName}</h2>
+            <h2 className="text-lg font-semibold">{hunt.speciesName}</h2>
             <div className="mt-1 flex flex-wrap items-center gap-1.5">
               <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
                 {game?.label ?? hunt.gameValue}
@@ -390,7 +390,7 @@ function NewHuntForm({
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-1 pb-6">
+    <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-1 pb-6">
 
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">New Hunt</h2>
@@ -401,7 +401,7 @@ function NewHuntForm({
 
       {/* Species */}
       <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Target Pokémon</label>
+        <label className="text-sm font-medium">Target Pokémon</label>
         <PokemonSearch
           value={species || null}
           onChange={(name) => { setSpecies(name ?? ""); setSpeciesName(name ? formatPokemonName(name) : ""); }}
@@ -411,7 +411,7 @@ function NewHuntForm({
 
       {/* Game */}
       <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Game</label>
+        <label className="text-sm font-medium">Game</label>
         <select
           value={gameValue}
           onChange={e => setGameValue(e.target.value)}
@@ -425,7 +425,7 @@ function NewHuntForm({
 
       {/* Method */}
       <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Method</label>
+        <label className="text-sm font-medium">Method</label>
         <div className="flex gap-2 flex-wrap">
           {(["soft-reset", "masuda", "sos-chain"] as ShinyMethod[]).map(m => {
             const available = methods.includes(m);
@@ -475,7 +475,7 @@ function NewHuntForm({
 
       {/* Notes */}
       <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Notes (optional)</label>
+        <label className="text-sm font-medium">Notes (optional)</label>
         <textarea
           value={notes}
           onChange={e => setNotes(e.target.value)}
@@ -618,9 +618,9 @@ export function ShinyHuntTracker({ user }: { user: User | null }) {
   };
 
   return (
-    <div className="flex flex-col px-6 sm:h-full">
+    <div className="flex flex-col px-4 sm:px-6 sm:h-full">
       <h1 className={cn(
-        "shrink-0 text-xl font-semibold border-b border-border py-3 -mx-6 px-6",
+        "shrink-0 text-xl font-semibold border-b border-border py-3 -mx-4 sm:-mx-6 px-4 sm:px-6",
         showDetail && "hidden sm:block",
       )}>
         Shiny Tracker
@@ -635,7 +635,7 @@ export function ShinyHuntTracker({ user }: { user: User | null }) {
           leftCollapsed && "sm:hidden",
         )}>
           <div className="flex items-center justify-between">
-            <h2 className="font-semibold">Hunts</h2>
+            <h2 className="text-base font-semibold">Hunts</h2>
             <button
               onClick={() => { setIsCreating(true); setSelectedId(null); }}
               className="flex items-center gap-1 rounded-md bg-primary px-2.5 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"

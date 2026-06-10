@@ -491,7 +491,7 @@ export function CommandPalette({ open, onClose, game }: CommandPaletteProps) {
                   <div key={section.heading}>
                     {!isSearching && (
                       <div className={cn(
-                        "flex items-center gap-1.5 px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground",
+                        "flex items-center gap-1.5 px-3 pt-2 pb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground",
                         sIdx > 0 && "mt-1 border-t border-border pt-3",
                       )}>
                         <section.Icon className="h-3 w-3" />

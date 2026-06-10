@@ -488,7 +488,7 @@ function EncounterRow({
 function Section({ title, count, headerExtra, children }: { title: string; count: number; headerExtra?: React.ReactNode; children: React.ReactNode }) {
   return (
     <section>
-      <h3 className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+      <h3 className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         {headerExtra}
         {title}
         <span className="rounded-full bg-muted px-1.5 text-[10px] font-medium">{count}</span>

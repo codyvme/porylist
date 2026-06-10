@@ -106,9 +106,9 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
   );
 
   return (
-    <div className="flex flex-col gap-6 px-6 pb-6">
+    <div className="flex flex-col gap-5 px-4 sm:px-6">
       {/* Page header */}
-      <div className="shrink-0 flex items-center gap-3 border-b border-border py-3 -mx-6 px-6">
+      <div className="shrink-0 flex items-center gap-3 border-b border-border py-3 -mx-4 sm:-mx-6 px-4 sm:px-6">
         <h1 className="flex-1 text-xl font-semibold">Team Builder</h1>
         {team.length > 0 && (
           <>
@@ -207,7 +207,7 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
           {/* Shared Weaknesses */}
           {sharedWeaknesses.length > 0 && (
             <section>
-              <h2 className="mb-3 font-semibold">
+              <h2 className="mb-3 text-base font-semibold">
                 Shared Weaknesses
               </h2>
               <div className="flex flex-wrap gap-2">
@@ -228,7 +228,7 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
 
           {/* Defensive matchups */}
           <section>
-            <h2 className="mb-3 font-semibold">
+            <h2 className="mb-3 text-base font-semibold">
               Defensive Matchups
             </h2>
             <div className="overflow-x-auto">
@@ -294,7 +294,7 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
 
           {/* Offensive coverage */}
           <section>
-            <h2 className="mb-3 font-semibold">
+            <h2 className="mb-3 text-base font-semibold">
               Offensive Coverage <span className="font-normal normal-case">(STAB)</span>
             </h2>
             <div className="flex flex-wrap gap-1.5">
