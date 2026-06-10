@@ -722,13 +722,16 @@ function buildEvolutionTree(link: ChainLink, maxDexId: number | null, isRoot = t
 
 export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokemon, nextPokemon, onOpenInCatchTracker }: PokemonModalProps) {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<MoveTab>("level-up");
+  const [moveTab, setMoveTab] = useState<MoveTab>("level-up");
   const [showShiny, setShowShiny] = useState(false);
   const [sparkleKey, setSparkleKey] = useState(0);
   const [spriteLoaded, setSpriteLoaded] = useState(false);
   const heroImgRef = useRef<HTMLImageElement>(null);
   const [expandedMove, setExpandedMove] = useState<string | null>(null);
   const [locationsGameValue, setLocationsGameValue] = useState<string | null>(game?.value ?? null);
+  const [modalTab, setModalTab] = useState<"overview" | "moves" | "locations">("overview");
+  const [locationsMounted, setLocationsMounted] = useState(false);
+  const [movesMounted, setMovesMounted] = useState(false);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -749,7 +752,23 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
 
   useEffect(() => {
     setExpandedMove(null);
-  }, [activeTab]);
+  }, [moveTab]);
+
+  // Reset top-level tab and lazy-load flags when navigating to a new Pokémon
+  useEffect(() => {
+    setModalTab("overview");
+    setLocationsMounted(false);
+    setMovesMounted(false);
+    setMoveTab("level-up");
+  }, [pokemonName]);
+
+  useEffect(() => {
+    if (modalTab === "locations") setLocationsMounted(true);
+  }, [modalTab]);
+
+  useEffect(() => {
+    if (modalTab === "moves") setMovesMounted(true);
+  }, [modalTab]);
 
   useLayoutEffect(() => {
     const alreadyLoaded = heroImgRef.current?.complete && (heroImgRef.current.naturalWidth ?? 0) > 0;
@@ -760,7 +779,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
   const { data: formDataMap } = usePokemonFormData([pokemonName]);
   const { data: species } = usePokemonSpecies(pokemon?.species.name ?? null);
   const { data: evolutionChain } = useEvolutionChain(species?.evolution_chain.url ?? null);
-  const { data: encounterData, isLoading: encountersLoading } = usePokemonEncounters(pokemon?.id ?? null);
+  const { data: encounterData, isLoading: encountersLoading } = usePokemonEncounters(locationsMounted ? (pokemon?.id ?? null) : null);
 
   // Fetch the base form's data to inherit egg moves (PokeAPI only lists egg moves on the base form)
   const baseSpeciesName = evolutionChain?.chain.species.name ?? null;
@@ -948,15 +967,18 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
   }, [pokemon, activeVGs, basePokemon]);
 
   const activeMoves = useMemo(() => {
-    switch (activeTab) {
+    switch (moveTab) {
       case "level-up": return filteredMoves.levelUp;
       case "egg":      return filteredMoves.egg;
       case "machine":  return filteredMoves.machine;
       case "tutor":    return filteredMoves.tutor;
     }
-  }, [filteredMoves, activeTab]);
+  }, [filteredMoves, moveTab]);
 
-  const activeMoveNames = useMemo(() => activeMoves.map((m) => m.name), [activeMoves]);
+  const activeMoveNames = useMemo(
+    () => movesMounted ? activeMoves.map((m) => m.name) : [],
+    [activeMoves, movesMounted],
+  );
 
   const moveDetailsQueries = useMoveDetails(activeMoveNames);
 
@@ -969,7 +991,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
   }, [moveDetailsQueries, activeMoveNames]);
 
   const machineUrls = useMemo(() => {
-    if (activeTab !== "machine") return [];
+    if (moveTab !== "machine") return [];
     const urls: string[] = [];
     for (const move of filteredMoves.machine) {
       const detail = moveDetailsMap[move.name];
@@ -978,12 +1000,12 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
       if (match) urls.push(match.machine.url);
     }
     return urls;
-  }, [activeTab, filteredMoves.machine, moveDetailsMap, activeVGs]);
+  }, [moveTab, filteredMoves.machine, moveDetailsMap, activeVGs]);
 
   const machineDetailsQueries = useMachineDetails(machineUrls);
 
   const machineNumberMap = useMemo(() => {
-    if (activeTab !== "machine") return undefined;
+    if (moveTab !== "machine") return undefined;
     const map: Record<string, string> = {};
     for (const q of machineDetailsQueries) {
       if (!q.data) continue;
@@ -991,14 +1013,14 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
       map[move.name] = item.name.toUpperCase();
     }
     return map;
-  }, [activeTab, machineDetailsQueries]);
+  }, [moveTab, machineDetailsQueries]);
 
   // Egg parent data — lazy loaded only when egg tab is active
   const [eggData, setEggData] = useState<Record<string, { n: string; p: string; i: number; g: string[]; l: Record<string, number> }> | null>(null);
   useEffect(() => {
-    if (activeTab !== "egg" || eggData !== null) return;
+    if (moveTab !== "egg" || eggData !== null) return;
     import("../data/egg-parents.json").then((m) => setEggData(m.default));
-  }, [activeTab, eggData]);
+  }, [moveTab, eggData]);
 
   const speciesEggGroups = useMemo(() => {
     if (!eggData || !pokemon) return null;
@@ -1045,7 +1067,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
   const formEnglishName = formDataMap?.[pokemonName]?.names.find((n) => n.language.name === "en")?.name;
   const displayName = formEnglishName ?? formatPokemonName(pokemonName);
 
-  const tabs: Array<{ id: MoveTab; label: string; count: number }> = [
+  const moveTabs: Array<{ id: MoveTab; label: string; count: number }> = [
     { id: "level-up", label: "Level Up",    count: filteredMoves.levelUp.length },
     { id: "egg",      label: "Egg Moves",   count: filteredMoves.egg.length },
     { id: "machine",  label: "TM / HM",     count: filteredMoves.machine.length },
@@ -1053,129 +1075,156 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
   ];
 
   return createPortal(
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex min-h-full items-start justify-center px-4 py-8">
-        {/* Backdrop */}
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm"
-          onClick={onClose}
-          aria-hidden="true"
-        />
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+        aria-hidden="true"
+      />
 
-        {/* Modal */}
+      {/* Modal panel */}
+      <div
+        className="relative z-10 w-full max-w-4xl rounded-t-xl sm:rounded-xl border bg-background overflow-hidden flex flex-col max-h-[92dvh] sm:max-h-[90vh]"
+        style={types[0] ? {
+          boxShadow: `0 0 0 1px ${TYPE_COLORS[types[0]]}30, 0 8px 24px rgba(0,0,0,0.35)`,
+        } : { boxShadow: "0 8px 24px rgba(0,0,0,0.35)" }}
+      >
+        {/* Header — pinned */}
         <div
-          className="relative z-10 w-full max-w-4xl rounded-xl border bg-background overflow-hidden"
-          style={types[0] ? {
-            boxShadow: `0 0 0 1px ${TYPE_COLORS[types[0]]}30, 0 8px 24px rgba(0,0,0,0.35)`,
-          } : { boxShadow: "0 8px 24px rgba(0,0,0,0.35)" }}
+          className="shrink-0 flex flex-col border-b sm:flex-row sm:items-center sm:justify-between"
+          style={types[0] ? { backgroundColor: `${TYPE_COLORS[types[0]]}1A` } : undefined}
         >
-          {/* Header */}
-          <div
-            className="flex flex-col border-b sm:flex-row sm:items-center sm:justify-between"
-            style={types[0] ? { backgroundColor: `${TYPE_COLORS[types[0]]}1A` } : undefined}
-          >
-            {/* Row 1: identity + close */}
-            <div className="flex items-center gap-2 px-4 py-3 sm:min-w-0 sm:flex-1 sm:gap-6 sm:px-6 sm:py-4">
-              <div className="flex min-w-0 flex-1 items-center gap-2.5">
-                {pokemon && (() => {
-                  const speciesIdMatch = pokemon.species.url.match(/\/(\d+)\/?$/);
-                  const dexNum = speciesIdMatch ? Number(speciesIdMatch[1]) : pokemon.id;
-                  return (
-                    <span className="hidden sm:inline shrink-0 font-mono text-sm text-muted-foreground">
-                      #{String(dexNum).padStart(4, "0")}
-                    </span>
-                  );
-                })()}
-                <h2 className="truncate text-xl font-semibold">{displayName}</h2>
-                {pokemon && (
-                  <CryButton
-                    id={pokemon.id}
-                    generation={game?.generation}
-                    className="shrink-0 rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                    title={game ? `Play ${game.label} cry` : "Play cry"}
-                  />
-                )}
-                <div className="flex shrink-0 items-center gap-1.5">
-                  {types.map((t) => (
-                    <Badge key={t} variant="default" className="capitalize !px-2" style={typeStyle(t)}>{t}</Badge>
-                  ))}
-                </div>
+          {/* Row 1: identity + close */}
+          <div className="flex items-center gap-2 px-4 py-3 sm:min-w-0 sm:flex-1 sm:gap-6 sm:px-6 sm:py-4">
+            <div className="flex min-w-0 flex-1 items-center gap-2.5">
+              {pokemon && (() => {
+                const speciesIdMatch = pokemon.species.url.match(/\/(\d+)\/?$/);
+                const dexNum = speciesIdMatch ? Number(speciesIdMatch[1]) : pokemon.id;
+                return (
+                  <span className="hidden sm:inline shrink-0 font-mono text-sm text-muted-foreground">
+                    #{String(dexNum).padStart(4, "0")}
+                  </span>
+                );
+              })()}
+              <h2 className="truncate text-xl font-semibold">{displayName}</h2>
+              {pokemon && (
+                <CryButton
+                  id={pokemon.id}
+                  generation={game?.generation}
+                  className="shrink-0 rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                  title={game ? `Play ${game.label} cry` : "Play cry"}
+                />
+              )}
+              <div className="flex shrink-0 items-center gap-1.5">
+                {types.map((t) => (
+                  <Badge key={t} variant="default" className="capitalize !px-2" style={typeStyle(t)}>{t}</Badge>
+                ))}
               </div>
-              {/* Close — mobile only */}
-              <button
-                onClick={onClose}
-                className="shrink-0 rounded-md border border-border bg-background p-1.5 hover:bg-muted sm:hidden"
-                aria-label="Close"
-              >
-                <X className="h-5 w-5" />
-              </button>
             </div>
-
-            {/* Row 2 on mobile / right-side buttons on desktop */}
-            <div className="flex items-center gap-2 border-t px-4 pb-3 pt-2 sm:border-0 sm:shrink-0 sm:px-6 sm:py-4 sm:pb-0 sm:pt-0">
-              <div className="flex flex-1 sm:flex-none items-center rounded-md border border-border overflow-hidden bg-background">
-                <button
-                  onClick={() => prevPokemon && onNavigate(prevPokemon.name)}
-                  disabled={!prevPokemon}
-                  className="flex flex-1 sm:flex-none items-center gap-1.5 pl-2 pr-3 py-1 hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
-                  aria-label="Previous Pokémon"
-                >
-                  <ChevronLeft className="h-4 w-4 shrink-0" />
-                  {prevPokemon && (
-                    <>
-                      <SpriteImg src={`${SPRITES_ROOT}/${prevPokemon.id}.png`} alt={prevPokemon.name} size="h-6 w-6" />
-                      <span className="max-w-[80px] truncate text-xs">{formatPokemonName(prevPokemon.name)}</span>
-                    </>
-                  )}
-                </button>
-                <div className="w-px self-stretch bg-border" />
-                <button
-                  onClick={() => nextPokemon && onNavigate(nextPokemon.name)}
-                  disabled={!nextPokemon}
-                  className="flex flex-1 sm:flex-none justify-end items-center gap-1.5 pl-3 pr-2 py-1 hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
-                  aria-label="Next Pokémon"
-                >
-                  {nextPokemon && (
-                    <>
-                      <span className="max-w-[80px] truncate text-xs">{formatPokemonName(nextPokemon.name)}</span>
-                      <SpriteImg src={`${SPRITES_ROOT}/${nextPokemon.id}.png`} alt={nextPokemon.name} size="h-6 w-6" />
-                    </>
-                  )}
-                  <ChevronRight className="h-4 w-4 shrink-0" />
-                </button>
-              </div>
-              {/* Close — desktop only */}
-              <button
-                onClick={onClose}
-                className="hidden shrink-0 rounded-md border border-border bg-background p-1.5 hover:bg-muted sm:block"
-                aria-label="Close"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
+            {/* Close — mobile only */}
+            <button
+              onClick={onClose}
+              className="shrink-0 rounded-md border border-border bg-background p-1.5 hover:bg-muted sm:hidden"
+              aria-label="Close"
+            >
+              <X className="h-5 w-5" />
+            </button>
           </div>
 
+          {/* Row 2 on mobile / right-side buttons on desktop */}
+          <div className="flex items-center gap-2 border-t px-4 pb-3 pt-2 sm:border-0 sm:shrink-0 sm:px-6 sm:py-4 sm:pb-0 sm:pt-0">
+            <div className="flex flex-1 sm:flex-none items-center rounded-md border border-border overflow-hidden bg-background">
+              <button
+                onClick={() => prevPokemon && onNavigate(prevPokemon.name)}
+                disabled={!prevPokemon}
+                className="flex flex-1 sm:flex-none items-center gap-1.5 pl-2 pr-3 py-1 hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
+                aria-label="Previous Pokémon"
+              >
+                <ChevronLeft className="h-4 w-4 shrink-0" />
+                {prevPokemon && (
+                  <>
+                    <SpriteImg src={`${SPRITES_ROOT}/${prevPokemon.id}.png`} alt={prevPokemon.name} size="h-6 w-6" />
+                    <span className="max-w-[80px] truncate text-xs">{formatPokemonName(prevPokemon.name)}</span>
+                  </>
+                )}
+              </button>
+              <div className="w-px self-stretch bg-border" />
+              <button
+                onClick={() => nextPokemon && onNavigate(nextPokemon.name)}
+                disabled={!nextPokemon}
+                className="flex flex-1 sm:flex-none justify-end items-center gap-1.5 pl-3 pr-2 py-1 hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
+                aria-label="Next Pokémon"
+              >
+                {nextPokemon && (
+                  <>
+                    <span className="max-w-[80px] truncate text-xs">{formatPokemonName(nextPokemon.name)}</span>
+                    <SpriteImg src={`${SPRITES_ROOT}/${nextPokemon.id}.png`} alt={nextPokemon.name} size="h-6 w-6" />
+                  </>
+                )}
+                <ChevronRight className="h-4 w-4 shrink-0" />
+              </button>
+            </div>
+            {/* Close — desktop only */}
+            <button
+              onClick={onClose}
+              className="hidden shrink-0 rounded-md border border-border bg-background p-1.5 hover:bg-muted sm:block"
+              aria-label="Close"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Tab bar — pinned, only shown when not loading */}
+        {!isLoading && (
+          <div className="shrink-0 flex border-b overflow-x-auto bg-background">
+            {(["overview", "moves", "locations"] as const).map((tab) => {
+              const label = tab === "overview" ? "Overview" : tab === "moves" ? "Moves" : "Locations";
+              return (
+                <button
+                  key={tab}
+                  onClick={() => setModalTab(tab)}
+                  className={cn(
+                    "px-5 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
+                    modalTab === tab
+                      ? "border-primary text-foreground"
+                      : "border-transparent text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Scrollable content area */}
+        <div className="flex-1 overflow-y-auto min-h-0">
           {isLoading ? (
             <div className="flex items-center justify-center py-24 text-muted-foreground">
               Loading…
             </div>
           ) : (
             <>
-              {/* Pokédex entry */}
-              {flavorText && (
-                <div className="border-b px-6 py-4">
-                  <blockquote className="border-l-[3px] border-primary/50 pl-3">
-                    <p className="text-sm italic leading-relaxed text-foreground/75">
-                      {flavorText.text}
-                    </p>
-                    {game && (
-                      <cite className="mt-1.5 block text-xs capitalize not-italic text-muted-foreground/60">
-                        — {flavorText.version.name.replace(/-/g, " ")}
-                      </cite>
-                    )}
-                  </blockquote>
-                </div>
-              )}
+              {/* ── Overview tab ── */}
+              {modalTab === "overview" && (
+                <>
+                  {/* Pokédex entry */}
+                  {flavorText && (
+                    <div className="border-b px-6 py-4">
+                      <blockquote className="border-l-[3px] border-primary/50 pl-3">
+                        <p className="text-sm italic leading-relaxed text-foreground/75">
+                          {flavorText.text}
+                        </p>
+                        {game && (
+                          <cite className="mt-1.5 block text-xs capitalize not-italic text-muted-foreground/60">
+                            — {flavorText.version.name.replace(/-/g, " ")}
+                          </cite>
+                        )}
+                      </blockquote>
+                    </div>
+                  )}
 
               {/* Sprite + info */}
               <div className="flex flex-col gap-6 p-6 sm:flex-row">
@@ -1335,192 +1384,163 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                 </div>
               </div>
 
-              {/* Pokédex Data */}
-              {(pokemon || species) && (() => {
-                const GROWTH_RATE_LABELS: Record<string, string> = {
-                  "slow": "Slow",
-                  "medium": "Medium",
-                  "fast": "Fast",
-                  "medium-slow": "Medium Slow",
-                  "slow-then-very-fast": "Erratic",
-                  "fast-then-very-slow": "Fluctuating",
-                };
-                const EV_STAT_LABELS: Record<string, string> = {
-                  "hp": "HP", "attack": "Atk", "defense": "Def",
-                  "special-attack": "Sp. Atk", "special-defense": "Sp. Def", "speed": "Spd",
-                };
-                const evYields = pokemon?.stats
-                  .filter((s) => s.effort > 0)
-                  .map((s) => `${s.effort} ${EV_STAT_LABELS[s.stat.name] ?? s.stat.name}`)
-                  .join(", ");
+                  {/* Pokédex Data */}
+                  {(pokemon || species) && (() => {
+                    const GROWTH_RATE_LABELS: Record<string, string> = {
+                      "slow": "Slow",
+                      "medium": "Medium",
+                      "fast": "Fast",
+                      "medium-slow": "Medium Slow",
+                      "slow-then-very-fast": "Erratic",
+                      "fast-then-very-slow": "Fluctuating",
+                    };
+                    const EV_STAT_LABELS: Record<string, string> = {
+                      "hp": "HP", "attack": "Atk", "defense": "Def",
+                      "special-attack": "Sp. Atk", "special-defense": "Sp. Def", "speed": "Spd",
+                    };
+                    const evYields = pokemon?.stats
+                      .filter((s) => s.effort > 0)
+                      .map((s) => `${s.effort} ${EV_STAT_LABELS[s.stat.name] ?? s.stat.name}`)
+                      .join(", ");
 
-                const genderRate = species?.gender_rate;
-                const femalePct = genderRate != null && genderRate !== -1 ? (genderRate / 8) * 100 : null;
-                const malePct = femalePct != null ? 100 - femalePct : null;
+                    const genderRate = species?.gender_rate;
+                    const femalePct = genderRate != null && genderRate !== -1 ? (genderRate / 8) * 100 : null;
+                    const malePct = femalePct != null ? 100 - femalePct : null;
 
-                const genus = species?.genera.find((g) => g.language.name === "en")?.genus;
-                const textRows = [
-                  { label: "EV Yield", value: evYields || "—" },
-                  { label: "Growth Rate", value: species ? (GROWTH_RATE_LABELS[species.growth_rate.name] ?? species.growth_rate.name) : "—" },
-                  { label: "Color", value: species ? species.color.name : "—" },
-                  { label: "Catch Rate", value: species != null ? `${species.capture_rate}/255` : "—" },
-                  { label: "Base Friendship", value: species != null ? String(species.base_happiness) : "—" },
-                  { label: "Egg Groups", value: species ? species.egg_groups.map((g) => g.name.replace(/-/g, " ")).join(", ") : "—" },
-                ];
+                    const genus = species?.genera.find((g) => g.language.name === "en")?.genus;
+                    const textRows = [
+                      { label: "EV Yield", value: evYields || "—" },
+                      { label: "Growth Rate", value: species ? (GROWTH_RATE_LABELS[species.growth_rate.name] ?? species.growth_rate.name) : "—" },
+                      { label: "Color", value: species ? species.color.name : "—" },
+                      { label: "Catch Rate", value: species != null ? `${species.capture_rate}/255` : "—" },
+                      { label: "Base Friendship", value: species != null ? String(species.base_happiness) : "—" },
+                      { label: "Egg Groups", value: species ? species.egg_groups.map((g) => g.name.replace(/-/g, " ")).join(", ") : "—" },
+                    ];
 
-                const genderCell = genderRate != null && (
-                  <div className="flex items-center gap-2">
-                    <dt className="shrink-0 text-xs text-muted-foreground">Gender</dt>
-                    <dd className="flex flex-1 items-center gap-1.5">
-                      {genderRate === -1 ? (
-                        <span className="text-sm font-medium text-muted-foreground">Genderless</span>
-                      ) : (
-                        <>
-                          <span className="text-xs font-medium text-blue-400">♂{malePct}%</span>
-                          <div className="h-2 flex-1 overflow-hidden rounded-full">
-                            <div className="flex h-full">
-                              {malePct! > 0 && <div className="h-full bg-blue-400" style={{ width: `${malePct}%` }} />}
-                              {femalePct! > 0 && <div className="h-full bg-pink-400" style={{ width: `${femalePct}%` }} />}
-                            </div>
-                          </div>
-                          <span className="text-xs font-medium text-pink-400">♀{femalePct}%</span>
-                        </>
-                      )}
-                    </dd>
-                  </div>
-                );
-
-                return (
-                  <div className="border-t px-6 py-5">
-                    <dl className="grid grid-cols-1 gap-y-2 sm:grid-cols-3 sm:gap-x-6">
-                      {/* Row 0: Category (full width) */}
-                      {genus && (
-                        <div className="flex items-baseline gap-2 sm:col-span-3">
-                          <dt className="shrink-0 text-xs text-muted-foreground">Category</dt>
-                          <dd className="text-sm font-medium">{genus}</dd>
-                        </div>
-                      )}
-                      {/* Row 1: Gender, EV Yield, Growth Rate */}
-                      {genderCell}
-                      {textRows.slice(0, 2).map(({ label, value }) => (
-                        <div key={label} className="flex items-baseline gap-2">
-                          <dt className="shrink-0 text-xs text-muted-foreground">{label}</dt>
-                          <dd className="truncate text-sm font-medium capitalize">{value}</dd>
-                        </div>
-                      ))}
-                      {/* Row 2: Color, Base Friendship, Egg Groups */}
-                      {textRows.slice(2).map(({ label, value }) => (
-                        <div key={label} className="flex items-baseline gap-2">
-                          <dt className="shrink-0 text-xs text-muted-foreground">{label}</dt>
-                          <dd className="truncate text-sm font-medium capitalize">{value}</dd>
-                        </div>
-                      ))}
-                    </dl>
-                  </div>
-                );
-              })()}
-
-              {/* Evolution Chain */}
-              {evolutionTree && (() => {
-                const renderNode = (node: EvoTreeNode): React.ReactNode => {
-                  const isCurrent = node.speciesName === pokemon?.species.name;
-                  const card = isCurrent ? (
-                    <div key={node.speciesName} className="flex flex-col items-center gap-1 rounded-lg border-2 border-primary bg-primary/10 px-3 py-2 min-w-[80px]">
-                      <SpriteImg
-                        src={`${SPRITES_ROOT}/other/home/${node.speciesId}.png`}
-                        alt={node.speciesName}
-                        size="h-14 w-14"
-                        fallbackSrc={`${SPRITES_ROOT}/${node.speciesId}.png`}
-                      />
-                      <p className="text-center text-xs font-semibold leading-tight text-primary">
-                        {formatPokemonName(node.speciesName)}
-                      </p>
-                      {node.methods.map((m) => (
-                        <p key={m} className="text-center text-[10px] text-muted-foreground leading-tight">{m}</p>
-                      ))}
-                    </div>
-                  ) : (
-                    <button
-                      key={node.speciesName}
-                      className="flex flex-col items-center gap-1 rounded-lg border bg-muted/30 px-3 py-2 text-center transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-w-[80px]"
-                      onClick={() => onNavigate(node.speciesName)}
-                    >
-                      <SpriteImg
-                        src={`${SPRITES_ROOT}/other/home/${node.speciesId}.png`}
-                        alt={node.speciesName}
-                        size="h-14 w-14"
-                        fallbackSrc={`${SPRITES_ROOT}/${node.speciesId}.png`}
-                      />
-                      <p className="text-xs font-medium leading-tight">
-                        {formatPokemonName(node.speciesName)}
-                      </p>
-                      {node.methods.map((m) => (
-                        <p key={m} className="text-center text-[10px] text-muted-foreground leading-tight">{m}</p>
-                      ))}
-                    </button>
-                  );
-
-                  if (node.children.length === 0) return card;
-
-                  return (
-                    <div key={node.speciesName} className="flex items-center gap-2">
-                      {card}
-                      <div className="px-1 text-lg text-muted-foreground">→</div>
-                      <div className="flex flex-col gap-3">
-                        {node.children.map((child) => renderNode(child))}
+                    const genderCell = genderRate != null && (
+                      <div className="flex items-center gap-2">
+                        <dt className="shrink-0 text-xs text-muted-foreground">Gender</dt>
+                        <dd className="flex flex-1 items-center gap-1.5">
+                          {genderRate === -1 ? (
+                            <span className="text-sm font-medium text-muted-foreground">Genderless</span>
+                          ) : (
+                            <>
+                              <span className="text-xs font-medium text-blue-400">♂{malePct}%</span>
+                              <div className="h-2 flex-1 overflow-hidden rounded-full">
+                                <div className="flex h-full">
+                                  {malePct! > 0 && <div className="h-full bg-blue-400" style={{ width: `${malePct}%` }} />}
+                                  {femalePct! > 0 && <div className="h-full bg-pink-400" style={{ width: `${femalePct}%` }} />}
+                                </div>
+                              </div>
+                              <span className="text-xs font-medium text-pink-400">♀{femalePct}%</span>
+                            </>
+                          )}
+                        </dd>
                       </div>
-                    </div>
-                  );
-                };
+                    );
 
-                return (
-                  <div className="border-t px-6 py-5">
-                    <h3 className="mb-4 text-base font-semibold">Evolution Chain</h3>
-                    <div className="overflow-x-auto pb-1">
-                      {renderNode(evolutionTree)}
-                    </div>
-                  </div>
-                );
-              })()}
+                    return (
+                      <div className="border-t px-6 py-5">
+                        <dl className="grid grid-cols-1 gap-y-2 sm:grid-cols-3 sm:gap-x-6">
+                          {/* Row 0: Category (full width) */}
+                          {genus && (
+                            <div className="flex items-baseline gap-2 sm:col-span-3">
+                              <dt className="shrink-0 text-xs text-muted-foreground">Category</dt>
+                              <dd className="text-sm font-medium">{genus}</dd>
+                            </div>
+                          )}
+                          {/* Row 1: Gender, EV Yield, Growth Rate */}
+                          {genderCell}
+                          {textRows.slice(0, 2).map(({ label, value }) => (
+                            <div key={label} className="flex items-baseline gap-2">
+                              <dt className="shrink-0 text-xs text-muted-foreground">{label}</dt>
+                              <dd className="truncate text-sm font-medium capitalize">{value}</dd>
+                            </div>
+                          ))}
+                          {/* Row 2: Color, Base Friendship, Egg Groups */}
+                          {textRows.slice(2).map(({ label, value }) => (
+                            <div key={label} className="flex items-baseline gap-2">
+                              <dt className="shrink-0 text-xs text-muted-foreground">{label}</dt>
+                              <dd className="truncate text-sm font-medium capitalize">{value}</dd>
+                            </div>
+                          ))}
+                        </dl>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Evolution Chain */}
+                  {evolutionTree && (() => {
+                    const renderNode = (node: EvoTreeNode): React.ReactNode => {
+                      const isCurrent = node.speciesName === pokemon?.species.name;
+                      const card = isCurrent ? (
+                        <div key={node.speciesName} className="flex flex-col items-center gap-1 rounded-lg border-2 border-primary bg-primary/10 px-3 py-2 min-w-[80px]">
+                          <SpriteImg
+                            src={`${SPRITES_ROOT}/other/home/${node.speciesId}.png`}
+                            alt={node.speciesName}
+                            size="h-14 w-14"
+                            fallbackSrc={`${SPRITES_ROOT}/${node.speciesId}.png`}
+                          />
+                          <p className="text-center text-xs font-semibold leading-tight text-primary">
+                            {formatPokemonName(node.speciesName)}
+                          </p>
+                          {node.methods.map((m) => (
+                            <p key={m} className="text-center text-[10px] text-muted-foreground leading-tight">{m}</p>
+                          ))}
+                        </div>
+                      ) : (
+                        <button
+                          key={node.speciesName}
+                          className="flex flex-col items-center gap-1 rounded-lg border bg-muted/30 px-3 py-2 text-center transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-w-[80px]"
+                          onClick={() => onNavigate(node.speciesName)}
+                        >
+                          <SpriteImg
+                            src={`${SPRITES_ROOT}/other/home/${node.speciesId}.png`}
+                            alt={node.speciesName}
+                            size="h-14 w-14"
+                            fallbackSrc={`${SPRITES_ROOT}/${node.speciesId}.png`}
+                          />
+                          <p className="text-xs font-medium leading-tight">
+                            {formatPokemonName(node.speciesName)}
+                          </p>
+                          {node.methods.map((m) => (
+                            <p key={m} className="text-center text-[10px] text-muted-foreground leading-tight">{m}</p>
+                          ))}
+                        </button>
+                      );
+
+                      if (node.children.length === 0) return card;
+
+                      return (
+                        <div key={node.speciesName} className="flex items-center gap-2">
+                          {card}
+                          <div className="px-1 text-lg text-muted-foreground">→</div>
+                          <div className="flex flex-col gap-3">
+                            {node.children.map((child) => renderNode(child))}
+                          </div>
+                        </div>
+                      );
+                    };
+
+                    return (
+                      <div className="border-t px-6 py-5">
+                        <h3 className="mb-4 text-base font-semibold">Evolution Chain</h3>
+                        <div className="overflow-x-auto pb-1">
+                          {renderNode(evolutionTree)}
+                        </div>
+                      </div>
+                    );
+                  })()}
 
               {/* Type Effectiveness */}
               {typeEffectiveness && (
                 <div className="border-t px-6 py-5">
-                  <h3 className="mb-4 text-base font-semibold">Type Effectiveness</h3>
-                  <div className="space-y-3">
-                    {typeEffectiveness.immune.length > 0 && (
-                      <div>
-                        <p className="mb-1.5 text-xs font-medium text-muted-foreground">Immune (0×)</p>
-                        <div className="flex flex-wrap gap-2">
-                          {typeEffectiveness.immune.map((t) => (
-                            <Badge key={t} variant="default" className="capitalize text-xs !px-2" style={typeStyle(t)}>{t}</Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {(typeEffectiveness.quarter.length > 0 || typeEffectiveness.half.length > 0) && (
-                      <div>
-                        <p className="mb-1.5 text-xs font-medium text-muted-foreground">Resistant</p>
-                        <div className="flex flex-wrap gap-x-4 gap-y-2">
-                          {typeEffectiveness.quarter.map((t) => (
-                            <span key={t} className="inline-flex items-center gap-1">
-                              <Badge variant="default" className="capitalize text-xs !px-2" style={typeStyle(t)}>{t}</Badge>
-                              <span className="text-xs text-muted-foreground">¼×</span>
-                            </span>
-                          ))}
-                          {typeEffectiveness.half.map((t) => (
-                            <span key={t} className="inline-flex items-center gap-1">
-                              <Badge variant="default" className="capitalize text-xs !px-2" style={typeStyle(t)}>{t}</Badge>
-                              <span className="text-xs text-muted-foreground">½×</span>
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                  <h3 className="mb-3 text-base font-semibold">Type Effectiveness</h3>
+                  <div className="grid grid-cols-[auto_1fr] items-baseline gap-x-4 gap-y-2">
                     {(typeEffectiveness.double.length > 0 || typeEffectiveness.quadruple.length > 0) && (
-                      <div>
-                        <p className="mb-1.5 text-xs font-medium text-muted-foreground">Weak to</p>
-                        <div className="flex flex-wrap gap-x-4 gap-y-2">
+                      <>
+                        <p className="text-xs text-muted-foreground">Weak to</p>
+                        <div className="flex flex-wrap gap-x-3 gap-y-1.5">
                           {typeEffectiveness.quadruple.map((t) => (
                             <span key={t} className="inline-flex items-center gap-1">
                               <Badge variant="default" className="capitalize text-xs !px-2" style={typeStyle(t)}>{t}</Badge>
@@ -1534,180 +1554,218 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                             </span>
                           ))}
                         </div>
-                      </div>
+                      </>
+                    )}
+                    {(typeEffectiveness.quarter.length > 0 || typeEffectiveness.half.length > 0) && (
+                      <>
+                        <p className="text-xs text-muted-foreground">Resists</p>
+                        <div className="flex flex-wrap gap-x-3 gap-y-1.5">
+                          {typeEffectiveness.quarter.map((t) => (
+                            <span key={t} className="inline-flex items-center gap-1">
+                              <Badge variant="default" className="capitalize text-xs !px-2" style={typeStyle(t)}>{t}</Badge>
+                              <span className="text-xs text-muted-foreground">¼×</span>
+                            </span>
+                          ))}
+                          {typeEffectiveness.half.map((t) => (
+                            <span key={t} className="inline-flex items-center gap-1">
+                              <Badge variant="default" className="capitalize text-xs !px-2" style={typeStyle(t)}>{t}</Badge>
+                              <span className="text-xs text-muted-foreground">½×</span>
+                            </span>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                    {typeEffectiveness.immune.length > 0 && (
+                      <>
+                        <p className="text-xs text-muted-foreground">Immune</p>
+                        <div className="flex flex-wrap gap-x-3 gap-y-1.5">
+                          {typeEffectiveness.immune.map((t) => (
+                            <span key={t} className="inline-flex items-center gap-1">
+                              <Badge variant="default" className="capitalize text-xs !px-2" style={typeStyle(t)}>{t}</Badge>
+                              <span className="text-xs text-muted-foreground">0×</span>
+                            </span>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+                </>
+              )}
+
+              {/* ── Moves tab ── */}
+              {modalTab === "moves" && (
+                <div>
+                  <div className="px-6 pt-5 pb-1">
+                    <h3 className="text-base font-semibold">Moves</h3>
+                  </div>
+                  {/* Mobile: dropdown */}
+                  <div className="px-6 py-3 sm:hidden">
+                    <select
+                      value={moveTab}
+                      onChange={(e) => setMoveTab(e.target.value as MoveTab)}
+                      className="w-full rounded-md border bg-background px-3 py-2 text-base sm:text-sm font-medium text-foreground"
+                    >
+                      {moveTabs.map((tab) => (
+                        <option key={tab.id} value={tab.id}>
+                          {tab.label}{tab.count > 0 ? ` (${tab.count})` : ""}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {/* Desktop: tab bar */}
+                  <div className="hidden overflow-x-auto border-b px-6 sm:flex">
+                    {moveTabs.map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick={() => setMoveTab(tab.id)}
+                        className={cn(
+                          "flex items-center gap-1.5 border-b-2 px-4 py-3 text-sm font-medium transition-colors",
+                          moveTab === tab.id
+                            ? "border-primary text-foreground"
+                            : "border-transparent text-muted-foreground hover:text-foreground",
+                        )}
+                      >
+                        {tab.label}
+                        {tab.count > 0 && (
+                          <span
+                            className={cn(
+                              "rounded-full px-1.5 py-0.5 text-xs",
+                              moveTab === tab.id
+                                ? "bg-primary/10 text-primary"
+                                : "bg-muted text-muted-foreground",
+                            )}
+                          >
+                            {tab.count}
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="p-4">
+                    {activeMoves.length === 0 ? (
+                      <p className="py-8 text-center text-sm text-muted-foreground">
+                        No moves available
+                        {game ? ` in ${game.label}` : ""}.
+                      </p>
+                    ) : (
+                      <MoveTable
+                        moves={activeMoves}
+                        moveDetailsMap={moveDetailsMap}
+                        showLevel={moveTab === "level-up"}
+                        machineNumberMap={machineNumberMap}
+                        eggParentMap={moveTab === "egg" ? eggParentMap : undefined}
+                        eggDataLoaded={eggData !== null}
+                        hasGeneration={generation != null}
+                        expandedMove={expandedMove}
+                        onToggleExpand={(name) =>
+                          setExpandedMove((prev) => (prev === name ? null : name))
+                        }
+                        onNavigate={onNavigate}
+                        versionGroups={versionGroups}
+                      />
                     )}
                   </div>
                 </div>
               )}
 
-              {/* Locations */}
-              <div className="border-t px-6 py-5">
-                <div className="mb-4 flex items-center justify-between gap-3">
-                  <h3 className="text-base font-semibold">Locations</h3>
-                  {allGamesLocations.length > 0 && (
-                    <select
-                      value={resolvedLocationsGameValue ?? ""}
-                      onChange={(e) => setLocationsGameValue(e.target.value)}
-                      className="rounded-md border bg-background px-2 py-1 text-base sm:text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-                    >
-                      {allGamesLocations.map(({ game: g }) => (
-                        <option key={g.value} value={g.value}>{g.label}</option>
-                      ))}
-                    </select>
-                  )}
-                </div>
-                {encountersLoading ? (
-                  <div className="space-y-2">
-                    {[1, 2, 3].map((i) => <div key={i} className="h-8 skeleton-shimmer rounded" />)}
+              {/* ── Locations tab ── */}
+              {modalTab === "locations" && (
+                <div className="px-6 py-5">
+                  <div className="mb-4 flex items-center justify-between gap-3">
+                    <h3 className="text-base font-semibold">Locations</h3>
+                    {allGamesLocations.length > 0 && (
+                      <select
+                        value={resolvedLocationsGameValue ?? ""}
+                        onChange={(e) => setLocationsGameValue(e.target.value)}
+                        className="rounded-md border bg-background px-2 py-1 text-base sm:text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                      >
+                        {allGamesLocations.map(({ game: g }) => (
+                          <option key={g.value} value={g.value}>{g.label}</option>
+                        ))}
+                      </select>
+                    )}
                   </div>
-                ) : allGamesLocations.length === 0 ? (
-                  <p className="text-sm italic text-muted-foreground">
-                    Not found in the wild in any supported game.
-                  </p>
-                ) : (() => {
-                  // Show only the selected game's locations
-                  const selected = allGamesLocations.find((x) => x.game.value === resolvedLocationsGameValue);
-                  if (!selected) return null;
-                  const { game: g, locations } = selected;
-                  const rows: { locKey: string; locName: string; versions: string[]; method: string; conditions: string[]; levelRange: string; chance: number; isFirstInLoc: boolean; }[] = [];
-                  for (const loc of locations) {
-                    let firstInLoc = true;
-                    for (const m of loc.methods) {
-                      const levelRange = m.minLevel === m.maxLevel ? `${m.minLevel}` : `${m.minLevel}–${m.maxLevel}`;
-                      rows.push({ locKey: loc.key, locName: loc.name, versions: m.versions, method: m.method, conditions: m.conditions, levelRange, chance: m.chance, isFirstInLoc: firstInLoc });
-                      firstInLoc = false;
-                    }
-                  }
-                  const hasVersionLabels = rows.some((r) => r.versions.length > 0);
-                  return (
-                    <div className="overflow-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b text-left text-xs font-medium text-muted-foreground">
-                            <th className="pb-2 pr-4">Location</th>
-                            {hasVersionLabels && <th className="pb-2 pr-4">Version</th>}
-                            <th className="pb-2 pr-4">Method</th>
-                            <th className="pb-2 pr-4">Levels</th>
-                            <th className="pb-2 text-right">Chance</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border/50">
-                          {rows.map((row, i) => {
-                            const methodLabel = METHOD_LABELS[row.method] ?? row.method.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-                            const condLabel = row.conditions.map(formatConditionLabel).filter(Boolean).join(", ");
-                            return (
-                              <tr key={i} className="hover:bg-muted/30">
-                                <td className="py-1.5 pr-4 whitespace-nowrap">
-                                  {row.isFirstInLoc ? (
-                                    onOpenInCatchTracker ? (
-                                      <button
-                                        className="text-left text-muted-foreground hover:text-primary hover:underline transition-colors"
-                                        onClick={() => { onOpenInCatchTracker(g.value, row.locKey); onClose(); }}
-                                      >
-                                        {row.locName}
-                                      </button>
-                                    ) : (
-                                      <span className="text-muted-foreground">{row.locName}</span>
-                                    )
-                                  ) : ""}
-                                </td>
-                                {hasVersionLabels && (
-                                  <td className="py-1.5 pr-4">
-                                    <div className="flex flex-wrap gap-1">
-                                      {row.versions.map((v) => <VersionBadge key={v} version={v} />)}
-                                    </div>
-                                  </td>
-                                )}
-                                <td className="py-1.5 pr-4 text-muted-foreground">
-                                  {methodLabel}
-                                  {condLabel && <span className="ml-1 text-xs opacity-70">({condLabel})</span>}
-                                </td>
-                                <td className="py-1.5 pr-4 font-mono tabular-nums text-muted-foreground">{row.levelRange}</td>
-                                <td className="py-1.5 text-right font-mono tabular-nums text-muted-foreground">{row.chance}%</td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
+                  {encountersLoading ? (
+                    <div className="space-y-2">
+                      {[1, 2, 3].map((i) => <div key={i} className="h-8 skeleton-shimmer rounded" />)}
                     </div>
-                  );
-                })()}
-              </div>
-
-              {/* Moves */}
-              <div className="border-t">
-                <div className="px-6 pt-5 pb-1">
-                  <h3 className="text-base font-semibold">Moves</h3>
-                </div>
-                {/* Mobile: dropdown */}
-                <div className="px-6 py-3 sm:hidden">
-                  <select
-                    value={activeTab}
-                    onChange={(e) => setActiveTab(e.target.value as MoveTab)}
-                    className="w-full rounded-md border bg-background px-3 py-2 text-base sm:text-sm font-medium text-foreground"
-                  >
-                    {tabs.map((tab) => (
-                      <option key={tab.id} value={tab.id}>
-                        {tab.label}{tab.count > 0 ? ` (${tab.count})` : ""}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                {/* Desktop: tab bar */}
-                <div className="hidden overflow-x-auto border-b px-6 sm:flex">
-                  {tabs.map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={cn(
-                        "flex items-center gap-1.5 border-b-2 px-4 py-3 text-sm font-medium transition-colors",
-                        activeTab === tab.id
-                          ? "border-primary text-foreground"
-                          : "border-transparent text-muted-foreground hover:text-foreground",
-                      )}
-                    >
-                      {tab.label}
-                      {tab.count > 0 && (
-                        <span
-                          className={cn(
-                            "rounded-full px-1.5 py-0.5 text-xs",
-                            activeTab === tab.id
-                              ? "bg-primary/10 text-primary"
-                              : "bg-muted text-muted-foreground",
-                          )}
-                        >
-                          {tab.count}
-                        </span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="p-4">
-                  {activeMoves.length === 0 ? (
-                    <p className="py-8 text-center text-sm text-muted-foreground">
-                      No moves available
-                      {game ? ` in ${game.label}` : ""}.
+                  ) : allGamesLocations.length === 0 ? (
+                    <p className="text-sm italic text-muted-foreground">
+                      Not found in the wild in any supported game.
                     </p>
-                  ) : (
-                    <MoveTable
-                      moves={activeMoves}
-                      moveDetailsMap={moveDetailsMap}
-                      showLevel={activeTab === "level-up"}
-                      machineNumberMap={machineNumberMap}
-                      eggParentMap={activeTab === "egg" ? eggParentMap : undefined}
-                      eggDataLoaded={eggData !== null}
-                      hasGeneration={generation != null}
-                      expandedMove={expandedMove}
-                      onToggleExpand={(name) =>
-                        setExpandedMove((prev) => (prev === name ? null : name))
+                  ) : (() => {
+                    // Show only the selected game's locations
+                    const selected = allGamesLocations.find((x) => x.game.value === resolvedLocationsGameValue);
+                    if (!selected) return null;
+                    const { game: g, locations } = selected;
+                    const rows: { locKey: string; locName: string; versions: string[]; method: string; conditions: string[]; levelRange: string; chance: number; isFirstInLoc: boolean; }[] = [];
+                    for (const loc of locations) {
+                      let firstInLoc = true;
+                      for (const m of loc.methods) {
+                        const levelRange = m.minLevel === m.maxLevel ? `${m.minLevel}` : `${m.minLevel}–${m.maxLevel}`;
+                        rows.push({ locKey: loc.key, locName: loc.name, versions: m.versions, method: m.method, conditions: m.conditions, levelRange, chance: m.chance, isFirstInLoc: firstInLoc });
+                        firstInLoc = false;
                       }
-                      onNavigate={onNavigate}
-                      versionGroups={versionGroups}
-                    />
-                  )}
+                    }
+                    const hasVersionLabels = rows.some((r) => r.versions.length > 0);
+                    return (
+                      <div className="overflow-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b text-left text-xs font-medium text-muted-foreground">
+                              <th className="pb-2 pr-4">Location</th>
+                              {hasVersionLabels && <th className="pb-2 pr-4">Version</th>}
+                              <th className="pb-2 pr-4">Method</th>
+                              <th className="pb-2 pr-4">Levels</th>
+                              <th className="pb-2 text-right">Chance</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-border/50">
+                            {rows.map((row, i) => {
+                              const methodLabel = METHOD_LABELS[row.method] ?? row.method.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+                              const condLabel = row.conditions.map(formatConditionLabel).filter(Boolean).join(", ");
+                              return (
+                                <tr key={i} className="hover:bg-muted/30">
+                                  <td className="py-1.5 pr-4 whitespace-nowrap">
+                                    {row.isFirstInLoc ? (
+                                      onOpenInCatchTracker ? (
+                                        <button
+                                          className="text-left text-muted-foreground hover:text-primary hover:underline transition-colors"
+                                          onClick={() => { onOpenInCatchTracker(g.value, row.locKey); onClose(); }}
+                                        >
+                                          {row.locName}
+                                        </button>
+                                      ) : (
+                                        <span className="text-muted-foreground">{row.locName}</span>
+                                      )
+                                    ) : ""}
+                                  </td>
+                                  {hasVersionLabels && (
+                                    <td className="py-1.5 pr-4">
+                                      <div className="flex flex-wrap gap-1">
+                                        {row.versions.map((v) => <VersionBadge key={v} version={v} />)}
+                                      </div>
+                                    </td>
+                                  )}
+                                  <td className="py-1.5 pr-4 text-muted-foreground">
+                                    {methodLabel}
+                                    {condLabel && <span className="ml-1 text-xs opacity-70">({condLabel})</span>}
+                                  </td>
+                                  <td className="py-1.5 pr-4 font-mono tabular-nums text-muted-foreground">{row.levelRange}</td>
+                                  <td className="py-1.5 text-right font-mono tabular-nums text-muted-foreground">{row.chance}%</td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    );
+                  })()}
                 </div>
-              </div>
+              )}
             </>
           )}
         </div>
