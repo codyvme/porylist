@@ -14,10 +14,10 @@ function typeIconUrl(type: string) {
 
 function multClass(mult: number) {
   if (mult === 0) return "bg-black text-white";
-  if (mult === 0.25) return "bg-slate-600 text-slate-100";
-  if (mult === 0.5) return "bg-slate-400/60 text-slate-900";
-  if (mult === 2) return "bg-orange-500 text-white";
-  if (mult === 4) return "bg-red-600 text-white";
+  if (mult === 0.25) return "bg-green-700 text-white";
+  if (mult === 0.5) return "bg-green-500 text-white";
+  if (mult === 2) return "bg-red-500 text-white";
+  if (mult === 4) return "bg-red-700 text-white";
   return "";
 }
 
@@ -185,6 +185,7 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
               onChange={(name) => { if (name) { onAdd(name); } setActiveSlot(null); }}
               filter={(p) => !team.includes(p.name)}
               className="flex-1"
+              autoFocus
             />
             <button
               onClick={() => setActiveSlot(null)}
@@ -279,7 +280,7 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
                           key={t}
                           className={cn(
                             "w-9 border-l border-border/60 pt-2 text-center text-[10px] font-bold",
-                            count >= 2 ? "text-red-500" : count === 1 ? "text-orange-400" : "text-transparent",
+                            count >= 2 ? "text-red-600" : count === 1 ? "text-red-500" : "text-transparent",
                           )}
                         >
                           {count > 0 ? count : "·"}

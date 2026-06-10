@@ -838,6 +838,10 @@ export function App() {
                   <TeamBuilder team={team} onAdd={addToTeam} onRemove={removeFromTeam} onClear={clearTeam} />
                 } />
               </Routes>
+              {/* Spacer: flex+overflow-auto swallows padding-bottom, so use a physical element instead */}
+              {location.pathname !== "/pokedex" && !(["/routes", "/breeding"].includes(location.pathname)) && (
+                <div className="shrink-0 h-6" aria-hidden />
+              )}
               </div>
             </React.Suspense>
           </main>

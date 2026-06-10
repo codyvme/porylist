@@ -55,6 +55,7 @@ export const PokemonSearch = forwardRef<PokemonSearchHandle, PokemonSearchProps>
   const { data: summaryList = [] } = usePokemonSummaryList();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -115,10 +116,37 @@ export const PokemonSearch = forwardRef<PokemonSearchHandle, PokemonSearchProps>
     [summaryMap, value],
   );
 
+  // Reset active index when results change
+  useEffect(() => { setActiveIndex(-1); }, [results]);
+
   const handleSelect = (name: string | null) => {
     onChange(name);
     setOpen(false);
     setQuery("");
+    setActiveIndex(-1);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!open) return;
+    const items = allowNone ? [null, ...results.map(p => p.name)] : results.map(p => p.name);
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      const next = Math.min(activeIndex + 1, items.length - 1);
+      setActiveIndex(next);
+      listRef.current?.children[next]?.scrollIntoView({ block: "nearest" });
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      const prev = Math.max(activeIndex - 1, 0);
+      setActiveIndex(prev);
+      listRef.current?.children[prev]?.scrollIntoView({ block: "nearest" });
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (activeIndex >= 0 && activeIndex < items.length) {
+        handleSelect(items[activeIndex]);
+      }
+    } else if (e.key === "Escape") {
+      setOpen(false);
+    }
   };
 
   return (
@@ -132,6 +160,7 @@ export const PokemonSearch = forwardRef<PokemonSearchHandle, PokemonSearchProps>
           value={open ? query : (selectedEntry ? formatPokemonName(selectedEntry.name) : "")}
           onFocus={() => { setQuery(""); setOpen(true); }}
           onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleKeyDown}
           className={cn(
             "h-9 w-full rounded-md border border-input bg-background pl-8 text-base sm:text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary",
             clearable && selectedEntry && !open ? "pr-8" : "pr-3",
@@ -164,6 +193,7 @@ export const PokemonSearch = forwardRef<PokemonSearchHandle, PokemonSearchProps>
               className={cn(
                 "flex w-full items-center gap-2 px-3 py-1.5 text-sm hover:bg-muted",
                 value === null && "bg-primary/10 font-medium",
+                activeIndex === 0 && "bg-muted",
               )}
             >
               <UserRound className="h-7 w-7 shrink-0 text-muted-foreground" />
@@ -173,7 +203,7 @@ export const PokemonSearch = forwardRef<PokemonSearchHandle, PokemonSearchProps>
           {results.length === 0 && !allowNone && (
             <p className="px-3 py-2 text-sm text-muted-foreground">No results.</p>
           )}
-          {results.map((p) => (
+          {results.map((p, i) => (
             <button
               key={p.name}
               onMouseDown={(e) => e.preventDefault()}
@@ -181,6 +211,7 @@ export const PokemonSearch = forwardRef<PokemonSearchHandle, PokemonSearchProps>
               className={cn(
                 "flex w-full items-center gap-2 px-3 py-1.5 text-sm hover:bg-muted",
                 p.name === value && "bg-primary/10 font-medium",
+                activeIndex === (allowNone ? i + 1 : i) && "bg-muted",
               )}
             >
               <SpriteImg

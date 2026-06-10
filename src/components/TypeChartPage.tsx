@@ -67,7 +67,7 @@ export function TypeChartPage({ game }: { game: GameOption | null }) {
           <span className="text-muted-foreground">Not very effective</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="inline-flex h-5 w-6 items-center justify-center rounded-sm bg-slate-600 dark:bg-slate-500 text-white text-[10px] font-bold">0</span>
+          <span className="inline-flex h-5 w-6 items-center justify-center rounded-sm bg-black text-white text-[10px] font-bold">0</span>
           <span className="text-muted-foreground">No effect (immune)</span>
         </div>
       </div>
@@ -143,7 +143,7 @@ export function TypeChartPage({ game }: { game: GameOption | null }) {
                           className={cn(
                             "w-8 h-7 text-xs font-bold flex items-center justify-center rounded-sm select-none transition-colors cursor-default",
                             isImmune
-                              ? "bg-slate-600 dark:bg-slate-500 text-white"
+                              ? "bg-black text-white"
                               : isSuper
                                 ? "bg-green-500 text-white"
                                 : isWeak
