@@ -25,32 +25,28 @@ import {
   DEFAULT_NUZLOCKE,
   TRIAL_GAME_GROUPS,
   currentLevelCap,
+  coverArtUrl,
+  effectiveTeam,
+  nextObjective,
   loadPlaythroughs,
   savePlaythroughs,
   newPlaythroughId,
   type Playthrough,
   type Badge,
   type NuzlockeOptions,
+  type TeamMember,
+  type RunObjective,
 } from "@/lib/playthroughs";
 import { EncountersTab } from "@/components/EncountersTab";
 import { EmptyState } from "@/components/EmptyState";
 import { PlaythroughTeamTab } from "@/components/PlaythroughTeamTab";
+import { TrainerMatchup } from "@/components/TrainerMatchup";
 import { useTrainerData, usePokemonSummaryList, useItemList, typesForGeneration, type TrainerEntry, type ItemListEntry } from "@/lib/pokeapi";
 import { MoveModal } from "@/components/MoveModal";
 import { PokemonModal } from "@/components/PokemonModal";
 import { AbilityModal } from "@/components/AbilityModal";
 import { ItemModal } from "@/components/ItemModal";
 import { SpriteImg } from "@/components/SpriteImg";
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-
-/** Returns the public path for the cover art for an individual version slug. */
-const COVER_JPG = new Set(["diamond", "emerald", "heartgold", "pearl", "soulsilver"]);
-function coverArtUrl(version: string): string {
-  const ext = COVER_JPG.has(version) ? "jpg" : "png";
-  return `/images/covers/${version}.${ext}`;
-}
 
 // ─── Nuzlocke Options Form (shared) ───────────────────────────────────────────
 
@@ -398,7 +394,8 @@ function formatSlug(slug: string): string {
   return slug.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
 }
 
-function TrainerTeamModal({ trainer, game, onClose }: { trainer: TrainerEntry; game: GameOption | undefined; onClose: () => void }) {
+function TrainerTeamModal({ trainer, game, yourTeam, typeSpecialty, onClose }: { trainer: TrainerEntry; game: GameOption | undefined; yourTeam: TeamMember[]; typeSpecialty?: string | null; onClose: () => void }) {
+  const [view, setView] = useState<"matchup" | "team">(yourTeam.length > 0 ? "matchup" : "team");
   const { data: summaryList = [] } = usePokemonSummaryList();
   const summaryByName = useMemo(() => {
     const map = new Map<string, typeof summaryList[number]>();
@@ -513,9 +510,31 @@ function TrainerTeamModal({ trainer, game, onClose }: { trainer: TrainerEntry; g
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b px-5 py-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{trainer.class}</p>
-            <h2 className="text-xl font-semibold">{trainer.name}</h2>
+          <div className="flex items-center gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{trainer.class}</p>
+              <h2 className="text-xl font-semibold">{trainer.name}</h2>
+            </div>
+            <div className="flex gap-1 rounded-lg bg-muted p-0.5">
+              <button
+                onClick={() => setView("matchup")}
+                className={cn(
+                  "rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+                  view === "matchup" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                Matchup
+              </button>
+              <button
+                onClick={() => setView("team")}
+                className={cn(
+                  "rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+                  view === "team" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                Their team
+              </button>
+            </div>
           </div>
           <button
             onClick={onClose}
@@ -525,7 +544,15 @@ function TrainerTeamModal({ trainer, game, onClose }: { trainer: TrainerEntry; g
           </button>
         </div>
 
+        {/* Matchup view */}
+        {view === "matchup" && (
+          <div className="p-5">
+            <TrainerMatchup trainer={trainer} yourTeam={yourTeam} game={game} typeSpecialty={typeSpecialty} onOpenPokemon={openPokemon} />
+          </div>
+        )}
+
         {/* Team */}
+        {view === "team" && (
         <div className="grid gap-3 p-5 sm:grid-cols-2">
           {trainer.team.map((mon, i) => {
             const spriteUrl = mon.ndex ? `${SPRITES_ROOT}/${mon.ndex}.png` : null;
@@ -620,9 +647,110 @@ function TrainerTeamModal({ trainer, game, onClose }: { trainer: TrainerEntry; g
             );
           })}
         </div>
+        )}
       </div>
     </div>
     </>
+  );
+}
+
+// ─── "What's next" objective banner ───────────────────────────────────────────
+
+function ObjectiveBanner({
+  objective,
+  game,
+  trainer,
+  onViewMatchup,
+}: {
+  objective: RunObjective;
+  game: GameOption | undefined;
+  trainer: TrainerEntry | undefined;
+  onViewMatchup: (t: TrainerEntry) => void;
+}) {
+  if (!objective) return null;
+
+  const matchupBtn = trainer && (
+    <button
+      onClick={() => onViewMatchup(trainer)}
+      className="shrink-0 flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
+    >
+      <Swords className="h-3.5 w-3.5" />
+      Matchup
+    </button>
+  );
+
+  if (objective.kind === "complete") {
+    return (
+      <div className="mb-3 flex items-center gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 p-3">
+        <Trophy className="h-6 w-6 shrink-0 text-amber-500" />
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-400">Run complete</p>
+          <p className="text-sm font-semibold">You're the Champion! 🎉</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (objective.kind === "final") {
+    return (
+      <div className="mb-3 rounded-xl border border-primary/30 bg-primary/5 p-3">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <Trophy className="h-5 w-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-semibold uppercase tracking-wide text-primary">Next objective</p>
+            <p className="text-sm font-semibold">Challenge the Elite Four &amp; Champion</p>
+            <p className="text-xs text-muted-foreground">
+              All {objective.total} {objective.isTrial ? "trials" : "badges"} earned.
+            </p>
+          </div>
+          {matchupBtn}
+        </div>
+      </div>
+    );
+  }
+
+  const b = objective.badge;
+  const counterTypes = objective.typeSpecialty
+    ? (() => {
+        const eff = computeTypeEffectiveness([objective.typeSpecialty!], game?.generation ?? 9);
+        return ALL_TYPES.filter((t) => (eff[t] ?? 1) >= 2);
+      })()
+    : [];
+
+  return (
+    <div className="mb-3 rounded-xl border border-primary/30 bg-primary/5 p-3">
+      <div className="flex items-center gap-3">
+        {b.image ? (
+          <img src={b.image} alt="" className="h-10 w-10 shrink-0 object-contain" />
+        ) : (
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <Swords className="h-5 w-5" />
+          </div>
+        )}
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-semibold uppercase tracking-wide text-primary">Next objective</p>
+          <p className="truncate text-sm font-semibold">
+            Beat {b.leader ?? b.name}
+            {b.location && <span className="font-normal text-muted-foreground"> · {b.location}</span>}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {objective.isTrial ? "Trial" : "Gym"} {objective.index + 1} of {objective.total}
+            {b.aceLevel ? ` · Level cap ${b.aceLevel}` : ""}
+          </p>
+          {counterTypes.length > 0 && objective.typeSpecialty && (
+            <div className="mt-1.5 flex flex-wrap items-center gap-1 text-xs">
+              <span className="text-muted-foreground">Bring</span>
+              {counterTypes.map((t) => (
+                <TypeBadge key={t} type={t} size="sm" />
+              ))}
+            </div>
+          )}
+        </div>
+        {matchupBtn}
+      </div>
+    </div>
   );
 }
 
@@ -653,6 +781,14 @@ function BadgesTab({
     [trainerData],
   );
 
+  const objective = nextObjective(playthrough);
+  const objectiveTrainer =
+    objective?.kind === "badge"
+      ? trainersByBadge.get(objective.badge.id)
+      : objective?.kind === "final"
+        ? eliteFour[0]
+        : undefined;
+
   if (badges.length === 0) {
     return (
       <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
@@ -671,8 +807,20 @@ function BadgesTab({
   return (
     <>
       {activeTrainer && (
-        <TrainerTeamModal trainer={activeTrainer} game={game} onClose={() => setActiveTrainer(null)} />
+        <TrainerTeamModal
+          trainer={activeTrainer}
+          game={game}
+          yourTeam={effectiveTeam(playthrough)}
+          typeSpecialty={activeTrainer.badgeId ? BADGE_TYPE_SPECIALTY[group]?.[activeTrainer.badgeId] ?? null : null}
+          onClose={() => setActiveTrainer(null)}
+        />
       )}
+      <ObjectiveBanner
+        objective={objective}
+        game={game}
+        trainer={objectiveTrainer}
+        onViewMatchup={setActiveTrainer}
+      />
       <div className="flex flex-col gap-1">
         {badges.map((badge) => {
           const isEarned = earned.has(badge.id);

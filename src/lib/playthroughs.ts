@@ -97,6 +97,8 @@ export interface TeamMember {
   species: string;
   /** Optional player-chosen nickname. */
   nickname?: string;
+  /** Optional current level — powers the team's "Coming up" digest and battle-prep level gap. */
+  level?: number;
 }
 
 /**
@@ -220,9 +222,11 @@ export function normalizeTeam(raw: unknown): TeamMember[] {
       if (entry) out.push({ species: entry });
     } else if (entry && typeof entry === "object" && typeof (entry as { species?: unknown }).species === "string") {
       const e = entry as TeamMember;
+      const level = typeof e.level === "number" && e.level >= 1 && e.level <= 100 ? Math.floor(e.level) : undefined;
       out.push({
         species: e.species,
         nickname: typeof e.nickname === "string" && e.nickname.trim() ? e.nickname : undefined,
+        level,
       });
     }
   }
@@ -654,4 +658,63 @@ export function savePlaythroughs(list: Playthrough[]): void {
 
 export function newPlaythroughId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+// ─── Cover art ────────────────────────────────────────────────────────────────
+
+const COVER_JPG = new Set(["diamond", "emerald", "heartgold", "pearl", "soulsilver"]);
+
+/** Public path for an individual version slug's box-art image. */
+export function coverArtUrl(version: string): string {
+  const ext = COVER_JPG.has(version) ? "jpg" : "png";
+  return `/images/covers/${version}.${ext}`;
+}
+
+// ─── Next objective ───────────────────────────────────────────────────────────
+
+export type RunObjective =
+  | { kind: "badge"; badge: Badge; index: number; total: number; typeSpecialty: string | null; isTrial: boolean }
+  | { kind: "final"; total: number; isTrial: boolean }
+  | { kind: "complete" }
+  | null;
+
+/**
+ * The next thing to do in a run: the next un-earned gym/trial, then the final
+ * challenge once they're all cleared, then "complete". Returns null for games
+ * with no badge data (e.g. Legends games handled elsewhere). Badge-driven so it
+ * works across every generation, unlike the partial location-order data.
+ */
+export function nextObjective(p: Playthrough): RunObjective {
+  if (p.status === "completed") return { kind: "complete" };
+  const group = VERSION_TO_GAME_GROUP[p.gameValue] ?? p.gameValue;
+  const badges = GAME_BADGES[group];
+  if (!badges || badges.length === 0) return null;
+  const isTrial = TRIAL_GAME_GROUPS.has(group);
+  const earned = new Set(p.earnedBadges);
+  const idx = badges.findIndex((b) => !earned.has(b.id));
+  if (idx === -1) return { kind: "final", total: badges.length, isTrial };
+  return {
+    kind: "badge",
+    badge: badges[idx],
+    index: idx,
+    total: badges.length,
+    typeSpecialty: BADGE_TYPE_SPECIALTY[group]?.[badges[idx].id] ?? null,
+    isTrial,
+  };
+}
+
+// ─── Effective team ───────────────────────────────────────────────────────────
+
+/**
+ * The team to analyze for a run. Prefers the explicit Team-tab roster; when
+ * that's empty (e.g. a Nuzlocker who only logs encounters), falls back to the
+ * live "team" encounters so battle-prep tools still have something to work with.
+ */
+export function effectiveTeam(p: Playthrough): TeamMember[] {
+  const roster = p.team ?? [];
+  if (roster.length > 0) return roster;
+  const fromEncounters = (p.encounters ?? [])
+    .filter((e) => e.status === "team" && e.species)
+    .map((e) => ({ species: e.species, nickname: e.nickname, level: e.level }));
+  return fromEncounters.slice(0, 6);
 }

@@ -5,8 +5,9 @@ import { usePokemonSummaryList, typesForGeneration } from "@/lib/pokeapi";
 import { spriteUrl, type GameOption } from "@/lib/games";
 import { TypeBadge } from "@/components/TypeBadge";
 import { formatPokemonName, cn } from "@/lib/utils";
-import type { Playthrough, TeamMember } from "@/lib/playthroughs";
+import { currentLevelCap, type Playthrough, type TeamMember } from "@/lib/playthroughs";
 import { SpriteImg } from "@/components/SpriteImg";
+import { TeamUpcoming } from "@/components/TeamUpcoming";
 
 interface Props {
   playthrough: Playthrough;
@@ -23,6 +24,8 @@ interface Props {
  */
 export function PlaythroughTeamTab({ playthrough, game, onUpdate }: Props) {
   const team = playthrough.team ?? [];
+  const levelCap = currentLevelCap(playthrough)?.cap ?? null;
+  const overCapCount = team.filter((m) => m.level != null && levelCap != null && m.level > levelCap).length;
   const { data: summaryList = [] } = usePokemonSummaryList();
   const [activeSlot, setActiveSlot] = useState<number | null>(null);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -79,6 +82,12 @@ export function PlaythroughTeamTab({ playthrough, game, onUpdate }: Props) {
     if (editingIndex === index) setEditingIndex(null);
   }, [team, writeTeam, editingIndex]);
 
+  const handleLevel = useCallback((index: number, raw: string) => {
+    const n = parseInt(raw, 10);
+    const level = Number.isFinite(n) && n >= 1 && n <= 100 ? n : undefined;
+    writeTeam(team.map((m, i) => (i === index ? { ...m, level } : m)));
+  }, [team, writeTeam]);
+
   const handleClear = useCallback(() => {
     writeTeam([]);
     setEditingIndex(null);
@@ -119,6 +128,14 @@ export function PlaythroughTeamTab({ playthrough, game, onUpdate }: Props) {
           </button>
         )}
       </div>
+
+      {overCapCount > 0 && levelCap != null && (
+        <div className="flex items-center gap-2 rounded-lg border border-red-500/40 bg-red-500/5 px-3 py-2 text-xs text-red-700 dark:text-red-300">
+          <span className="font-medium">
+            {overCapCount} {overCapCount === 1 ? "Pokémon is" : "Pokémon are"} over the level cap (Lv. {levelCap}).
+          </span>
+        </div>
+      )}
 
       <div className="flex flex-col gap-2">
         {Array.from({ length: 6 }).map((_, i) => {
@@ -223,7 +240,29 @@ export function PlaythroughTeamTab({ playthrough, game, onUpdate }: Props) {
                       <div className="truncate text-xs text-muted-foreground">{speciesLabel}</div>
                     )}
                   </div>
-                  <div className="flex shrink-0 gap-1">
+                  {(() => {
+                    const overCap = member.level != null && levelCap != null && member.level > levelCap;
+                    return (
+                      <input
+                        type="number"
+                        min={1}
+                        max={100}
+                        value={member.level ?? ""}
+                        onChange={(e) => handleLevel(i, e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                        placeholder="Lv"
+                        aria-label={`Level for ${speciesLabel}`}
+                        title={overCap ? `Over the level cap (${levelCap})` : undefined}
+                        className={cn(
+                          "w-12 shrink-0 rounded-md border bg-background px-1.5 py-1 text-center text-xs tabular-nums focus:outline-none focus:ring-2 focus:ring-primary",
+                          overCap
+                            ? "border-red-500 text-red-600 dark:text-red-400 focus:ring-red-500"
+                            : "border-input",
+                        )}
+                      />
+                    );
+                  })()}
+                  <div className="hidden shrink-0 gap-1 sm:flex">
                     {typesForGeneration(summary, game?.generation).map((t) => (
                       <TypeBadge key={t} type={t} />
                     ))}
@@ -254,6 +293,8 @@ export function PlaythroughTeamTab({ playthrough, game, onUpdate }: Props) {
           Click any empty slot to add a Pokémon to your team.
         </div>
       )}
+
+      {team.length > 0 && <TeamUpcoming team={team} game={game} />}
     </div>
   );
 }

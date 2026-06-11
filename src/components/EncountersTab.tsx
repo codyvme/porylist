@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { Check, Pencil, Plus, Skull, Trash2, X } from "lucide-react";
+import { Check, Pencil, Plus, Skull, Trash2, UserCheck, UserPlus, X } from "lucide-react";
 import {
   newEncounterId,
   type EncounterRecord,
@@ -91,6 +91,22 @@ export function EncountersTab({ playthrough, game, routeDataKey, onUpdate }: Pro
     onUpdate({ ...playthrough, encounters: next, updatedAt: Date.now() });
   }, [playthrough, encounters, onUpdate]);
 
+  const handleAddToTeam = useCallback((e: EncounterRecord) => {
+    const roster = playthrough.team ?? [];
+    if (!e.species || roster.length >= 6 || roster.some((m) => m.species === e.species)) return;
+    onUpdate({
+      ...playthrough,
+      team: [...roster, { species: e.species, nickname: e.nickname, level: e.level }],
+      updatedAt: Date.now(),
+    });
+  }, [playthrough, onUpdate]);
+
+  const teamSpecies = useMemo(
+    () => new Set((playthrough.team ?? []).map((m) => m.species)),
+    [playthrough.team],
+  );
+  const teamFull = (playthrough.team ?? []).length >= 6;
+
   const liveEncounters = encounters.filter((e) => e.status === "team" || e.status === "boxed");
   const cemetery = encounters.filter((e) => e.status === "fainted");
   const missed = encounters.filter((e) => e.status === "missed");
@@ -140,6 +156,10 @@ export function EncountersTab({ playthrough, game, routeDataKey, onUpdate }: Pro
               onCancel={() => setEditingId(null)}
               onSave={(patch) => handleSave(e.id, patch)}
               onDelete={() => handleDelete(e.id)}
+              game={game}
+              onAddToTeam={() => handleAddToTeam(e)}
+              onTeam={!!e.species && teamSpecies.has(e.species)}
+              teamFull={teamFull}
             />
           ))}
         </Section>
@@ -162,6 +182,10 @@ export function EncountersTab({ playthrough, game, routeDataKey, onUpdate }: Pro
               onCancel={() => setEditingId(null)}
               onSave={(patch) => handleSave(e.id, patch)}
               onDelete={() => handleDelete(e.id)}
+              game={game}
+              onAddToTeam={() => handleAddToTeam(e)}
+              onTeam={!!e.species && teamSpecies.has(e.species)}
+              teamFull={teamFull}
             />
           ))}
         </Section>
@@ -180,6 +204,10 @@ export function EncountersTab({ playthrough, game, routeDataKey, onUpdate }: Pro
               onCancel={() => setEditingId(null)}
               onSave={(patch) => handleSave(e.id, patch)}
               onDelete={() => handleDelete(e.id)}
+              game={game}
+              onAddToTeam={() => handleAddToTeam(e)}
+              onTeam={!!e.species && teamSpecies.has(e.species)}
+              teamFull={teamFull}
             />
           ))}
         </Section>
@@ -213,24 +241,31 @@ function EncounterForm({
   locations, burnedRoutes, caughtSpecies, enforceFirstOnly, enforceSpeciesClause,
   initial, submitLabel = "Add", onSubmit, onCancel,
 }: FormProps) {
-  const [locationKey, setLocationKey] = useState(initial?.locationKey ?? "");
+  // A custom location key is logged as "custom:<name>"; seed the input from it on edit.
+  const initialCustom = initial?.locationKey?.startsWith("custom:") ? (initial?.locationName ?? "") : "";
+  const [locationKey, setLocationKey] = useState(initial?.locationKey?.startsWith("custom:") ? "__custom__" : (initial?.locationKey ?? ""));
+  const [customName, setCustomName] = useState(initialCustom);
   const [species, setSpecies] = useState(initial?.species ?? "");
   const [status, setStatus] = useState<Status>(initial?.status ?? "team");
   const [nickname, setNickname] = useState(initial?.nickname ?? "");
   const [level, setLevel] = useState<string>(initial?.level != null ? String(initial.level) : "");
   const [notes, setNotes] = useState(initial?.notes ?? "");
 
+  const isCustom = locationKey === "__custom__";
   const selectedLocation = locations.find((l) => l.key === locationKey);
-  const routeAlreadyBurned = enforceFirstOnly && locationKey && burnedRoutes.has(locationKey) && locationKey !== initial?.locationKey;
+  const resolvedKey = isCustom ? `custom:${customName.trim().toLowerCase()}` : locationKey;
+  const resolvedLabel = isCustom ? customName.trim() : selectedLocation?.label;
+  const locationValid = isCustom ? customName.trim().length > 0 : !!selectedLocation;
+  const routeAlreadyBurned = !isCustom && enforceFirstOnly && locationKey && burnedRoutes.has(locationKey) && locationKey !== initial?.locationKey;
   const speciesAlreadyCaught = enforceSpeciesClause && species && status !== "missed" && caughtSpecies.has(species) && species !== initial?.species;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!locationKey || !selectedLocation) return;
+    if (!locationValid || !resolvedLabel) return;
     if (status !== "missed" && !species) return;
     onSubmit({
-      locationKey,
-      locationName: selectedLocation.label,
+      locationKey: resolvedKey,
+      locationName: resolvedLabel,
       species,
       nickname: nickname.trim() || undefined,
       level: level.trim() ? Number(level) : undefined,
@@ -251,12 +286,22 @@ function EncounterForm({
             className="h-9 rounded-md border border-input bg-background px-2 text-base sm:text-sm"
           >
             <option value="">Select a route…</option>
+            <option value="__custom__">Custom location (gift, static, trade…)</option>
             {locations.map((l) => (
               <option key={l.key} value={l.key} disabled={enforceFirstOnly && burnedRoutes.has(l.key) && l.key !== initial?.locationKey}>
                 {l.label}{enforceFirstOnly && burnedRoutes.has(l.key) ? " (burned)" : ""}
               </option>
             ))}
           </select>
+          {isCustom && (
+            <input
+              value={customName}
+              onChange={(e) => setCustomName(e.target.value)}
+              placeholder="e.g. Goldenrod Game Corner (Eevee)"
+              autoFocus
+              className="mt-1 h-9 rounded-md border border-input bg-background px-2 text-base sm:text-sm"
+            />
+          )}
         </label>
 
         <label className="flex flex-col gap-1 text-xs">
@@ -333,7 +378,7 @@ function EncounterForm({
         </button>
         <button
           type="submit"
-          disabled={!locationKey || (status !== "missed" && !species)}
+          disabled={!locationValid || (status !== "missed" && !species)}
           className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
         >
           {submitLabel}
@@ -353,6 +398,10 @@ function EncounterRow({
   onCancel,
   onSave,
   onDelete,
+  game,
+  onAddToTeam,
+  onTeam,
+  teamFull,
 }: {
   encounter: EncounterRecord;
   pokemonSummary: { id: number; name: string } | null;
@@ -361,6 +410,10 @@ function EncounterRow({
   onCancel: () => void;
   onSave: (patch: Partial<EncounterRecord>) => void;
   onDelete: () => void;
+  game: GameOption;
+  onAddToTeam: () => void;
+  onTeam: boolean;
+  teamFull: boolean;
 }) {
   const [nickname, setNickname] = useState(encounter.nickname ?? "");
   const [status, setStatus] = useState<Status>(encounter.status);
@@ -445,7 +498,8 @@ function EncounterRow({
     <div className="flex items-center gap-3 rounded-lg border border-border bg-card p-2.5">
       {pokemonSummary ? (
         <SpriteImg
-          src={spriteUrl(pokemonSummary.id)}
+          src={spriteUrl(pokemonSummary.id, pokemonSummary.id <= game.genMax ? game.spriteVersion : undefined)}
+          fallbackSrc={spriteUrl(pokemonSummary.id)}
           alt=""
           size="h-12 w-12"
           className={encounter.status === "fainted" ? "grayscale opacity-70" : undefined}
@@ -474,6 +528,23 @@ function EncounterRow({
       <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide", meta.className)}>
         {meta.label}
       </span>
+      {(encounter.status === "team" || encounter.status === "boxed") && encounter.species && (
+        onTeam ? (
+          <span className="flex items-center justify-center p-1.5 text-emerald-600 dark:text-emerald-400" title="On your team">
+            <UserCheck className="h-3.5 w-3.5" />
+          </span>
+        ) : (
+          <button
+            onClick={onAddToTeam}
+            disabled={teamFull}
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40 disabled:hover:bg-transparent"
+            aria-label="Add to team"
+            title={teamFull ? "Team is full (6)" : "Add to your team"}
+          >
+            <UserPlus className="h-3.5 w-3.5" />
+          </button>
+        )
+      )}
       <button
         onClick={onEdit}
         className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"

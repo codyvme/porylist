@@ -11,7 +11,7 @@ import { formatPokemonName } from "@/lib/utils";
 import { spriteUrl, SPRITES_ROOT, type GameOption, GAMES_BY_VALUE } from "@/lib/games";
 import { usePokemonSummaryList, usePokemonSpecies } from "@/lib/pokeapi";
 import { TYPE_COLORS, typeStyle } from "@/lib/types";
-import { loadPlaythroughs, VERSION_TO_GAME_GROUP, VERSION_DISPLAY_LABEL } from "@/lib/playthroughs";
+import { loadPlaythroughs, VERSION_TO_GAME_GROUP, VERSION_DISPLAY_LABEL, GAME_BADGES, TRIAL_GAME_GROUPS, coverArtUrl } from "@/lib/playthroughs";
 import { loadProjects } from "@/lib/breeding";
 import { loadHunts, METHOD_LABELS, shinyRate, cumulativeProb } from "@/lib/shiny-hunts";
 import { fetchDashboardConfig, upsertDashboardConfig, type User } from "@/lib/supabase";
@@ -346,11 +346,6 @@ function PokemonOfTheDay({ game }: { game: GameOption | null }) {
 
 // ─── Playthroughs ─────────────────────────────────────────────────────────────
 
-const COVER_JPG = new Set(["diamond", "emerald", "heartgold", "pearl", "soulsilver"]);
-function coverArtUrl(version: string) {
-  return `/images/covers/${version}.${COVER_JPG.has(version) ? "jpg" : "png"}`;
-}
-
 function PlaythroughsSection() {
   const playthroughs = useMemo(() => loadPlaythroughs().filter((p) => p.status === "active"), []);
 
@@ -370,6 +365,13 @@ function PlaythroughsSection() {
         const dexTotal = game?.genMax ?? 0;
         const pct = dexTotal > 0 ? (p.caught.length / dexTotal) * 100 : 0;
         const versionLabel = VERSION_DISPLAY_LABEL[p.gameValue] ?? game?.label ?? p.gameValue;
+        const badges = GAME_BADGES[group] ?? [];
+        const earnedSet = new Set(p.earnedBadges);
+        const badgeWord = TRIAL_GAME_GROUPS.has(group) ? "trials" : "badges";
+        const nextBadge = badges.find((b) => !earnedSet.has(b.id));
+        const nextLabel = p.earnedBadges.length >= badges.length
+          ? (badges.length > 0 ? "Champion run" : null)
+          : nextBadge?.leader ?? nextBadge?.name ?? null;
         return (
           <Link
             key={p.id}
@@ -390,6 +392,12 @@ function PlaythroughsSection() {
                 {p.nuzlocke.enabled && <Skull className="h-3 w-3 shrink-0 text-red-500" />}
               </div>
               <p className="text-xs text-muted-foreground">{versionLabel}</p>
+              {badges.length > 0 && (
+                <p className="mt-0.5 text-[11px] text-muted-foreground tabular-nums">
+                  {p.earnedBadges.length}/{badges.length} {badgeWord}
+                  {nextLabel && <span className="text-muted-foreground/70"> · Next: {nextLabel}</span>}
+                </p>
+              )}
               {dexTotal > 0 && (
                 <div className="mt-1.5">
                   <div className="flex h-1.5 overflow-hidden rounded-full bg-muted">

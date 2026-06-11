@@ -71,9 +71,9 @@ import {
   type AbilityDetail,
   type LocationAreaEncounter,
   type ChainLink,
-  type EvolutionDetail,
 } from "@/lib/pokeapi";
 import { cn, formatPokemonName } from "@/lib/utils";
+import { formatEvolutionMethod, formatLocationName } from "@/lib/evolution";
 
 // ── Encounter helpers ────────────────────────────────────────────────────────
 
@@ -143,20 +143,6 @@ function formatConditionLabel(condition: string): string {
   if (condition.startsWith("story-progress-")) return "";
   // Generic: title-case the hyphenated key
   return condition.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-function formatLocationName(apiName: string): string {
-  let name = apiName
-    .replace(/-area$/, "")
-    .replace(/-/g, " ");
-  // B1F, 1F floor notation
-  name = name.replace(/\bb(\d+)f\b/gi, (_, n) => `B${n}F`);
-  name = name.replace(/\b(\d+)f\b/gi, (_, n) => `${n}F`);
-  // Capitalize words
-  name = name.replace(/\b\w+/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
-  // Fix abbreviations
-  name = name.replace(/\bMt\b/g, "Mt.").replace(/\bSs\b/g, "SS");
-  return name;
 }
 
 type MethodData = {
@@ -647,55 +633,6 @@ const GEN_MAX_DEX: Record<number, number> = {
   6: 721, 7: 809, 8: 905, 9: 1025,
 };
 
-function formatItemName(name: string): string {
-  return name.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-function formatEvolutionMethod(detail: EvolutionDetail): string {
-  const trigger = detail.trigger.name;
-  const parts: string[] = [];
-
-  switch (trigger) {
-    case "level-up":
-      if (detail.min_level) parts.push(`Level ${detail.min_level}`);
-      else if (detail.min_happiness) parts.push("High Friendship");
-      else if (detail.min_beauty) parts.push("High Beauty");
-      else if (detail.min_affection) parts.push("High Affection");
-      else if (detail.known_move) parts.push(`Know ${formatItemName(detail.known_move.name)}`);
-      else if (detail.known_move_type) parts.push(`Know a ${formatItemName(detail.known_move_type.name)}-type move`);
-      else if (detail.location) parts.push(`At ${formatLocationName(detail.location.name)}`);
-      else parts.push("Level up");
-      if (detail.time_of_day === "day") parts.push("(Day)");
-      else if (detail.time_of_day === "night") parts.push("(Night)");
-      if (detail.needs_overworld_rain) parts.push("(Rain)");
-      if (detail.gender === 1) parts.push("(♀)");
-      if (detail.gender === 2) parts.push("(♂)");
-      if (detail.relative_physical_stats === 1) parts.push("(Atk > Def)");
-      else if (detail.relative_physical_stats === -1) parts.push("(Atk < Def)");
-      else if (detail.relative_physical_stats === 0) parts.push("(Atk = Def)");
-      if (detail.turn_upside_down) parts.push("(Upside down)");
-      break;
-    case "use-item":
-      parts.push(`Use ${formatItemName(detail.item?.name ?? "item")}`);
-      break;
-    case "trade":
-      if (detail.held_item) parts.push(`Trade holding ${formatItemName(detail.held_item.name)}`);
-      else if (detail.trade_species) parts.push(`Trade for ${formatItemName(detail.trade_species.name)}`);
-      else parts.push("Trade");
-      break;
-    case "shed": parts.push("Level 20 + empty party slot"); break;
-    case "three-critical-hits": parts.push("3 critical hits in one battle"); break;
-    case "take-damage": parts.push("Travel after taking damage"); break;
-    case "agile-style-move": parts.push("Use agile style 20 times"); break;
-    case "strong-style-move": parts.push("Use strong style 20 times"); break;
-    case "recoil-damage": parts.push("Take 294+ recoil damage"); break;
-    case "tower-of-darkness": parts.push("Tower of Darkness"); break;
-    case "tower-of-waters": parts.push("Tower of Waters"); break;
-    default: parts.push(trigger.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
-  }
-
-  return parts.join(" ");
-}
 
 interface EvoTreeNode {
   speciesName: string;
