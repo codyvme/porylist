@@ -25,7 +25,7 @@ export function Modal({ onClose, children, maxWidth = "max-w-lg", className, blu
     <div
       className={cn(
         "fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4",
-        blur && "backdrop-blur-sm",
+        blur && "backdrop-blur-xs",
       )}
       onClick={onClose}
     >

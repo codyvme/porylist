@@ -28,7 +28,7 @@ export function WelcomeModal({ onClose, onOpenPalette }: WelcomeModalProps) {
       title: "Search anything with the command palette",
       body: (
         <>
-          Press <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium">{shortcut}</kbd> to instantly find any Pokémon, move, ability, or item. Also reachable from the search icon in the header.
+          Press <kbd className="rounded-sm border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium">{shortcut}</kbd> to instantly find any Pokémon, move, ability, or item. Also reachable from the search icon in the header.
         </>
       ),
     },

@@ -77,7 +77,7 @@ function IVDots({
           key={stat}
           title={`${STAT_LABELS[stat]}: ${perfect.has(stat) ? "31 ✓" : "not perfect"}`}
           className={cn(
-            "inline-flex items-center justify-center rounded font-bold",
+            "inline-flex items-center justify-center rounded-sm font-bold",
             size === "xs" ? "h-4 w-5 text-[9px]" : "h-5 w-6 text-[10px]",
             perfect.has(stat)
               ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
@@ -329,7 +329,7 @@ function NewProjectForm({
                 key={stat}
                 onClick={() => toggleIV(stat)}
                 className={cn(
-                  "rounded px-2.5 py-1 text-xs font-bold transition-colors",
+                  "rounded-sm px-2.5 py-1 text-xs font-bold transition-colors",
                   targetIVs.has(stat)
                     ? "bg-emerald-500 text-white"
                     : "bg-muted text-muted-foreground hover:bg-muted/70",
@@ -344,7 +344,7 @@ function NewProjectForm({
                   prev.size === STATS.length ? new Set() : new Set(STATS),
                 )
               }
-              className="rounded px-2.5 py-1 text-xs text-muted-foreground underline"
+              className="rounded-sm px-2.5 py-1 text-xs text-muted-foreground underline"
             >
               {targetIVs.size === STATS.length ? "Clear all" : "Select all"}
             </button>
@@ -431,7 +431,7 @@ function NewProjectForm({
           {eggMoves.length < 4 && (
             <div className="relative">
               <input
-                className="h-9 w-full rounded-md border border-input bg-background px-3 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="h-9 w-full rounded-md border border-input bg-background px-3 text-base sm:text-sm focus:outline-hidden focus:ring-2 focus:ring-ring"
                 placeholder="Search moves…"
                 value={moveSearch}
                 onChange={(e) => { setMoveSearch(e.target.value); setShowMoveDrop(true); }}
@@ -541,7 +541,7 @@ function PlanAccordion({ steps }: { steps: BreedingStep[] }) {
             >
               <span
                 className={cn(
-                  "shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
+                  "shrink-0 rounded-sm px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
                   STEP_TYPE_COLORS[step.type],
                 )}
               >
@@ -632,7 +632,7 @@ function QuickEntry({
             onClick={() => toggleIV(stat)}
             title={STAT_FULL_LABELS[stat]}
             className={cn(
-              "h-7 w-8 rounded text-[11px] font-bold transition-colors",
+              "h-7 w-8 rounded-sm text-[11px] font-bold transition-colors",
               ivs.has(stat)
                 ? "bg-emerald-500 text-white"
                 : "bg-background text-muted-foreground hover:bg-muted",
@@ -693,7 +693,7 @@ function QuickEntry({
               }
               title={m.replace(/-/g, " ")}
               className={cn(
-                "rounded px-1.5 py-0.5 text-[10px] font-medium transition-colors",
+                "rounded-sm px-1.5 py-0.5 text-[10px] font-medium transition-colors",
                 moves.has(m)
                   ? "bg-violet-500 text-white"
                   : "bg-background text-muted-foreground hover:bg-muted",
@@ -715,7 +715,7 @@ function QuickEntry({
               if (activating) setSparkleKey((k) => k + 1);
             }}
             className={cn(
-              "rounded px-2 py-0.5 text-xs font-medium transition-colors",
+              "rounded-sm px-2 py-0.5 text-xs font-medium transition-colors",
               isShiny ? "bg-amber-400 text-white" : "bg-background text-muted-foreground hover:bg-muted",
             )}
             title="Shiny?"
@@ -816,7 +816,7 @@ function HatchLog({
                             <span
                               key={m}
                               className={cn(
-                                "rounded px-1 py-0 text-[9px] font-medium",
+                                "rounded-sm px-1 py-0 text-[9px] font-medium",
                                 h.eggMoves.includes(m)
                                   ? "bg-violet-500/20 text-violet-700 dark:text-violet-400"
                                   : "bg-muted text-muted-foreground/40",
@@ -843,7 +843,7 @@ function HatchLog({
                           <button
                             onClick={() => onMarkSuccess(h.id)}
                             title="Mark as the successful hatch — this was the one! Records it as the project goal achieved."
-                            className="rounded p-0.5 text-muted-foreground hover:text-amber-500"
+                            className="rounded-sm p-0.5 text-muted-foreground hover:text-amber-500"
                           >
                             <Trophy className="h-3.5 w-3.5" />
                           </button>
@@ -851,7 +851,7 @@ function HatchLog({
                         <button
                           onClick={() => onDeleteHatch(h.id)}
                           title="Delete"
-                          className="rounded p-0.5 text-muted-foreground hover:text-destructive"
+                          className="rounded-sm p-0.5 text-muted-foreground hover:text-destructive"
                         >
                           <X className="h-3.5 w-3.5" />
                         </button>
@@ -1435,7 +1435,7 @@ export function BreedingTracker({ user }: { user: User | null }) {
         <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-border" />
         <button
           onClick={() => setProjectsCollapsed((v) => !v)}
-          className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex h-5 w-5 items-center justify-center rounded-full border bg-background text-muted-foreground shadow-sm hover:bg-muted hover:text-foreground transition-colors"
+          className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex h-5 w-5 items-center justify-center rounded-full border bg-background text-muted-foreground shadow-xs hover:bg-muted hover:text-foreground transition-colors"
           title={projectsCollapsed ? "Show projects" : "Hide projects"}
         >
           {projectsCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}

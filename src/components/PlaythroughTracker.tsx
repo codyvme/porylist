@@ -147,7 +147,7 @@ function PlaythroughCard({
       <button onClick={onClick} className="w-full p-3 text-left">
         <div className="flex items-start gap-3 pr-6">
           {/* Cover art */}
-          <div className="shrink-0 w-10 h-14 rounded overflow-hidden bg-muted flex items-center justify-center">
+          <div className="shrink-0 w-10 h-14 rounded-sm overflow-hidden bg-muted flex items-center justify-center">
             <img
               src={coverArtUrl(playthrough.gameValue)}
               alt={versionLabel}
@@ -188,7 +188,7 @@ function PlaythroughCard({
       <div className="absolute top-2 right-2" ref={menuRef}>
         <button
           onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v); }}
-          className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          className="rounded-sm p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           aria-label="Playthrough options"
         >
           <Settings className="h-3.5 w-3.5" />
@@ -290,7 +290,7 @@ function NewPlaythroughForm({
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium">Name <span className="text-muted-foreground font-normal">(optional)</span></label>
           <input
-            className="h-9 w-full rounded-md border border-input bg-background px-3 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="h-9 w-full rounded-md border border-input bg-background px-3 text-base sm:text-sm focus:outline-hidden focus:ring-2 focus:ring-ring"
             placeholder={`${selectedVersion?.label ?? ""} Run`}
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -359,7 +359,7 @@ function EditPlaythroughForm({
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium">Name</label>
           <input
-            className="h-9 w-full rounded-md border border-input bg-background px-3 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="h-9 w-full rounded-md border border-input bg-background px-3 text-base sm:text-sm focus:outline-hidden focus:ring-2 focus:ring-ring"
             value={name}
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") handleSave(); }}
@@ -494,7 +494,7 @@ function TrainerTeamModal({ trainer, game, yourTeam, typeSpecialty, onClose }: {
     {activeAbility && <AbilityModal name={activeAbility} game={game} onClose={closeAbility} />}
     {activeItem && <ItemModal item={activeItem} onClose={closeItem} />}
     <div className={cn("fixed inset-0 z-50 flex items-center justify-center p-4", isSubModalOpen && "hidden")} onClick={onClose}>
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-xs" />
       <div
         className="relative z-10 w-full max-w-2xl max-h-[80vh] overflow-y-auto rounded-xl border bg-background shadow-xl"
         onClick={e => e.stopPropagation()}
@@ -511,7 +511,7 @@ function TrainerTeamModal({ trainer, game, yourTeam, typeSpecialty, onClose }: {
                 onClick={() => setView("matchup")}
                 className={cn(
                   "rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
-                  view === "matchup" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
+                  view === "matchup" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 Matchup
@@ -520,7 +520,7 @@ function TrainerTeamModal({ trainer, game, yourTeam, typeSpecialty, onClose }: {
                 onClick={() => setView("team")}
                 className={cn(
                   "rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
-                  view === "team" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
+                  view === "team" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 Their team
@@ -1005,7 +1005,7 @@ function RulesTab({ playthrough, onUpdate }: { playthrough: Playthrough; onUpdat
           >
             <span
               className={cn(
-                "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border",
+                "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-sm border",
                 active ? "border-red-500 bg-red-500 text-white" : "border-muted-foreground/40",
               )}
             >
@@ -1464,7 +1464,7 @@ export function PlaythroughTracker({
           <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-border" />
           <button
             onClick={() => setRunsCollapsed((v) => !v)}
-            className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex h-5 w-5 items-center justify-center rounded-full border bg-background text-muted-foreground shadow-sm hover:bg-muted hover:text-foreground transition-colors"
+            className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex h-5 w-5 items-center justify-center rounded-full border bg-background text-muted-foreground shadow-xs hover:bg-muted hover:text-foreground transition-colors"
             title={runsCollapsed ? "Show runs" : "Hide runs"}
           >
             {runsCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}

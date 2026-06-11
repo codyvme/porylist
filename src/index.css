@@ -1,6 +1,116 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@plugin 'tailwindcss-animate';
+
+@custom-variant dark (&:is(.dark *));
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+  @media (width >= --theme(--breakpoint-sm)) {
+    max-width: none;
+  }
+  @media (width >= 1400px) {
+    max-width: 1400px;
+  }
+}
+
+@theme {
+  --font-sans: Onest, ui-sans-serif, system-ui, sans-serif;
+  --font-mono: Geist Mono, ui-monospace, SFMono-Regular, monospace;
+
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+/* Button backgrounds use porylist red; low-opacity tints (/5, /10, /20) stay
+   teal so nav active states and subtle highlights are unaffected. These
+   override Tailwind's generated bg-primary utilities, so they're plain
+   (escaped) class selectors in the utilities layer, not @utility. */
+@layer utilities {
+  .bg-primary            { background-color: hsl(var(--btn-primary)); }
+  .bg-primary\/60        { background-color: hsl(var(--btn-primary) / 0.6); }
+  .bg-primary\/80        { background-color: hsl(var(--btn-primary) / 0.8); }
+  .bg-primary\/90        { background-color: hsl(var(--btn-primary) / 0.9); }
+  .hover\:bg-primary:hover     { background-color: hsl(var(--btn-primary)); }
+  .hover\:bg-primary\/80:hover { background-color: hsl(var(--btn-primary) / 0.8); }
+  .hover\:bg-primary\/90:hover { background-color: hsl(var(--btn-primary) / 0.9); }
+}
+
+@utility animate-palette-in {
+  animation: palette-in 0.15s ease-out both;
+}
+
+@utility animate-stat-fill {
+  animation: stat-fill 0.8s ease-out both;
+}
+
+@utility animate-fade-up {
+  animation: fade-slide-up 0.25s ease-out both;
+}
+
+@utility animate-fade-in {
+  /* For virtualized rows that use transform for positioning — only fade opacity */
+  animation: fade-in 0.2s ease-out both;
+}
+
+@utility skeleton-shimmer {
+  /* Skeleton shimmer — replaces animate-pulse for loading placeholders */
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 25%,
+    hsl(var(--muted-foreground) / 0.12) 50%,
+    hsl(var(--muted)) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
 
 @layer base {
   :root {
@@ -136,75 +246,67 @@
   }
 }
 
-/* ─── Animation keyframes ─────────────────────────────────────────────────── */
-
-@keyframes palette-in {
-  from { opacity: 0; transform: scale(0.97) translateY(-6px); }
-  to   { opacity: 1; transform: scale(1)    translateY(0); }
-}
-
-@keyframes shimmer {
-  0%   { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-@keyframes stat-fill {
-  from { width: 0; }
-}
-
-@keyframes fade-slide-up {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* Opacity-only fade for elements that already use transform for positioning (e.g. virtual rows) */
-@keyframes fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-@keyframes sparkle-pop {
-  0%   { transform: translate(-50%, -50%) rotate(var(--angle)) translateX(0px) scale(1.2); opacity: 1; }
-  100% { transform: translate(-50%, -50%) rotate(var(--angle)) translateX(var(--dist)) scale(0); opacity: 0; }
-}
-
 @layer utilities {
-  /* Button backgrounds use porylist red; low-opacity tints (/5, /10, /20)
-     stay teal so nav active states and subtle highlights are unaffected. */
-  .bg-primary            { background-color: hsl(var(--btn-primary)); }
-  .bg-primary\/60        { background-color: hsl(var(--btn-primary) / 0.6); }
-  .bg-primary\/80        { background-color: hsl(var(--btn-primary) / 0.8); }
-  .bg-primary\/90        { background-color: hsl(var(--btn-primary) / 0.9); }
-  .hover\:bg-primary:hover     { background-color: hsl(var(--btn-primary)); }
-  .hover\:bg-primary\/80:hover { background-color: hsl(var(--btn-primary) / 0.8); }
-  .hover\:bg-primary\/90:hover { background-color: hsl(var(--btn-primary) / 0.9); }
-}
+  /* ─── Animation keyframes ─────────────────────────────────────────────────── */
 
-@layer utilities {
-  .animate-palette-in {
-    animation: palette-in 0.15s ease-out both;
-  }
-  .animate-stat-fill {
-    animation: stat-fill 0.8s ease-out both;
-  }
-  .animate-fade-up {
-    animation: fade-slide-up 0.25s ease-out both;
-  }
-  /* For virtualized rows that use transform for positioning — only fade opacity */
-  .animate-fade-in {
-    animation: fade-in 0.2s ease-out both;
+  @keyframes palette-in {
+    from {
+      opacity: 0;
+      transform: scale(0.97) translateY(-6px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
   }
 
-  /* Skeleton shimmer — replaces animate-pulse for loading placeholders */
-  .skeleton-shimmer {
-    background: linear-gradient(
-      90deg,
-      hsl(var(--muted)) 25%,
-      hsl(var(--muted-foreground) / 0.12) 50%,
-      hsl(var(--muted)) 75%
-    );
-    background-size: 200% 100%;
-    animation: shimmer 1.5s ease-in-out infinite;
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  @keyframes stat-fill {
+    from {
+      width: 0;
+    }
+  }
+
+  @keyframes fade-slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Opacity-only fade for elements that already use transform for positioning (e.g. virtual rows) */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes sparkle-pop {
+    0% {
+      transform: translate(-50%, -50%) rotate(var(--angle)) translateX(0px)
+        scale(1.2);
+      opacity: 1;
+    }
+    100% {
+      transform: translate(-50%, -50%) rotate(var(--angle))
+        translateX(var(--dist)) scale(0);
+      opacity: 0;
+    }
   }
 }
 

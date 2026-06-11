@@ -151,7 +151,7 @@ export function PlaythroughTeamTab({ playthrough, game, onUpdate }: Props) {
                   }}
                   placeholder={speciesLabel}
                   maxLength={24}
-                  className="min-w-0 flex-1 rounded-md border border-input bg-background px-2 py-1 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="min-w-0 flex-1 rounded-md border border-input bg-background px-2 py-1 text-base sm:text-sm focus:outline-hidden focus:ring-2 focus:ring-primary"
                 />
                 <div className="flex shrink-0 gap-1">
                   <button
@@ -218,7 +218,7 @@ export function PlaythroughTeamTab({ playthrough, game, onUpdate }: Props) {
                       </span>
                       <button
                         onClick={(e) => { e.stopPropagation(); beginEdit(i, member.nickname); }}
-                        className="shrink-0 rounded p-0.5 text-muted-foreground/60 hover:bg-muted hover:text-foreground"
+                        className="shrink-0 rounded-sm p-0.5 text-muted-foreground/60 hover:bg-muted hover:text-foreground"
                         aria-label={`Edit nickname for ${speciesLabel}`}
                       >
                         <Pencil className="h-3 w-3" />
@@ -242,7 +242,7 @@ export function PlaythroughTeamTab({ playthrough, game, onUpdate }: Props) {
                         aria-label={`Level for ${speciesLabel}`}
                         title={overCap ? `Over the level cap (${levelCap})` : undefined}
                         className={cn(
-                          "w-12 shrink-0 rounded-md border bg-background px-1.5 py-1 text-center text-xs tabular-nums focus:outline-none focus:ring-2 focus:ring-primary",
+                          "w-12 shrink-0 rounded-md border bg-background px-1.5 py-1 text-center text-xs tabular-nums focus:outline-hidden focus:ring-2 focus:ring-primary",
                           overCap
                             ? "border-red-500 text-red-600 dark:text-red-400 focus:ring-red-500"
                             : "border-input",

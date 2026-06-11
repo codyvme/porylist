@@ -159,7 +159,7 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
                     </span>
                     <button
                       onClick={() => onRemove(m.name)}
-                      className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[11px] text-white shadow hover:bg-destructive/80 transition-colors"
+                      className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[11px] text-white shadow-sm hover:bg-destructive/80 transition-colors"
                       aria-label={`Remove ${m.name}`}
                     >
                       <X className="h-3 w-3" />
@@ -215,7 +215,7 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
                 {sharedWeaknesses.map(({ type, count }) => (
                   <span key={type} className="flex items-center gap-1.5">
                     <span
-                      className="rounded px-2 py-0.5 text-xs font-semibold capitalize"
+                      className="rounded-sm px-2 py-0.5 text-xs font-semibold capitalize"
                       style={typeStyle(type)}
                     >
                       {type}
@@ -261,7 +261,7 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
                         return (
                           <td
                             key={t}
-                            className={cn("w-9 rounded py-1.5 text-center text-[10px] font-semibold border-l border-border/60", cls)}
+                            className={cn("w-9 rounded-sm py-1.5 text-center text-[10px] font-semibold border-l border-border/60", cls)}
                             title={`${t}: ${mult}×`}
                           >
                             {cls ? multLabel(mult) : ""}
@@ -303,7 +303,7 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
                 <span
                   key={t}
                   className={cn(
-                    "rounded px-2 py-0.5 text-xs font-semibold capitalize transition-opacity",
+                    "rounded-sm px-2 py-0.5 text-xs font-semibold capitalize transition-opacity",
                     covered.has(t) ? "opacity-100" : "opacity-20",
                   )}
                   style={typeStyle(t)}
@@ -325,7 +325,7 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
                     {uncovered.map(t => (
                       <span
                         key={t}
-                        className="rounded px-2 py-0.5 text-xs font-semibold capitalize"
+                        className="rounded-sm px-2 py-0.5 text-xs font-semibold capitalize"
                         style={typeStyle(t)}
                       >
                         {t}

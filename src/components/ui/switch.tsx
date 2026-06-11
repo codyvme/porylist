@@ -19,7 +19,7 @@ export const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
         {...props}
       />
       <span className="h-full w-full rounded-full bg-input transition-colors peer-checked:bg-primary peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2" />
-      <span className="pointer-events-none absolute left-0.5 h-4 w-4 rounded-full bg-background shadow transition-transform peer-checked:translate-x-4" />
+      <span className="pointer-events-none absolute left-0.5 h-4 w-4 rounded-full bg-background shadow-sm transition-transform peer-checked:translate-x-4" />
     </label>
   ),
 );

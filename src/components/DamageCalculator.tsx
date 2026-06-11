@@ -69,7 +69,7 @@ function MovePicker({
           onFocus={() => { setQuery(""); setOpen(true); }}
           onChange={(e) => setQuery(e.target.value)}
           className={cn(
-            "h-9 w-full rounded-md border border-input bg-background pl-8 text-base sm:text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary",
+            "h-9 w-full rounded-md border border-input bg-background pl-8 text-base sm:text-sm placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-primary",
             value && !open ? "pr-8" : "pr-3",
           )}
         />
@@ -78,7 +78,7 @@ function MovePicker({
             type="button"
             onClick={() => onChange(null)}
             aria-label="Clear move"
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground hover:text-foreground"
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-sm p-0.5 text-muted-foreground hover:text-foreground"
           >
             <X className="h-3.5 w-3.5" />
           </button>

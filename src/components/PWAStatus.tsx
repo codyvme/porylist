@@ -66,7 +66,7 @@ export function PWAStatus() {
   return (
     <div className="pointer-events-none fixed bottom-[calc(env(safe-area-inset-bottom)_+_4.5rem)] right-3 z-40 flex flex-col gap-2 sm:bottom-4">
       {offline && (
-        <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-700 shadow-sm dark:text-amber-300">
+        <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-700 shadow-xs dark:text-amber-300">
           <WifiOff className="h-3.5 w-3.5" />
           You're offline — cached data only
         </div>
