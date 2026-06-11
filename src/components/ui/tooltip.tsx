@@ -58,10 +58,10 @@ export function Tooltip({ content, children, className, side = "top", disabled =
 
   const boxCls =
     side === "right"
-      ? "pointer-events-none absolute z-50 -translate-y-1/2 rounded bg-foreground px-2 py-1 text-xs text-background shadow-md whitespace-nowrap"
+      ? "pointer-events-none absolute z-50 -translate-y-1/2 rounded-sm bg-foreground px-2 py-1 text-xs text-background shadow-md whitespace-nowrap"
       : side === "bottom"
-      ? "pointer-events-none absolute z-50 -translate-x-1/2 rounded bg-foreground px-2 py-1 text-xs text-background shadow-md whitespace-nowrap"
-      : "pointer-events-none absolute z-50 -translate-x-1/2 -translate-y-full rounded bg-foreground px-2 py-1 text-xs text-background shadow-md whitespace-nowrap";
+      ? "pointer-events-none absolute z-50 -translate-x-1/2 rounded-sm bg-foreground px-2 py-1 text-xs text-background shadow-md whitespace-nowrap"
+      : "pointer-events-none absolute z-50 -translate-x-1/2 -translate-y-full rounded-sm bg-foreground px-2 py-1 text-xs text-background shadow-md whitespace-nowrap";
 
   return (
     <>

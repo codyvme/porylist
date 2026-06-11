@@ -59,7 +59,7 @@ export const SpriteImg = memo(function SpriteImg({
   return (
     <div className={cn("relative flex shrink-0 items-center justify-center", size, className)}>
       {status === "loading" && (
-        <div className={cn("absolute skeleton-shimmer rounded", size)} />
+        <div className={cn("absolute skeleton-shimmer rounded-sm", size)} />
       )}
       {status === "error" && (
         <Package className="text-muted-foreground/30 max-h-full w-auto max-w-full" style={{ height: "65%", width: "65%" }} />

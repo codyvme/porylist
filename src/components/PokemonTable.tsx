@@ -178,7 +178,7 @@ function statColumn(
     ),
     cell: ({ getValue, row }) => {
       if (row.original.isLoading) {
-        return <div className="h-4 w-8 skeleton-shimmer rounded" />;
+        return <div className="h-4 w-8 skeleton-shimmer rounded-sm" />;
       }
       const v = getValue();
       return (
@@ -198,7 +198,7 @@ const typesColumn = columnHelper.accessor("types", {
   cell: ({ getValue, row }) => {
     const types = getValue();
     if (row.original.isLoading) {
-      return <div className="h-5 w-24 skeleton-shimmer rounded" />;
+      return <div className="h-5 w-24 skeleton-shimmer rounded-sm" />;
     }
     return (
       <div className="flex flex-wrap gap-1.5">
@@ -360,7 +360,7 @@ const MemoizedVirtualRow = React.memo(({
                           fallbackSrc={`${SPRITES_ROOT}/${detail!.id}.png`}
                         />
                       ) : (
-                        <div className="h-10 w-10 skeleton-shimmer rounded" />
+                        <div className="h-10 w-10 skeleton-shimmer rounded-sm" />
                       )}
                     </div>
                   </div>
@@ -369,10 +369,10 @@ const MemoizedVirtualRow = React.memo(({
                   {/* name */}
                   <div className="flex items-center px-3 py-3 text-sm">
                     {isLoadingDetail ? (
-                      <div className="h-4 w-32 skeleton-shimmer rounded" />
+                      <div className="h-4 w-32 skeleton-shimmer rounded-sm" />
                     ) : (
                       <button
-                        className="rounded-sm text-left font-medium text-muted-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        className="rounded-sm text-left font-medium text-muted-foreground hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
                         onClick={() => openModal(formName)}
                       >
                         {name}
@@ -382,7 +382,7 @@ const MemoizedVirtualRow = React.memo(({
                   {/* types */}
                   <div className="flex items-center px-3 py-3 text-sm">
                     {isLoadingDetail ? (
-                      <div className="h-5 w-24 skeleton-shimmer rounded" />
+                      <div className="h-5 w-24 skeleton-shimmer rounded-sm" />
                     ) : (
                       <div className="flex flex-wrap gap-1.5">
                         {types.map((t) => (
@@ -402,7 +402,7 @@ const MemoizedVirtualRow = React.memo(({
                   {visibleStats.map(({ id, val }) => (
                     <div key={id} className="flex items-center px-3 py-3 text-sm">
                       {isLoadingDetail ? (
-                        <div className="h-4 w-8 skeleton-shimmer rounded" />
+                        <div className="h-4 w-8 skeleton-shimmer rounded-sm" />
                       ) : (
                         <span className="font-mono tabular-nums text-sm">
                           {val > 0 ? val : "—"}
@@ -414,7 +414,7 @@ const MemoizedVirtualRow = React.memo(({
                   {columnVisibility["bst"] !== false && (
                     <div className="flex items-center px-3 py-3 text-sm">
                       {isLoadingDetail ? (
-                        <div className="h-4 w-10 skeleton-shimmer rounded" />
+                        <div className="h-4 w-10 skeleton-shimmer rounded-sm" />
                       ) : (
                         <span className="font-mono tabular-nums text-sm font-semibold">
                           {bst > 0 ? bst : "—"}
@@ -426,7 +426,7 @@ const MemoizedVirtualRow = React.memo(({
                   {columnVisibility["height"] !== false && (
                     <div className="flex items-center px-3 py-3 text-sm">
                       {isLoadingDetail ? (
-                        <div className="h-4 w-10 skeleton-shimmer rounded" />
+                        <div className="h-4 w-10 skeleton-shimmer rounded-sm" />
                       ) : (() => {
                         const v = detail?.height ?? 0;
                         if (v <= 0) return <span className="font-mono tabular-nums text-sm">—</span>;
@@ -441,7 +441,7 @@ const MemoizedVirtualRow = React.memo(({
                   {columnVisibility["weight"] !== false && (
                     <div className="flex items-center px-3 py-3 text-sm">
                       {isLoadingDetail ? (
-                        <div className="h-4 w-10 skeleton-shimmer rounded" />
+                        <div className="h-4 w-10 skeleton-shimmer rounded-sm" />
                       ) : (() => {
                         const v = detail?.weight ?? 0;
                         if (v <= 0) return <span className="font-mono tabular-nums text-sm">—</span>;
@@ -738,7 +738,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
             {row.original.sprite ? (
               <SpriteImg key={row.original.sprite} src={row.original.sprite} alt={name} />
             ) : (
-              <div className="h-10 w-10 skeleton-shimmer rounded" />
+              <div className="h-10 w-10 skeleton-shimmer rounded-sm" />
             )}
           </div>
         );
@@ -755,7 +755,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
           <div className="flex flex-col gap-0.5 min-w-0">
             <div className="flex items-center gap-2">
               <button
-                className="rounded-sm text-left font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="rounded-sm text-left font-medium text-primary hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
                 onClick={() => openModalRef.current(name)}
               >
                 {formatPokemonName(getValue())}
@@ -801,7 +801,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
         return (
           <button
             onClick={() => toggleExpanded(row.original.name)}
-            className="flex h-6 w-6 items-center justify-center rounded hover:bg-muted"
+            className="flex h-6 w-6 items-center justify-center rounded-sm hover:bg-muted"
             aria-label={isExpanded ? "Collapse forms" : "Expand forms"}
           >
             <Icon className="h-4 w-4 text-muted-foreground" />
@@ -863,7 +863,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
         ),
         cell: ({ getValue, row }) => {
           if (row.original.isLoading) {
-            return <div className="h-4 w-10 skeleton-shimmer rounded" />;
+            return <div className="h-4 w-10 skeleton-shimmer rounded-sm" />;
           }
           const v = getValue();
           return (
@@ -879,7 +879,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
       id: "height",
       header: ({ column }) => <SortHeader label="Height" sorted={column.getIsSorted()} />,
       cell: ({ getValue, row }) => {
-        if (row.original.isLoading) return <div className="h-4 w-10 skeleton-shimmer rounded" />;
+        if (row.original.isLoading) return <div className="h-4 w-10 skeleton-shimmer rounded-sm" />;
         const v = getValue();
         if (v <= 0) return <span className="font-mono tabular-nums text-sm">—</span>;
         const totalIn = v * 3.93701;
@@ -893,7 +893,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
       id: "weight",
       header: ({ column }) => <SortHeader label="Weight" sorted={column.getIsSorted()} />,
       cell: ({ getValue, row }) => {
-        if (row.original.isLoading) return <div className="h-4 w-12 skeleton-shimmer rounded" />;
+        if (row.original.isLoading) return <div className="h-4 w-12 skeleton-shimmer rounded-sm" />;
         const v = getValue();
         if (v <= 0) return <span className="font-mono tabular-nums text-sm">—</span>;
         const lbs = (v * 0.220462).toFixed(1);
@@ -905,9 +905,9 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
       id: "captureRate",
       header: ({ column }) => <SortHeader label="Catch" sorted={column.getIsSorted()} />,
       cell: ({ getValue, row }) => {
-        if (row.original.isLoading) return <div className="h-4 w-8 skeleton-shimmer rounded" />;
+        if (row.original.isLoading) return <div className="h-4 w-8 skeleton-shimmer rounded-sm" />;
         const v = getValue();
-        if (v === null) return <div className="h-4 w-8 skeleton-shimmer rounded" />;
+        if (v === null) return <div className="h-4 w-8 skeleton-shimmer rounded-sm" />;
         return <span className="font-mono tabular-nums text-sm">{v}</span>;
       },
     });
@@ -917,9 +917,9 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
       enableSorting: false,
       header: () => <span className="select-none">Egg Group</span>,
       cell: ({ getValue, row }) => {
-        if (row.original.isLoading) return <div className="h-4 w-20 skeleton-shimmer rounded" />;
+        if (row.original.isLoading) return <div className="h-4 w-20 skeleton-shimmer rounded-sm" />;
         const v = getValue();
-        if (v === null) return <div className="h-4 w-20 skeleton-shimmer rounded" />;
+        if (v === null) return <div className="h-4 w-20 skeleton-shimmer rounded-sm" />;
         return (
           <span className="text-sm capitalize">
             {v.map((g) => g.replace(/\b\w/g, (c) => c.toUpperCase())).join(", ")}
@@ -1094,7 +1094,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search Pokémon…"
-            className="h-9 w-full rounded-md border border-input bg-background pl-8 pr-8 text-base sm:text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+            className="h-9 w-full rounded-md border border-input bg-background pl-8 pr-8 text-base sm:text-sm placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-primary"
             aria-label="Search Pokémon"
           />
           {search && (
@@ -1168,7 +1168,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
                   value={moveFilter}
                   onChange={(e) => setMoveFilter(e.target.value)}
                   placeholder={selectedGame ? `e.g. Surf (${selectedGame.label})` : "e.g. Surf (any game)"}
-                  className="w-full rounded-md border bg-background px-2.5 py-1.5 text-base sm:text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full rounded-md border bg-background px-2.5 py-1.5 text-base sm:text-sm focus:outline-hidden focus:ring-1 focus:ring-primary"
                 />
                 {moveFilter && (
                   <button

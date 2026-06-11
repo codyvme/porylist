@@ -498,7 +498,7 @@ function EncounterRow({
           className={encounter.status === "fainted" ? "grayscale opacity-70" : undefined}
         />
       ) : (
-        <div className="flex h-12 w-12 items-center justify-center rounded bg-muted text-muted-foreground">
+        <div className="flex h-12 w-12 items-center justify-center rounded-sm bg-muted text-muted-foreground">
           <X className="h-4 w-4" />
         </div>
       )}

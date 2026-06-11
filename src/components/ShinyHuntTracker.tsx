@@ -294,7 +294,7 @@ function HuntDetail({
                 placeholder="Route, location, strategy..."
                 rows={3}
                 autoFocus
-                className="w-full rounded-md border border-input bg-background px-2.5 py-1.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full rounded-md border border-input bg-background px-2.5 py-1.5 text-sm resize-none focus:outline-hidden focus:ring-2 focus:ring-primary"
               />
               <div className="flex justify-end gap-2">
                 <button
@@ -415,7 +415,7 @@ function NewHuntForm({
         <select
           value={gameValue}
           onChange={e => setGameValue(e.target.value)}
-          className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary"
         >
           {GAMES.map(g => (
             <option key={g.value} value={g.value}>{g.label}</option>
@@ -459,7 +459,7 @@ function NewHuntForm({
           checked={hasCharm && charmAvailable}
           disabled={!charmAvailable}
           onChange={e => setHasCharm(e.target.checked)}
-          className="rounded"
+          className="rounded-sm"
         />
         Shiny Charm
         {!charmAvailable && <span className="text-xs text-muted-foreground">(Gen 5+)</span>}
@@ -481,7 +481,7 @@ function NewHuntForm({
           onChange={e => setNotes(e.target.value)}
           placeholder="Route, location, strategy..."
           rows={2}
-          className="rounded-md border border-input bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+          className="rounded-md border border-input bg-background px-3 py-2 text-sm resize-none focus:outline-hidden focus:ring-2 focus:ring-primary"
         />
       </div>
 
@@ -684,7 +684,7 @@ export function ShinyHuntTracker({ user }: { user: User | null }) {
           <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-border" />
           <button
             onClick={() => setLeftCollapsed(v => !v)}
-            className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex h-5 w-5 items-center justify-center rounded-full border bg-background text-muted-foreground shadow-sm hover:bg-muted hover:text-foreground transition-colors"
+            className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex h-5 w-5 items-center justify-center rounded-full border bg-background text-muted-foreground shadow-xs hover:bg-muted hover:text-foreground transition-colors"
             title={leftCollapsed ? "Show hunts" : "Hide hunts"}
           >
             {leftCollapsed

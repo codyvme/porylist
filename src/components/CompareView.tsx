@@ -295,7 +295,7 @@ export function CompareView({ game }: { game: GameOption | null }) {
                     ) : (
                       <button
                         onClick={() => searchRefs[i].current?.focus()}
-                        className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-border text-muted-foreground transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-border text-muted-foreground transition-colors hover:border-primary hover:text-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                         aria-label={`Choose Pokémon for slot ${i + 1}`}
                       >
                         <Plus className="h-6 w-6" />
@@ -494,7 +494,7 @@ export function CompareView({ game }: { game: GameOption | null }) {
                           {p === null ? (
                             <span className="text-muted-foreground">—</span>
                           ) : loading ? (
-                            <span className="inline-block h-3 w-8 skeleton-shimmer rounded" />
+                            <span className="inline-block h-3 w-8 skeleton-shimmer rounded-sm" />
                           ) : s ? (
                             s.capture_rate
                           ) : (
@@ -515,7 +515,7 @@ export function CompareView({ game }: { game: GameOption | null }) {
                           {p === null ? (
                             <span className="text-sm text-muted-foreground">—</span>
                           ) : loading ? (
-                            <span className="inline-block h-3 w-24 skeleton-shimmer rounded" />
+                            <span className="inline-block h-3 w-24 skeleton-shimmer rounded-sm" />
                           ) : s ? (
                             <GenderBar rate={s.gender_rate} />
                           ) : (
@@ -536,7 +536,7 @@ export function CompareView({ game }: { game: GameOption | null }) {
                           {p === null ? (
                             <span className="text-muted-foreground">—</span>
                           ) : loading ? (
-                            <span className="inline-block h-3 w-20 skeleton-shimmer rounded" />
+                            <span className="inline-block h-3 w-20 skeleton-shimmer rounded-sm" />
                           ) : s ? (
                             s.egg_groups.map((g) => formatPokemonName(g.name)).join(", ")
                           ) : (
@@ -557,7 +557,7 @@ export function CompareView({ game }: { game: GameOption | null }) {
                           {p === null ? (
                             <span className="text-muted-foreground">—</span>
                           ) : loading ? (
-                            <span className="inline-block h-3 w-20 skeleton-shimmer rounded" />
+                            <span className="inline-block h-3 w-20 skeleton-shimmer rounded-sm" />
                           ) : s ? (
                             GROWTH_LABELS[s.growth_rate.name] ??
                             formatPokemonName(s.growth_rate.name)

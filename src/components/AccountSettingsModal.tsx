@@ -289,7 +289,7 @@ export function AccountSettingsModal({
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder={user.email?.split("@")[0] ?? "Your name"}
                   maxLength={32}
-                  className="h-9 w-full rounded-md border border-input bg-background px-3 text-base sm:text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="h-9 w-full rounded-md border border-input bg-background px-3 text-base sm:text-sm placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-primary"
                 />
               </div>
             </div>
@@ -312,7 +312,7 @@ export function AccountSettingsModal({
                       title={color}
                     >
                       {avatarBgColor === color && (
-                        <Check className="mx-auto h-3.5 w-3.5 text-white drop-shadow" />
+                        <Check className="mx-auto h-3.5 w-3.5 text-white drop-shadow-sm" />
                       )}
                     </button>
                   ))}
@@ -388,7 +388,7 @@ export function AccountSettingsModal({
                   onKeyDown={(e) => { if (e.key === "Enter" && newEmail.trim()) handleChangeEmail(); if (e.key === "Escape") { setEmailStep("idle"); setEmailError(null); } }}
                   placeholder="New email address"
                   autoFocus
-                  className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-primary"
                 />
                 {emailError && <p className="text-xs text-destructive">{emailError}</p>}
                 <div className="flex gap-2">

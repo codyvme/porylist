@@ -268,12 +268,12 @@ function PokemonOfTheDay({ game }: { game: GameOption | null }) {
                     src={normalSrc}
                     alt={formatPokemonName(pokemon.name)}
                     onLoad={() => setSpriteLoaded(true)}
-                    className={cn("absolute inset-0 h-36 w-36 object-bottom object-contain drop-shadow-sm transition-opacity duration-200", showShiny ? "opacity-0" : "opacity-100")}
+                    className={cn("absolute inset-0 h-36 w-36 object-bottom object-contain drop-shadow-xs transition-opacity duration-200", showShiny ? "opacity-0" : "opacity-100")}
                   />
                   <img
                     src={shinySrc}
                     alt={`${formatPokemonName(pokemon.name)} shiny`}
-                    className={cn("absolute inset-0 h-36 w-36 object-contain drop-shadow-sm transition-opacity duration-200", showShiny ? "opacity-100" : "opacity-0")}
+                    className={cn("absolute inset-0 h-36 w-36 object-contain drop-shadow-xs transition-opacity duration-200", showShiny ? "opacity-100" : "opacity-0")}
                   />
                 </div>
               );
@@ -319,7 +319,7 @@ function PokemonOfTheDay({ game }: { game: GameOption | null }) {
                   {pokemon.types.map((t) => (
                     <span
                       key={t.type.name}
-                      className="rounded px-2 py-0.5 text-xs font-semibold capitalize text-white"
+                      className="rounded-sm px-2 py-0.5 text-xs font-semibold capitalize text-white"
                       style={typeStyle(t.type.name)}
                     >
                       {t.type.name}
@@ -376,7 +376,7 @@ function PlaythroughsSection() {
             to={`/routes?run=${p.id}`}
             className="flex items-center gap-3 rounded-lg border p-3 hover:border-primary/40 hover:bg-muted/50 transition-colors"
           >
-            <div className="shrink-0 w-9 h-12 rounded overflow-hidden bg-muted flex items-center justify-center">
+            <div className="shrink-0 w-9 h-12 rounded-sm overflow-hidden bg-muted flex items-center justify-center">
               <img
                 src={coverArtUrl(p.gameValue)}
                 alt={versionLabel}

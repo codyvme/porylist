@@ -72,9 +72,9 @@ export function AbilityModal({ name, entry, game, onClose }: AbilityModalProps) 
         <div className="space-y-5 px-5 py-4">
           {isLoading ? (
             <div className="space-y-1.5">
-              <div className="h-3.5 w-1/4 skeleton-shimmer rounded" />
-              <div className="h-4 w-full skeleton-shimmer rounded" />
-              <div className="h-4 w-3/4 skeleton-shimmer rounded" />
+              <div className="h-3.5 w-1/4 skeleton-shimmer rounded-sm" />
+              <div className="h-4 w-full skeleton-shimmer rounded-sm" />
+              <div className="h-4 w-3/4 skeleton-shimmer rounded-sm" />
             </div>
           ) : shortEffect ? (
             <div>

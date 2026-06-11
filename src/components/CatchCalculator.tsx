@@ -77,7 +77,7 @@ function BallPicker({
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-sm hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary"
+        className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-sm hover:bg-muted focus:outline-hidden focus:ring-2 focus:ring-primary"
       >
         <span>{selected.name}</span>
         <span className="flex items-center gap-2 text-xs text-muted-foreground">

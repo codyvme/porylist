@@ -509,7 +509,7 @@ function MoveTable({ moves, moveDetailsMap, showLevel, machineNumberMap, eggPare
                   {showMachineNum && (
                     <td className="py-1.5 pr-4 font-mono tabular-nums text-muted-foreground">
                       {machineNum ?? (
-                        <div className="h-4 w-10 skeleton-shimmer rounded" />
+                        <div className="h-4 w-10 skeleton-shimmer rounded-sm" />
                       )}
                     </td>
                   )}
@@ -526,35 +526,35 @@ function MoveTable({ moves, moveDetailsMap, showLevel, machineNumberMap, eggPare
                         {detail.type.name}
                       </Badge>
                     ) : (
-                      <div className="h-5 w-16 skeleton-shimmer rounded" />
+                      <div className="h-5 w-16 skeleton-shimmer rounded-sm" />
                     )}
                   </td>
                   <td className="py-1.5 pr-4">
                     {detail ? (
                       <DamageCategoryBadge category={detail.damage_class.name} />
                     ) : (
-                      <div className="h-5 w-14 skeleton-shimmer rounded" />
+                      <div className="h-5 w-14 skeleton-shimmer rounded-sm" />
                     )}
                   </td>
                   <td className="hidden py-1.5 pr-4 text-right font-mono tabular-nums sm:table-cell">
                     {detail ? (
                       detail.power ?? "—"
                     ) : (
-                      <div className="ml-auto h-4 w-6 skeleton-shimmer rounded" />
+                      <div className="ml-auto h-4 w-6 skeleton-shimmer rounded-sm" />
                     )}
                   </td>
                   <td className="hidden py-1.5 pr-4 text-right font-mono tabular-nums sm:table-cell">
                     {detail ? (
                       detail.accuracy != null ? `${detail.accuracy}%` : "—"
                     ) : (
-                      <div className="ml-auto h-4 w-8 skeleton-shimmer rounded" />
+                      <div className="ml-auto h-4 w-8 skeleton-shimmer rounded-sm" />
                     )}
                   </td>
                   <td className="hidden py-1.5 text-right font-mono tabular-nums sm:table-cell">
                     {detail ? (
                       detail.pp ?? "—"
                     ) : (
-                      <div className="ml-auto h-4 w-6 skeleton-shimmer rounded" />
+                      <div className="ml-auto h-4 w-6 skeleton-shimmer rounded-sm" />
                     )}
                   </td>
                 </tr>
@@ -567,14 +567,14 @@ function MoveTable({ moves, moveDetailsMap, showLevel, machineNumberMap, eggPare
                         {effect ? (
                           <p>{effect}</p>
                         ) : (
-                          <div className="h-3 w-48 skeleton-shimmer rounded" />
+                          <div className="h-3 w-48 skeleton-shimmer rounded-sm" />
                         )}
                         {eggParentMap !== undefined && (
                           <div>
                             {!hasGeneration ? (
                               <p className="italic">Select a game to see breeding parents.</p>
                             ) : !eggDataLoaded ? (
-                              <div className="h-3 w-32 skeleton-shimmer rounded" />
+                              <div className="h-3 w-32 skeleton-shimmer rounded-sm" />
                             ) : eggParentMap === null ? null : (
                               (() => {
                                 const parents = eggParentMap[move.name] ?? [];
@@ -1015,7 +1015,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/60 backdrop-blur-xs"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -1166,7 +1166,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
               {/* Sprite + info */}
               <div className="flex flex-col gap-6 p-6 sm:flex-row">
                 {/* Left: sprite */}
-                <div className="flex flex-shrink-0 flex-col items-center gap-3">
+                <div className="flex shrink-0 flex-col items-center gap-3">
                   {/* Crossfading sprite pair — both load immediately so the
                       shiny image is already cached when the button is clicked */}
                   {homeSpriteNormal && homeSpriteShiny && (
@@ -1271,7 +1271,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                                   </p>
                                 )
                               ) : (
-                                <div className="mt-1 h-3 w-32 skeleton-shimmer rounded" />
+                                <div className="mt-1 h-3 w-32 skeleton-shimmer rounded-sm" />
                               )}
                             </li>
                           );
@@ -1428,7 +1428,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                       ) : (
                         <button
                           key={node.speciesName}
-                          className="flex flex-col items-center gap-1 rounded-lg border bg-muted/30 px-3 py-2 text-center transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-w-[80px]"
+                          className="flex flex-col items-center gap-1 rounded-lg border bg-muted/30 px-3 py-2 text-center transition-colors hover:bg-muted/60 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary min-w-[80px]"
                           onClick={() => onNavigate(node.speciesName)}
                         >
                           <SpriteImg
@@ -1617,7 +1617,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                       <select
                         value={resolvedLocationsGameValue ?? ""}
                         onChange={(e) => setLocationsGameValue(e.target.value)}
-                        className="rounded-md border bg-background px-2 py-1 text-base sm:text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="rounded-md border bg-background px-2 py-1 text-base sm:text-xs focus:outline-hidden focus:ring-1 focus:ring-primary"
                       >
                         {allGamesLocations.map(({ game: g }) => (
                           <option key={g.value} value={g.value}>{g.label}</option>
@@ -1627,7 +1627,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                   </div>
                   {encountersLoading ? (
                     <div className="space-y-2">
-                      {[1, 2, 3].map((i) => <div key={i} className="h-8 skeleton-shimmer rounded" />)}
+                      {[1, 2, 3].map((i) => <div key={i} className="h-8 skeleton-shimmer rounded-sm" />)}
                     </div>
                   ) : allGamesLocations.length === 0 ? (
                     <p className="text-sm italic text-muted-foreground">

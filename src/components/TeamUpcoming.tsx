@@ -138,12 +138,12 @@ function MemberUpcoming({
                 <span className="font-medium">{formatPokemonName(evo.species)}</span>
                 <span className="min-w-0 truncate text-muted-foreground">{evo.methods.join(" or ") || "Special"}</span>
                 {ready && (
-                  <span className="shrink-0 rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+                  <span className="shrink-0 rounded-sm bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
                     Ready!
                   </span>
                 )}
                 {soon && (
-                  <span className="shrink-0 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+                  <span className="shrink-0 rounded-sm bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
                     Soon
                   </span>
                 )}

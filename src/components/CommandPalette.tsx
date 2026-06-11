@@ -429,7 +429,7 @@ export function CommandPalette({ open, onClose, game }: CommandPaletteProps) {
     <>
       {open && createPortal(
         <div
-          className="fixed inset-0 z-[60] flex items-start justify-center bg-black/60 backdrop-blur-sm p-4 pt-[15vh]"
+          className="fixed inset-0 z-[60] flex items-start justify-center bg-black/60 backdrop-blur-xs p-4 pt-[15vh]"
           onClick={onClose}
         >
           <div
@@ -445,10 +445,10 @@ export function CommandPalette({ open, onClose, game }: CommandPaletteProps) {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search Pokémon, moves, abilities, items…"
-                className="flex-1 bg-transparent py-4 text-base sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+                className="flex-1 bg-transparent py-4 text-base sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-hidden"
                 autoFocus
               />
-              <kbd className="hidden sm:inline-block rounded border border-border px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+              <kbd className="hidden sm:inline-block rounded-sm border border-border px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
                 ESC
               </kbd>
             </div>
@@ -464,7 +464,7 @@ export function CommandPalette({ open, onClose, game }: CommandPaletteProps) {
                       key={kind}
                       onClick={() => setKindFilter(kind)}
                       className={cn(
-                        "shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+                        "shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
                         active
                           ? "bg-primary/15 text-primary ring-1 ring-inset ring-primary/30"
                           : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -539,9 +539,9 @@ export function CommandPalette({ open, onClose, game }: CommandPaletteProps) {
             {/* Footer */}
             <div className="flex items-center justify-between gap-2 border-t border-border px-3 py-2 text-[11px] text-muted-foreground">
               <div className="flex items-center gap-2">
-                <kbd className="rounded border border-border px-1 py-0.5">↑↓</kbd>
+                <kbd className="rounded-sm border border-border px-1 py-0.5">↑↓</kbd>
                 <span>navigate</span>
-                <kbd className="rounded border border-border px-1 py-0.5">↵</kbd>
+                <kbd className="rounded-sm border border-border px-1 py-0.5">↵</kbd>
                 <span>open</span>
               </div>
               {isSearching && (

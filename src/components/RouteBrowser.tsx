@@ -167,7 +167,7 @@ function CaughtButton({ isCaught, onToggle, label }: {
   };
 
   return (
-    <div className="relative flex-shrink-0">
+    <div className="relative shrink-0">
       <button
         onClick={handleClick}
         className={cn(
@@ -337,7 +337,7 @@ function EncounterCard({ enc, method, isCaught, spriteVersion, game, caughtKey, 
         aria-label={isCaught ? `Mark ${enc.name} as not caught` : `Mark ${enc.name} as caught`}
       >
         {/* Sprite with pokeball badge when caught */}
-        <div className="relative flex-shrink-0">
+        <div className="relative shrink-0">
           <SpriteImg
             src={spriteUrl(enc.id, spriteVersion)}
             alt={enc.name}
@@ -373,7 +373,7 @@ function EncounterCard({ enc, method, isCaught, spriteVersion, game, caughtKey, 
       {/* Info button — opens the Pokémon modal */}
       <button
         onClick={(e) => { e.stopPropagation(); onOpen(enc.name); }}
-        className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground/30 hover:text-muted-foreground transition-colors"
+        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-sm p-1 text-muted-foreground/30 hover:text-muted-foreground transition-colors"
         aria-label={`View ${enc.name} details`}
       >
         <Info className="h-3.5 w-3.5" />
@@ -558,7 +558,7 @@ function CaughtModal({ caughtList, spriteVersion, onOpen, onToggleCaught, caught
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex flex-shrink-0 items-center gap-3 border-b px-4 py-3">
+        <div className="flex shrink-0 items-center gap-3 border-b px-4 py-3">
           <div className="shrink-0">
             <h2 className="text-base font-semibold">Caught Pokémon</h2>
             <p className="text-xs text-muted-foreground">{filtered.length} caught</p>
@@ -570,7 +570,7 @@ function CaughtModal({ caughtList, spriteVersion, onOpen, onToggleCaught, caught
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search…"
-              className="w-full rounded-md border bg-background py-1 pl-8 pr-3 text-base sm:text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded-md border bg-background py-1 pl-8 pr-3 text-base sm:text-sm placeholder:text-muted-foreground focus:outline-hidden focus:ring-1 focus:ring-primary"
               autoFocus
             />
           </div>
@@ -600,7 +600,7 @@ function CaughtModal({ caughtList, spriteVersion, onOpen, onToggleCaught, caught
                       fallbackSrc={spriteUrl(p.id, undefined)}
                     />
                     <button
-                      className="rounded-sm text-xs font-medium leading-tight hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="rounded-sm text-xs font-medium leading-tight hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
                       onClick={() => onOpen(p.name)}
                     >
                       {formatPokemonName(p.name)}
@@ -647,7 +647,7 @@ function MissingModal({ title, missing, spriteVersion, onOpen, onToggleCaught, c
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex flex-shrink-0 items-center gap-3 border-b px-4 py-3">
+        <div className="flex shrink-0 items-center gap-3 border-b px-4 py-3">
           <div className="shrink-0">
             <h2 className="text-base font-semibold">{title}</h2>
             <p className="text-xs text-muted-foreground">{filtered.length} remaining</p>
@@ -659,7 +659,7 @@ function MissingModal({ title, missing, spriteVersion, onOpen, onToggleCaught, c
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search…"
-              className="w-full rounded-md border bg-background py-1 pl-8 pr-3 text-base sm:text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded-md border bg-background py-1 pl-8 pr-3 text-base sm:text-sm placeholder:text-muted-foreground focus:outline-hidden focus:ring-1 focus:ring-primary"
               autoFocus
             />
           </div>
@@ -689,7 +689,7 @@ function MissingModal({ title, missing, spriteVersion, onOpen, onToggleCaught, c
                       fallbackSrc={spriteUrl(p.id, undefined)}
                     />
                     <button
-                      className="rounded-sm text-xs font-medium leading-tight hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="rounded-sm text-xs font-medium leading-tight hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
                       onClick={() => onOpen(p.name)}
                     >
                       {formatPokemonName(p.name)}
@@ -1085,7 +1085,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
                   <select
                     value={locationKey ?? ""}
                     onChange={(e) => setLocationKey(e.target.value || null)}
-                    className="flex-1 min-w-0 rounded-md border bg-background px-2 py-1.5 text-base sm:text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="flex-1 min-w-0 rounded-md border bg-background px-2 py-1.5 text-base sm:text-sm focus:outline-hidden focus:ring-1 focus:ring-primary"
                   >
                     <option value="">Select a location…</option>
                     {filteredLocations.map((loc) => (
@@ -1127,7 +1127,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
                         }
                       }}
                       placeholder="e.g. Ralts, Pikachu…"
-                      className="w-full rounded-md border bg-background py-1.5 pl-8 pr-3 text-base sm:text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="w-full rounded-md border bg-background py-1.5 pl-8 pr-3 text-base sm:text-sm placeholder:text-muted-foreground focus:outline-hidden focus:ring-1 focus:ring-primary"
                       autoComplete="off"
                     />
                     {showSuggestions && suggestions.length > 0 && (
@@ -1199,7 +1199,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
               {routeDataQuery.isLoading && (
                 <div className="space-y-2 p-4">
                   {Array.from({ length: 6 }).map((_, i) => (
-                    <div key={i} className="h-10 skeleton-shimmer rounded" />
+                    <div key={i} className="h-10 skeleton-shimmer rounded-sm" />
                   ))}
                 </div>
               )}
@@ -1259,7 +1259,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
               selectedLocation ? "hidden sm:flex" : "flex",
             )}>
               {/* Mode toggle */}
-              <div className="flex-shrink-0 border-b">
+              <div className="shrink-0 border-b">
                 <div className="flex text-xs font-medium">
                   <button
                     onClick={() => setListMode("locations")}
@@ -1289,7 +1289,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
                         value={locationSearch}
                         onChange={(e) => setLocationSearch(e.target.value)}
                         placeholder="Search locations…"
-                        className="w-full rounded-md border bg-background py-1.5 pl-8 pr-3 text-base sm:text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="w-full rounded-md border bg-background py-1.5 pl-8 pr-3 text-base sm:text-sm placeholder:text-muted-foreground focus:outline-hidden focus:ring-1 focus:ring-primary"
                       />
                     ) : (
                       <div ref={pokemonSearchRef} className="relative">
@@ -1324,7 +1324,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
                             }
                           }}
                           placeholder="e.g. Ralts, Pikachu…"
-                          className="w-full rounded-md border bg-background py-1.5 pl-8 pr-3 text-base sm:text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                          className="w-full rounded-md border bg-background py-1.5 pl-8 pr-3 text-base sm:text-sm placeholder:text-muted-foreground focus:outline-hidden focus:ring-1 focus:ring-primary"
                           autoFocus
                           autoComplete="off"
                         />
@@ -1366,7 +1366,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
                 {routeDataQuery.isLoading && (
                   <div className="space-y-1 p-2">
                     {Array.from({ length: 12 }).map((_, i) => (
-                      <div key={i} className="h-8 skeleton-shimmer rounded" />
+                      <div key={i} className="h-8 skeleton-shimmer rounded-sm" />
                     ))}
                   </div>
                 )}
@@ -1437,7 +1437,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
               {/* Back button — mobile only */}
               {selectedLocation && (
                 <button
-                  className="sm:hidden flex items-center gap-1.5 border-b px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground w-full flex-shrink-0"
+                  className="sm:hidden flex items-center gap-1.5 border-b px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground w-full shrink-0"
                   onClick={() => setLocationKey(null)}
                 >
                   <ArrowLeft className="h-4 w-4" />
@@ -1452,7 +1452,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
                 <>
                   <div className="mb-4 flex items-center justify-between gap-2">
                     <h2 className="text-lg font-semibold">{selectedLocation.label}</h2>
-                    <div className="flex flex-shrink-0 items-center gap-2">
+                    <div className="flex shrink-0 items-center gap-2">
                       {locationProgress && (
                         <span className="text-xs text-muted-foreground">
                           {locationProgress.count} / {locationProgress.total} caught
