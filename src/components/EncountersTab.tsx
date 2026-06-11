@@ -5,10 +5,10 @@ import {
   type EncounterRecord,
   type Playthrough,
 } from "@/lib/playthroughs";
-import { usePokemonSummaryList, useRouteData } from "@/lib/pokeapi";
+import { usePokemonSummaryMap, useRouteData, type PokemonSummary } from "@/lib/pokeapi";
 import { SpriteImg } from "@/components/SpriteImg";
 import { PokemonSearch } from "@/components/PokemonSearch";
-import { spriteUrl, type GameOption } from "@/lib/games";
+import { spriteUrl, gameSpriteUrl, type GameOption } from "@/lib/games";
 import { formatPokemonName, cn } from "@/lib/utils";
 
 type Status = EncounterRecord["status"];
@@ -29,7 +29,7 @@ interface Props {
 
 export function EncountersTab({ playthrough, game, routeDataKey, onUpdate }: Props) {
   const { data: routeData } = useRouteData(routeDataKey);
-  const { data: pokemonList } = usePokemonSummaryList();
+  const { data: pokemonById = new Map<string, PokemonSummary>() } = usePokemonSummaryMap();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
 
@@ -54,13 +54,6 @@ export function EncountersTab({ playthrough, game, routeDataKey, onUpdate }: Pro
     }
     return set;
   }, [encounters]);
-
-  const pokemonById = useMemo(() => {
-    const map = new Map<string, { id: number; name: string }>();
-    if (!pokemonList) return map;
-    for (const p of pokemonList) map.set(p.name, { id: p.id, name: p.name });
-    return map;
-  }, [pokemonList]);
 
   const handleAdd = useCallback((draft: Omit<EncounterRecord, "id" | "createdAt" | "updatedAt">) => {
     const now = Date.now();
@@ -498,7 +491,7 @@ function EncounterRow({
     <div className="flex items-center gap-3 rounded-lg border border-border bg-card p-2.5">
       {pokemonSummary ? (
         <SpriteImg
-          src={spriteUrl(pokemonSummary.id, pokemonSummary.id <= game.genMax ? game.spriteVersion : undefined)}
+          src={gameSpriteUrl(pokemonSummary.id, game)}
           fallbackSrc={spriteUrl(pokemonSummary.id)}
           alt=""
           size="h-12 w-12"

@@ -7,7 +7,7 @@ import {
   type User,
 } from "@/lib/supabase";
 import { Archive, ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Circle, Pencil, Plus, RotateCcw, Settings, Skull, Swords, Trash2, Trophy, X } from "lucide-react";
-import { cn, formatPokemonName } from "@/lib/utils";
+import { cn, formatPokemonName, titleCaseSlug } from "@/lib/utils";
 import { GAMES_BY_VALUE, SPRITES_ROOT, type GameOption } from "@/lib/games";
 import { TYPE_COLORS } from "@/lib/types";
 import { TypeBadge } from "@/components/TypeBadge";
@@ -41,7 +41,7 @@ import { EncountersTab } from "@/components/EncountersTab";
 import { EmptyState } from "@/components/EmptyState";
 import { PlaythroughTeamTab } from "@/components/PlaythroughTeamTab";
 import { TrainerMatchup } from "@/components/TrainerMatchup";
-import { useTrainerData, usePokemonSummaryList, useItemList, typesForGeneration, type TrainerEntry, type ItemListEntry } from "@/lib/pokeapi";
+import { useTrainerData, usePokemonSummaryMap, useItemList, typesForGeneration, type TrainerEntry, type ItemListEntry, type PokemonSummary } from "@/lib/pokeapi";
 import { MoveModal } from "@/components/MoveModal";
 import { PokemonModal } from "@/components/PokemonModal";
 import { AbilityModal } from "@/components/AbilityModal";
@@ -390,18 +390,9 @@ function EditPlaythroughForm({
 
 // ─── Trainer Team Modal ───────────────────────────────────────────────────────
 
-function formatSlug(slug: string): string {
-  return slug.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
-}
-
 function TrainerTeamModal({ trainer, game, yourTeam, typeSpecialty, onClose }: { trainer: TrainerEntry; game: GameOption | undefined; yourTeam: TeamMember[]; typeSpecialty?: string | null; onClose: () => void }) {
   const [view, setView] = useState<"matchup" | "team">(yourTeam.length > 0 ? "matchup" : "team");
-  const { data: summaryList = [] } = usePokemonSummaryList();
-  const summaryByName = useMemo(() => {
-    const map = new Map<string, typeof summaryList[number]>();
-    for (const p of summaryList) map.set(p.name, p);
-    return map;
-  }, [summaryList]);
+  const { data: summaryByName = new Map<string, PokemonSummary>() } = usePokemonSummaryMap();
 
   const { data: itemList = [] } = useItemList();
   const itemBySlug = useMemo(() => {
@@ -603,7 +594,7 @@ function TrainerTeamModal({ trainer, game, yourTeam, typeSpecialty, onClose }: {
                     <p className="text-xs text-muted-foreground mt-0.5">
                       <span className="font-semibold">Ability: </span>
                       <button onClick={() => openAbility(mon.ability!)} className="text-primary hover:underline transition-colors">
-                        {formatSlug(mon.ability)}
+                        {titleCaseSlug(mon.ability)}
                       </button>
                     </p>
                   )}
@@ -612,9 +603,9 @@ function TrainerTeamModal({ trainer, game, yourTeam, typeSpecialty, onClose }: {
                       <span className="font-semibold">Item: </span>
                       {itemBySlug.get(mon.heldItem) ? (
                         <button onClick={() => openItem(mon.heldItem!)} className="text-primary hover:underline transition-colors">
-                          {formatSlug(mon.heldItem)}
+                          {titleCaseSlug(mon.heldItem)}
                         </button>
-                      ) : <span className="text-primary">{formatSlug(mon.heldItem)}</span>}
+                      ) : <span className="text-primary">{titleCaseSlug(mon.heldItem)}</span>}
                     </p>
                   )}
                   {mon.moves.length > 0 && (
@@ -636,7 +627,7 @@ function TrainerTeamModal({ trainer, game, yourTeam, typeSpecialty, onClose }: {
                                 {m.type}
                               </span>
                             )}
-                            <span className="text-xs font-medium capitalize">{formatSlug(m.name)}</span>
+                            <span className="text-xs font-medium capitalize">{titleCaseSlug(m.name)}</span>
                           </button>
                         );
                       })}

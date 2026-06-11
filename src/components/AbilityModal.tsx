@@ -2,31 +2,10 @@ import { useMemo } from "react";
 import { X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSingleAbilityDetail, usePokemonSummaryList, type AbilityListEntry } from "@/lib/pokeapi";
-import { bestFlavorText, spriteUrl, type GameOption } from "@/lib/games";
+import { bestFlavorText, spriteUrl, versionGroupLabel, type GameOption } from "@/lib/games";
 import { SpriteImg } from "@/components/SpriteImg";
 import { Modal } from "@/components/ui/modal";
-import { formatPokemonName } from "@/lib/utils";
-
-
-const VERSION_GROUP_LABELS: Record<string, string> = {
-  "ruby-sapphire":                       "Ruby/Sapphire",
-  "emerald":                             "Emerald",
-  "firered-leafgreen":                   "FireRed/LeafGreen",
-  "diamond-pearl":                       "Diamond/Pearl",
-  "platinum":                            "Platinum",
-  "heartgold-soulsilver":                "HeartGold/SoulSilver",
-  "black-white":                         "Black/White",
-  "black-2-white-2":                     "Black 2/White 2",
-  "x-y":                                 "X/Y",
-  "omega-ruby-alpha-sapphire":           "Omega Ruby/Alpha Sapphire",
-  "sun-moon":                            "Sun/Moon",
-  "ultra-sun-ultra-moon":                "Ultra Sun/Ultra Moon",
-  "lets-go-pikachu-lets-go-eevee":       "Let's Go",
-  "sword-shield":                        "Sword/Shield",
-  "brilliant-diamond-and-shining-pearl": "Brilliant Diamond/Shining Pearl",
-  "legends-arceus":                      "Legends: Arceus",
-  "scarlet-violet":                      "Scarlet/Violet",
-};
+import { formatPokemonName, titleCaseSlug } from "@/lib/utils";
 
 interface AbilityModalProps {
   name: string;
@@ -41,7 +20,7 @@ export function AbilityModal({ name, entry, game, onClose }: AbilityModalProps) 
   const { data: allPokemon } = usePokemonSummaryList();
 
   const displayName = entry?.displayName
-    ?? name.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    ?? titleCaseSlug(name);
 
   const shortEffect =
     detail?.effect_entries?.find((e) => e.language.name === "en")?.short_effect
@@ -111,7 +90,7 @@ export function AbilityModal({ name, entry, game, onClose }: AbilityModalProps) 
               <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 In-game description
                 <span className="ml-1.5 font-normal normal-case text-muted-foreground/70">
-                  ({VERSION_GROUP_LABELS[flavorEntry.version_group.name] ?? flavorEntry.version_group.name})
+                  ({versionGroupLabel(flavorEntry.version_group.name)})
                 </span>
               </p>
               <p className="text-sm italic leading-relaxed text-muted-foreground">

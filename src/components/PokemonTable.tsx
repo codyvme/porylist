@@ -38,7 +38,7 @@ import {
 } from "@/lib/games";
 import { typeStyle } from "@/lib/types";
 import { ALL_TYPES } from "@/lib/type-chart";
-import { cn, formatPokemonName } from "@/lib/utils";
+import { cn, formatPokemonName, titleCaseSlug } from "@/lib/utils";
 import { GameFilter } from "@/components/GameFilter";
 
 function CryButton({ id, generation, className }: { id: number; generation?: number; className?: string }) {
@@ -137,7 +137,7 @@ function canonicalFormName(
     const eng = data.names.find((n) => n.language.name === "en")?.name;
     if (eng) return eng;
   }
-  return formName.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  return titleCaseSlug(formName);
 }
 
 
@@ -1180,7 +1180,7 @@ export function PokemonTable({ game: gameProp, onOpenInCatchTracker }: {
                 )}
                 <datalist id="move-datalist">
                   {allMoveNames.map((n) => (
-                    <option key={n} value={n.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())} />
+                    <option key={n} value={titleCaseSlug(n)} />
                   ))}
                 </datalist>
               </div>

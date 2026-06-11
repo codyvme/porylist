@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Users } from "lucide-react";
-import { usePokemonSummaryList, typesForGeneration } from "@/lib/pokeapi";
+import { usePokemonSummaryMap, typesForGeneration, type PokemonSummary } from "@/lib/pokeapi";
 import { ALL_TYPES, computeTypeEffectiveness } from "@/lib/type-chart";
 import { spriteUrl, SPRITES_ROOT, type GameOption } from "@/lib/games";
 import { SpriteImg } from "@/components/SpriteImg";
@@ -53,12 +53,7 @@ export function RouteTeamSuggestions({ routePokemonNames, game, onOpen, teamOver
     return () => window.removeEventListener("storage", handler);
   }, [teamOverride]);
 
-  const { data: summaryList = [] } = usePokemonSummaryList();
-  const summaryByName = useMemo(() => {
-    const map = new Map<string, typeof summaryList[number]>();
-    for (const p of summaryList) map.set(p.name, p);
-    return map;
-  }, [summaryList]);
+  const { data: summaryByName = new Map<string, PokemonSummary>() } = usePokemonSummaryMap();
 
   // Pull the user's team types from summary (skip the 6-pokemon hooks pattern
   // — we only need types here, not full detail data)

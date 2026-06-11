@@ -1,37 +1,14 @@
 import { X } from "lucide-react";
 import { TYPE_COLORS } from "@/lib/types";
 import { useSingleMoveDetail, type MoveListEntry } from "@/lib/pokeapi";
-import { bestFlavorText, type GameOption } from "@/lib/games";
+import { bestFlavorText, versionGroupLabel, type GameOption } from "@/lib/games";
+import { titleCaseSlug } from "@/lib/utils";
 import { Modal } from "@/components/ui/modal";
 
 const CATEGORY_STYLE: Record<string, { bg: string; label: string }> = {
   physical: { bg: "#C92112", label: "Physical" },
   special:  { bg: "#4F5870", label: "Special"  },
   status:   { bg: "#8C888C", label: "Status"   },
-};
-
-const VERSION_GROUP_LABELS: Record<string, string> = {
-  "red-blue":                            "Red/Blue",
-  "yellow":                              "Yellow",
-  "gold-silver":                         "Gold/Silver",
-  "crystal":                             "Crystal",
-  "ruby-sapphire":                       "Ruby/Sapphire",
-  "emerald":                             "Emerald",
-  "firered-leafgreen":                   "FireRed/LeafGreen",
-  "diamond-pearl":                       "Diamond/Pearl",
-  "platinum":                            "Platinum",
-  "heartgold-soulsilver":                "HeartGold/SoulSilver",
-  "black-white":                         "Black/White",
-  "black-2-white-2":                     "Black 2/White 2",
-  "x-y":                                 "X/Y",
-  "omega-ruby-alpha-sapphire":           "Omega Ruby/Alpha Sapphire",
-  "sun-moon":                            "Sun/Moon",
-  "ultra-sun-ultra-moon":                "Ultra Sun/Ultra Moon",
-  "lets-go-pikachu-lets-go-eevee":       "Let's Go",
-  "sword-shield":                        "Sword/Shield",
-  "brilliant-diamond-and-shining-pearl": "Brilliant Diamond/Shining Pearl",
-  "legends-arceus":                      "Legends: Arceus",
-  "scarlet-violet":                      "Scarlet/Violet",
 };
 
 function substituteChance(text: string, chance: number | null): string {
@@ -51,7 +28,7 @@ export function MoveModal({ name, entry, game, onClose }: MoveModalProps) {
 
   const displayName = detail?.names?.find((n) => n.language.name === "en")?.name
     ?? entry?.displayName
-    ?? name.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    ?? titleCaseSlug(name);
 
   const type = detail?.type?.name ?? entry?.type ?? "normal";
   const category = detail?.damage_class?.name ?? entry?.category ?? "status";
@@ -143,7 +120,7 @@ export function MoveModal({ name, entry, game, onClose }: MoveModalProps) {
               <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 In-game description
                 <span className="ml-1.5 font-normal normal-case text-muted-foreground/70">
-                  ({VERSION_GROUP_LABELS[flavorEntry.version_group.name] ?? flavorEntry.version_group.name})
+                  ({versionGroupLabel(flavorEntry.version_group.name)})
                 </span>
               </p>
               <p className="text-sm italic leading-relaxed text-muted-foreground">

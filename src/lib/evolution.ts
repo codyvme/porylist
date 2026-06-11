@@ -2,9 +2,10 @@
 // "Coming up" digest. Pure formatting + chain traversal — no React.
 
 import type { ChainLink, EvolutionDetail } from "@/lib/pokeapi";
+import { titleCaseSlug } from "@/lib/utils";
 
 export function formatItemName(name: string): string {
-  return name.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  return titleCaseSlug(name);
 }
 
 export function formatLocationName(apiName: string): string {
@@ -61,7 +62,7 @@ export function formatEvolutionMethod(detail: EvolutionDetail): string {
     case "recoil-damage": parts.push("Take 294+ recoil damage"); break;
     case "tower-of-darkness": parts.push("Tower of Darkness"); break;
     case "tower-of-waters": parts.push("Tower of Waters"); break;
-    default: parts.push(trigger.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
+    default: parts.push(titleCaseSlug(trigger));
   }
 
   return parts.join(" ");

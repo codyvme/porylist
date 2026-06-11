@@ -6,7 +6,7 @@ import { useRouteData, usePokemonList, type RouteEncounter, type RouteLocation }
 import { spriteUrl } from "@/lib/games";
 import { PokemonModal } from "@/components/PokemonModal";
 import { SpriteImg } from "@/components/SpriteImg";
-import { cn, formatPokemonName } from "@/lib/utils";
+import { cn, formatPokemonName, titleCaseSlug } from "@/lib/utils";
 import { useEscapeKey } from "@/lib/hooks";
 import { RouteTeamSuggestions } from "@/components/RouteTeamSuggestions";
 
@@ -139,7 +139,7 @@ function aggregateEncounters(encounters: RouteEncounter[]): RouteEncounter[] {
 }
 
 function formatItemName(name: string): string {
-  return name.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  return titleCaseSlug(name);
 }
 
 function PokeballIcon({ caught, size = 14 }: { caught: boolean; size?: number }) {

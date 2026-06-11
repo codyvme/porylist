@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { ShieldAlert, ShieldCheck } from "lucide-react";
-import { usePokemonSummaryList, typesForGeneration, type TrainerEntry } from "@/lib/pokeapi";
+import { usePokemonSummaryMap, typesForGeneration, type TrainerEntry, type PokemonSummary } from "@/lib/pokeapi";
 import { SPRITES_ROOT, type GameOption } from "@/lib/games";
 import { computeTypeEffectiveness, ALL_TYPES } from "@/lib/type-chart";
 import { SpriteImg } from "@/components/SpriteImg";
@@ -39,7 +39,7 @@ const TONE_CELL: Record<MatchupTone, string> = {
  * of the player's Pokémon.
  */
 export function TrainerMatchup({ trainer, yourTeam, game, typeSpecialty, onOpenPokemon }: Props) {
-  const { data: summaryList = [] } = usePokemonSummaryList();
+  const { data: summaryByName = new Map<string, PokemonSummary>() } = usePokemonSummaryMap();
   const gen = game?.generation;
 
   // Types that hit the leader's specialty for 2×+ — what to bring against them.
@@ -48,12 +48,6 @@ export function TrainerMatchup({ trainer, yourTeam, game, typeSpecialty, onOpenP
     const eff = computeTypeEffectiveness([typeSpecialty], gen ?? 9);
     return ALL_TYPES.filter((t) => (eff[t] ?? 1) >= 2);
   }, [typeSpecialty, gen]);
-
-  const summaryByName = useMemo(() => {
-    const map = new Map<string, typeof summaryList[number]>();
-    for (const p of summaryList) map.set(p.name, p);
-    return map;
-  }, [summaryList]);
 
   const yourMons = useMemo(
     () =>

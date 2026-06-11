@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Pencil, Plus, X } from "lucide-react";
 import { PokemonSearch } from "@/components/PokemonSearch";
-import { usePokemonSummaryList, typesForGeneration } from "@/lib/pokeapi";
-import { spriteUrl, type GameOption } from "@/lib/games";
+import { usePokemonSummaryMap, typesForGeneration, type PokemonSummary } from "@/lib/pokeapi";
+import { spriteUrl, gameSpriteUrl, type GameOption } from "@/lib/games";
 import { TypeBadge } from "@/components/TypeBadge";
 import { formatPokemonName, cn } from "@/lib/utils";
 import { currentLevelCap, type Playthrough, type TeamMember } from "@/lib/playthroughs";
@@ -26,26 +26,14 @@ export function PlaythroughTeamTab({ playthrough, game, onUpdate }: Props) {
   const team = playthrough.team ?? [];
   const levelCap = currentLevelCap(playthrough)?.cap ?? null;
   const overCapCount = team.filter((m) => m.level != null && levelCap != null && m.level > levelCap).length;
-  const { data: summaryList = [] } = usePokemonSummaryList();
+  const { data: summaryByName = new Map<string, PokemonSummary>() } = usePokemonSummaryMap();
   const [activeSlot, setActiveSlot] = useState<number | null>(null);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [draftNickname, setDraftNickname] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
   const nicknameInputRef = useRef<HTMLInputElement>(null);
 
-  const summaryByName = useMemo(() => {
-    const map = new Map<string, typeof summaryList[number]>();
-    for (const p of summaryList) map.set(p.name, p);
-    return map;
-  }, [summaryList]);
-
-  // Use the game's sprite version when the Pokémon was available in that
-  // generation; otherwise fall back to the modern home render. Mirrors the
-  // logic from the Pokémon of the Day card.
-  const spriteFor = useCallback((id: number) => {
-    const version = game && id <= game.genMax ? game.spriteVersion : undefined;
-    return spriteUrl(id, version);
-  }, [game]);
+  const spriteFor = useCallback((id: number) => gameSpriteUrl(id, game), [game]);
   const fallbackSprite = useCallback((id: number) => spriteUrl(id, undefined), []);
 
   // Close search popup on outside click

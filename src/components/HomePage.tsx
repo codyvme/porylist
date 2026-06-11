@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatPokemonName } from "@/lib/utils";
-import { spriteUrl, SPRITES_ROOT, type GameOption, GAMES_BY_VALUE } from "@/lib/games";
+import { spriteUrl, gameSpriteUrl, SPRITES_ROOT, type GameOption, GAMES_BY_VALUE } from "@/lib/games";
 import { usePokemonSummaryList, usePokemonSpecies } from "@/lib/pokeapi";
 import { TYPE_COLORS, typeStyle } from "@/lib/types";
 import { loadPlaythroughs, VERSION_TO_GAME_GROUP, VERSION_DISPLAY_LABEL, GAME_BADGES, TRIAL_GAME_GROUPS, coverArtUrl } from "@/lib/playthroughs";
@@ -256,9 +256,7 @@ function PokemonOfTheDay({ game }: { game: GameOption | null }) {
           <div className="flex shrink-0 flex-col items-center gap-3 p-5">
             {(() => {
               const useGameSprite = game && pokemon.id <= game.genMax && game.spriteVersion;
-              const normalSrc = useGameSprite
-                ? `${SPRITES_ROOT}/versions/${game!.spriteVersion}/${pokemon.id}.png`
-                : `${SPRITES_ROOT}/other/home/${pokemon.id}.png`;
+              const normalSrc = gameSpriteUrl(pokemon.id, game);
               const shinySrc = useGameSprite
                 ? `${SPRITES_ROOT}/versions/${game!.spriteVersion}/shiny/${pokemon.id}.png`
                 : `${SPRITES_ROOT}/other/home/shiny/${pokemon.id}.png`;

@@ -72,7 +72,7 @@ import {
   type LocationAreaEncounter,
   type ChainLink,
 } from "@/lib/pokeapi";
-import { cn, formatPokemonName } from "@/lib/utils";
+import { cn, formatPokemonName, titleCaseSlug } from "@/lib/utils";
 import { formatEvolutionMethod, formatLocationName } from "@/lib/evolution";
 
 // ── Encounter helpers ────────────────────────────────────────────────────────
@@ -142,7 +142,7 @@ function formatConditionLabel(condition: string): string {
   // story-progress-* → drop silently (handled by SKIP_CONDITIONS, but fallback just in case)
   if (condition.startsWith("story-progress-")) return "";
   // Generic: title-case the hyphenated key
-  return condition.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  return titleCaseSlug(condition);
 }
 
 type MethodData = {
@@ -371,7 +371,7 @@ function moveName(apiName: string, detail: MoveDetail | undefined): string {
     const eng = detail.names.find((n) => n.language.name === "en")?.name;
     if (eng) return eng;
   }
-  return apiName.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  return titleCaseSlug(apiName);
 }
 
 function moveShortEffect(detail: MoveDetail): string {
@@ -1662,7 +1662,7 @@ export function PokemonModal({ pokemonName, game, onClose, onNavigate, prevPokem
                           </thead>
                           <tbody className="divide-y divide-border/50">
                             {rows.map((row, i) => {
-                              const methodLabel = METHOD_LABELS[row.method] ?? row.method.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+                              const methodLabel = METHOD_LABELS[row.method] ?? titleCaseSlug(row.method);
                               const condLabel = row.conditions.map(formatConditionLabel).filter(Boolean).join(", ");
                               return (
                                 <tr key={i} className="hover:bg-muted/30">

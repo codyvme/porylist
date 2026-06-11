@@ -1,3 +1,5 @@
+import { titleCaseSlug } from "@/lib/utils";
+
 export interface GameOption {
   value: string;
   label: string;
@@ -217,6 +219,52 @@ export const VG_BANDS: string[][] = [
 ];
 
 /**
+ * Friendly display names for PokéAPI version-group slugs, used wherever a
+ * flavor-text / effect entry is attributed to a game. Includes the side games
+ * and DLC (Isle of Armor, Crown Tundra, Teal Mask, Indigo Disk) that the main
+ * GAMES list doesn't cover. Use `versionGroupLabel` rather than reading this
+ * directly so unknown slugs still render readably.
+ */
+export const VERSION_GROUP_LABELS: Record<string, string> = {
+  "red-blue":                            "Red/Blue",
+  "yellow":                              "Yellow",
+  "gold-silver":                         "Gold/Silver",
+  "crystal":                             "Crystal",
+  "ruby-sapphire":                       "Ruby/Sapphire",
+  "emerald":                             "Emerald",
+  "firered-leafgreen":                   "FireRed/LeafGreen",
+  "colosseum":                           "Colosseum",
+  "xd":                                  "XD: Gale of Darkness",
+  "diamond-pearl":                       "Diamond/Pearl",
+  "platinum":                            "Platinum",
+  "heartgold-soulsilver":                "HeartGold/SoulSilver",
+  "black-white":                         "Black/White",
+  "black-2-white-2":                     "Black 2/White 2",
+  "x-y":                                 "X/Y",
+  "omega-ruby-alpha-sapphire":           "Omega Ruby/Alpha Sapphire",
+  "sun-moon":                            "Sun/Moon",
+  "ultra-sun-ultra-moon":                "Ultra Sun/Ultra Moon",
+  "lets-go-pikachu-lets-go-eevee":       "Let's Go",
+  "sword-shield":                        "Sword/Shield",
+  "the-isle-of-armor":                   "The Isle of Armor",
+  "the-crown-tundra":                    "The Crown Tundra",
+  "brilliant-diamond-and-shining-pearl": "Brilliant Diamond/Shining Pearl",
+  "legends-arceus":                      "Legends: Arceus",
+  "scarlet-violet":                      "Scarlet/Violet",
+  "the-teal-mask":                       "The Teal Mask",
+  "the-indigo-disk":                     "The Indigo Disk",
+};
+
+/**
+ * Friendly label for a version-group slug. Falls back to a title-cased version
+ * of the slug for anything not in the table, so new games never surface a raw
+ * slug like "the-indigo-disk".
+ */
+export function versionGroupLabel(slug: string): string {
+  return VERSION_GROUP_LABELS[slug] ?? titleCaseSlug(slug);
+}
+
+/**
  * Returns the best English flavor-text entry for the given game.
  * Prefers a direct match on the game's version groups; falls back to the
  * latest entry from any version group in an earlier or equal generation.
@@ -259,6 +307,16 @@ export function spriteUrl(id: number, spriteVersion?: string): string {
     return `${SPRITES_ROOT}/versions/${spriteVersion}/${id}.png`;
   }
   return `${SPRITES_ROOT}/other/home/${id}.png`;
+}
+
+/**
+ * Sprite URL using the game's era-specific render when the Pokémon existed in
+ * that generation, falling back to the modern HOME sprite otherwise. Pair with
+ * `spriteUrl(id)` as the SpriteImg `fallbackSrc`.
+ */
+export function gameSpriteUrl(id: number, game: GameOption | null | undefined): string {
+  const version = game && id <= game.genMax ? game.spriteVersion : undefined;
+  return spriteUrl(id, version);
 }
 
 export const CRIES_ROOT = "https://cdn.jsdelivr.net/gh/PokeAPI/cries@main/cries/pokemon";
