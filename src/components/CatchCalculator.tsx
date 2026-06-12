@@ -150,6 +150,11 @@ export function CatchCalculator({ game }: { game: GameOption | null }) {
     }
   }, [availableBalls, selectedBallId]);
 
+  // Quick Ball only cares about turn 1; reset the slider so it shows the correct multiplier
+  useEffect(() => {
+    if (selectedBallId === "quick-ball") setTurnNumber(1);
+  }, [selectedBallId]);
+
   const selectedBall = availableBalls.find((b) => b.id === selectedBallId) ?? availableBalls[0];
 
   const ballCtx: BallContext = {
@@ -167,7 +172,8 @@ export function CatchCalculator({ game }: { game: GameOption | null }) {
   };
 
   // Show extra inputs for certain balls
-  const needsTurn = ["timer-ball", "quick-ball"].includes(selectedBall.id);
+  const needsTurn = selectedBall.id === "timer-ball";
+  const needsFirstTurn = selectedBall.id === "quick-ball";
   const needsDark = selectedBall.id === "dusk-ball";
   const needsFishing = selectedBall.id === "lure-ball";
   const needsWater = selectedBall.id === "dive-ball";
@@ -318,6 +324,17 @@ export function CatchCalculator({ game }: { game: GameOption | null }) {
                 className="w-full accent-primary"
               />
             </div>
+          )}
+          {needsFirstTurn && (
+            <label className="flex cursor-pointer items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={turnNumber === 1}
+                onChange={(e) => setTurnNumber(e.target.checked ? 1 : 2)}
+                className="accent-primary"
+              />
+              First turn of battle
+            </label>
           )}
 
           {needsPlayerLevel && (
