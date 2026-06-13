@@ -175,8 +175,15 @@ function ShinyProbChart({ p, count }: { p: number; count: number }) {
             domain={[0, 100]}
           />
           <RechartsTooltip
-            formatter={(v: unknown) => [`${Number(v).toFixed(2)}%`, "cumul. chance"]}
-            labelFormatter={(n: unknown) => `${Number(n).toLocaleString()} encounters`}
+            content={({ active, payload, label }) => {
+              if (!active || !payload?.length) return null;
+              return (
+                <div className="rounded-md border bg-popover px-2.5 py-1.5 text-xs shadow-md">
+                  <p className="text-muted-foreground">{Number(label).toLocaleString()} encounters</p>
+                  <p className="font-semibold text-foreground">{Number(payload[0].value).toFixed(2)}% cumul. chance</p>
+                </div>
+              );
+            }}
           />
           {count > 0 && (
             <ReferenceLine

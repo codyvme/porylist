@@ -145,8 +145,16 @@ function CumulativeChart({ p }: { p: number }) {
             domain={[0, 100]}
           />
           <RechartsTooltip
-            formatter={(v: unknown) => [`${Number(v).toFixed(1)}%`, "catch chance"]}
-            labelFormatter={(n: unknown) => `${Number(n)} throw${Number(n) !== 1 ? "s" : ""}`}
+            content={({ active, payload, label }) => {
+              if (!active || !payload?.length) return null;
+              const n = Number(label);
+              return (
+                <div className="rounded-md border bg-popover px-2.5 py-1.5 text-xs shadow-md">
+                  <p className="text-muted-foreground">{n} throw{n !== 1 ? "s" : ""}</p>
+                  <p className="font-semibold text-foreground">{Number(payload[0].value).toFixed(1)}% catch chance</p>
+                </div>
+              );
+            }}
           />
           <Line
             type="monotone"
