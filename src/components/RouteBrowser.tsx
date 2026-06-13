@@ -1023,18 +1023,18 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
 
       {/* Catch progress — shown above the location box */}
       {game && GAMES_WITH_ROUTES.has(game) && gameProgress && (
-        <div className="flex items-center gap-x-2 gap-y-0 flex-wrap text-sm text-muted-foreground -mb-2 mt-1">
+        <div className="flex items-center gap-x-2 overflow-x-auto scrollbar-none text-sm text-muted-foreground -mb-2 mt-1 whitespace-nowrap">
           <PokeballIcon caught={gameProgress.count > 0} size={13} />
           <button
             onClick={() => setMissingMode("routes")}
-            className="hover:text-foreground hover:underline transition-colors"
+            className="underline underline-offset-2 hover:text-foreground transition-colors"
           >
             {gameProgress.count} / {gameProgress.routeTotal} catchable
           </button>
           <span className="text-muted-foreground/40">·</span>
           <button
             onClick={() => setMissingMode("dex")}
-            className="hover:text-foreground hover:underline transition-colors"
+            className="underline underline-offset-2 hover:text-foreground transition-colors"
           >
             {gameProgress.count} / {gameProgress.dexTotal} Pokédex
           </button>
@@ -1043,7 +1043,7 @@ export function RouteBrowser({ caught, onToggleCaught, navigationTarget, game: g
               <span className="text-muted-foreground/40">·</span>
               <button
                 onClick={() => setShowCaughtModal(true)}
-                className="hover:text-foreground hover:underline transition-colors"
+                className="underline underline-offset-2 hover:text-foreground transition-colors"
               >
                 View caught
               </button>

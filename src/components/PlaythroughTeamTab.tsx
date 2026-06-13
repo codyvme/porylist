@@ -142,9 +142,11 @@ export function PlaythroughTeamTab({ playthrough, game, onUpdate }: Props) {
   return (
     <div ref={containerRef} className="flex flex-col gap-3 overflow-y-auto pt-3 pb-[calc(env(safe-area-inset-bottom)_+_3.5rem)] sm:pb-8">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-xs text-muted-foreground">
-          Track your current team for this run. Click the pencil to nickname a Pokémon. Powers the route browser's "Picks for your team" suggestions.
-        </p>
+        {levelCap != null ? (
+          <span className="shrink-0 flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-300">
+            Lvl cap {levelCap}
+          </span>
+        ) : <span />}
         {team.length > 0 && (
           <button
             onClick={handleClear}
@@ -276,11 +278,11 @@ export function PlaythroughTeamTab({ playthrough, game, onUpdate }: Props) {
                         value={member.level ?? ""}
                         onChange={(e) => handleLevel(i, e.target.value)}
                         onClick={(e) => e.stopPropagation()}
-                        placeholder="Lv"
+                        placeholder="Lvl"
                         aria-label={`Level for ${speciesLabel}`}
                         title={overCap ? `Over the level cap (${levelCap})` : undefined}
                         className={cn(
-                          "w-12 shrink-0 rounded-md border bg-background px-1.5 py-1 text-center text-xs tabular-nums focus:outline-hidden focus:ring-2 focus:ring-primary",
+                          "w-16 shrink-0 rounded-md border bg-background px-1.5 py-1 text-center text-xs tabular-nums focus:outline-hidden focus:ring-2 focus:ring-primary",
                           overCap
                             ? "border-red-500 text-red-600 dark:text-red-400 focus:ring-red-500"
                             : "border-input",
@@ -326,13 +328,13 @@ export function PlaythroughTeamTab({ playthrough, game, onUpdate }: Props) {
         <section className="pt-1">
           <h3 className="mb-3 text-base font-semibold">Defensive Matchups</h3>
           <div className="overflow-x-auto">
-            <table className="border-collapse text-xs">
+            <table className="min-w-max border-collapse text-xs">
               <thead>
                 <tr>
-                  <th className="w-28 pr-3" />
+                  <th className="sticky left-0 z-10 bg-background w-24 pr-2" />
                   {ALL_TYPES.map((t) => (
-                    <th key={t} className="w-9 border-l border-border/60 pb-1 text-center">
-                      <img src={typeIconUrl(t)} alt={t} title={t} className="mx-auto h-5 w-5" />
+                    <th key={t} className="w-8 border-l border-border/60 pb-1 text-center">
+                      <img src={typeIconUrl(t)} alt={t} title={t} className="mx-auto h-4 w-4 sm:h-5 sm:w-5" />
                     </th>
                   ))}
                 </tr>
@@ -340,7 +342,7 @@ export function PlaythroughTeamTab({ playthrough, game, onUpdate }: Props) {
               <tbody>
                 {team.map((m, i) => (
                   <tr key={m.species + i} className={i % 2 === 1 ? "bg-muted/70" : ""}>
-                    <td className="max-w-[7rem] truncate py-1.5 pr-3 font-medium" title={formatPokemonName(m.nickname ?? m.species)}>
+                    <td className={cn("sticky left-0 z-10 w-24 max-w-[6rem] truncate py-1.5 pr-2 font-medium", i % 2 === 1 ? "bg-muted" : "bg-background")} title={formatPokemonName(m.nickname ?? m.species)}>
                       {formatPokemonName(m.nickname ?? m.species)}
                     </td>
                     {ALL_TYPES.map((t) => {
@@ -349,7 +351,7 @@ export function PlaythroughTeamTab({ playthrough, game, onUpdate }: Props) {
                       return (
                         <td
                           key={t}
-                          className={cn("w-9 rounded-sm py-1.5 text-center text-[10px] font-semibold border-l border-border/60", cls)}
+                          className={cn("w-8 rounded-sm py-1.5 text-center text-[10px] font-semibold border-l border-border/60", cls)}
                           title={`${t}: ${mult}×`}
                         >
                           {cls ? multLabel(mult) : ""}
@@ -359,14 +361,14 @@ export function PlaythroughTeamTab({ playthrough, game, onUpdate }: Props) {
                   </tr>
                 ))}
                 <tr className="border-t border-border/60">
-                  <td className="pr-3 pt-2 text-[11px] font-medium text-muted-foreground">Weaknesses</td>
+                  <td className="sticky left-0 z-10 bg-background pr-2 pt-2 text-[11px] font-medium text-muted-foreground">Weaknesses</td>
                   {ALL_TYPES.map((t) => {
                     const count = weaknessCounts[t];
                     return (
                       <td
                         key={t}
                         className={cn(
-                          "w-9 border-l border-border/60 pt-2 text-center text-[10px] font-bold",
+                          "w-8 border-l border-border/60 pt-2 text-center text-[10px] font-bold",
                           count >= 2 ? "text-red-600" : count === 1 ? "text-red-500" : "text-transparent",
                         )}
                       >

@@ -233,17 +233,17 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
               Defensive Matchups
             </h2>
             <div className="overflow-x-auto">
-              <table className="border-collapse text-xs">
+              <table className="min-w-max border-collapse text-xs">
                 <thead>
                   <tr>
-                    <th className="w-28 pr-3" />
+                    <th className="sticky left-0 z-10 bg-background w-24 pr-2" />
                     {ALL_TYPES.map(t => (
-                      <th key={t} className="w-9 border-l border-border/60 pb-1 text-center">
+                      <th key={t} className="w-8 border-l border-border/60 pb-1 text-center">
                         <img
                           src={typeIconUrl(t)}
                           alt={t}
                           title={t}
-                          className="mx-auto h-5 w-5"
+                          className="mx-auto h-4 w-4 sm:h-5 sm:w-5"
                         />
                       </th>
                     ))}
@@ -252,7 +252,7 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
                 <tbody>
                   {members.map((m, i) => (
                     <tr key={m.name} className={i % 2 === 1 ? "bg-muted/70" : ""}>
-                      <td className="max-w-[7rem] truncate py-1.5 pr-3 font-medium" title={formatPokemonName(m.name)}>
+                      <td className={cn("sticky left-0 z-10 w-24 max-w-[6rem] truncate py-1.5 pr-2 font-medium", i % 2 === 1 ? "bg-muted" : "bg-background")} title={formatPokemonName(m.name)}>
                         {formatPokemonName(m.name)}
                       </td>
                       {ALL_TYPES.map(t => {
@@ -261,7 +261,7 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
                         return (
                           <td
                             key={t}
-                            className={cn("w-9 rounded-sm py-1.5 text-center text-[10px] font-semibold border-l border-border/60", cls)}
+                            className={cn("w-8 rounded-sm py-1.5 text-center text-[10px] font-semibold border-l border-border/60", cls)}
                             title={`${t}: ${mult}×`}
                           >
                             {cls ? multLabel(mult) : ""}
@@ -272,14 +272,14 @@ export function TeamBuilder({ team, onAdd, onRemove, onClear }: Props) {
                   ))}
                   {/* Weakness count totals row */}
                   <tr className="border-t border-border/60">
-                    <td className="pr-3 pt-2 text-[11px] font-medium text-muted-foreground">Weaknesses</td>
+                    <td className="sticky left-0 z-10 bg-background pr-2 pt-2 text-[11px] font-medium text-muted-foreground">Weaknesses</td>
                     {ALL_TYPES.map(t => {
                       const count = weaknessCounts[t];
                       return (
                         <td
                           key={t}
                           className={cn(
-                            "w-9 border-l border-border/60 pt-2 text-center text-[10px] font-bold",
+                            "w-8 border-l border-border/60 pt-2 text-center text-[10px] font-bold",
                             count >= 2 ? "text-red-600" : count === 1 ? "text-red-500" : "text-transparent",
                           )}
                         >

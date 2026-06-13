@@ -124,7 +124,7 @@ export function RouteTeamSuggestions({ routePokemonNames, game, onOpen, teamOver
             <div className="min-w-0 flex-1">
               <div className="truncate text-sm font-medium">{formatPokemonName(r.name)}</div>
               <div className="mt-0.5 flex flex-wrap gap-0.5 text-[10px]">
-                <span className="text-muted-foreground">Hits:</span>
+                <span className="text-muted-foreground">Effective against:</span>
                 {r.hits.map((t) => (
                   <TypeBadge key={t} type={t} className="px-1.5 py-px font-medium" />
                 ))}

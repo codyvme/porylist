@@ -1186,7 +1186,7 @@ function PlaythroughDetail({
       {/* Tabs + tab content */}
       {!isEditing && (
         <>
-          <div className="flex gap-1 shrink-0 flex-wrap">
+          <div className="flex gap-1 shrink-0 overflow-x-auto scrollbar-none">
             <button className={tabCls("pokedex")} onClick={() => setTab("pokedex")}>
               Pokédex
               {playthrough.caught.length > 0 && game && (
