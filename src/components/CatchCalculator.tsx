@@ -262,10 +262,10 @@ export function CatchCalculator({ game }: { game: GameOption | null }) {
         <GameFilter />
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 max-w-3xl">
+      <div className="flex flex-col lg:flex-row-reverse gap-6 lg:gap-8">
 
         {/* ── Inputs ── */}
-        <div className="flex flex-col gap-5 flex-1">
+        <div className="flex flex-col gap-5 lg:w-80 shrink-0">
 
           {/* Pokémon */}
           <div className="flex flex-col gap-1.5">
@@ -438,7 +438,7 @@ export function CatchCalculator({ game }: { game: GameOption | null }) {
         </div>
 
         {/* ── Result ── */}
-        <div className="lg:w-56 flex flex-col gap-4">
+        <div className="flex-1 flex flex-col gap-4">
           <div className="rounded-xl border bg-muted/30 p-5 flex flex-col items-center gap-3">
             {!selectedPokemon ? (
               <p className="text-sm text-muted-foreground text-center">Select a Pokémon to calculate.</p>
