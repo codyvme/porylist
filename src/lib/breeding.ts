@@ -146,6 +146,13 @@ export function saveProjects(projects: BreedingProject[]): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
 }
 
+export async function saveProjectsAsync(projects: BreedingProject[]): Promise<void> {
+  const json = JSON.stringify(projects);
+  try { localStorage.setItem(STORAGE_KEY, json); } catch {}
+  const { dbSet } = await import("./db");
+  await dbSet(STORAGE_KEY, json);
+}
+
 // Masuda Method: 6/4096 per egg (Gen 6+). Base: 1/4096.
 const MASUDA_RATE = 6 / 4096;
 const BASE_SHINY_RATE = 1 / 4096;

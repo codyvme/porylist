@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from "react";
+import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
 import { ChevronDown } from "lucide-react";
 import { cn, formatPokemonName } from "@/lib/utils";
 import { spriteUrl } from "@/lib/games";
@@ -103,6 +104,60 @@ function BallPicker({
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── Cumulative Probability Chart ────────────────────────────────────────────
+
+function CumulativeChart({ p }: { p: number }) {
+  const data = useMemo(
+    () =>
+      Array.from({ length: 30 }, (_, i) => ({
+        n: i + 1,
+        pct: +(100 * (1 - Math.pow(1 - p, i + 1))).toFixed(2),
+      })),
+    [p],
+  );
+
+  const isDark = document.documentElement.classList.contains("dark");
+  const lineColor = isDark ? "hsl(192, 80%, 58%)" : "hsl(192, 89%, 45%)";
+  const mutedColor = isDark ? "hsl(0,0%,45%)" : "hsl(0,0%,60%)";
+  const gridColor = isDark ? "hsl(0,0%,25%)" : "hsl(0,0%,88%)";
+
+  return (
+    <div className="w-full rounded-lg bg-muted/60 p-3">
+      <p className="text-xs font-medium text-foreground mb-2">Cumulative probability</p>
+      <ResponsiveContainer width="100%" height={110}>
+        <LineChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -16 }}>
+          <XAxis
+            dataKey="n"
+            tick={{ fontSize: 9, fill: mutedColor }}
+            tickLine={false}
+            axisLine={{ stroke: gridColor }}
+            label={{ value: "throws", position: "insideBottomRight", offset: 0, fontSize: 8, fill: mutedColor }}
+          />
+          <YAxis
+            tick={{ fontSize: 9, fill: mutedColor }}
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={(v: number) => `${v}%`}
+            domain={[0, 100]}
+          />
+          <RechartsTooltip
+            formatter={(v: unknown) => [`${Number(v).toFixed(1)}%`, "catch chance"]}
+            labelFormatter={(n: unknown) => `${Number(n)} throw${Number(n) !== 1 ? "s" : ""}`}
+          />
+          <Line
+            type="monotone"
+            dataKey="pct"
+            stroke={lineColor}
+            strokeWidth={2}
+            dot={false}
+            activeDot={{ r: 3, fill: lineColor }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
     </div>
   );
 }
@@ -454,22 +509,9 @@ export function CatchCalculator({ game }: { game: GameOption | null }) {
                   </div>
                 </div>
 
-                {/* Three-throw / five-throw cumulative */}
+                {/* Cumulative probability chart */}
                 {result.probability > 0 && result.probability < 1 && (
-                  <div className="w-full rounded-lg bg-muted/60 p-3 text-xs space-y-1">
-                    <p className="font-medium text-foreground mb-1.5">Cumulative probability</p>
-                    {[1, 3, 5, 10].map((n) => {
-                      const p = 1 - Math.pow(1 - result.probability, n);
-                      return (
-                        <div key={n} className="flex justify-between">
-                          <span className="text-muted-foreground">{n} throw{n > 1 ? "s" : ""}</span>
-                          <span className={cn("font-medium tabular-nums", pctColor(p))}>
-                            {(p * 100).toFixed(1)}%
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <CumulativeChart p={result.probability} />
                 )}
               </>
             ) : null}

@@ -125,6 +125,13 @@ export function saveHunts(hunts: ShinyHunt[]): void {
   }
 }
 
+export async function saveHuntsAsync(hunts: ShinyHunt[]): Promise<void> {
+  const json = JSON.stringify(hunts);
+  try { localStorage.setItem(STORAGE_KEY, json); } catch {}
+  const { dbSet } = await import("./db");
+  await dbSet(STORAGE_KEY, json);
+}
+
 export function newHuntId(): string {
   return `hunt-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 }

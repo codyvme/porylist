@@ -29,7 +29,7 @@ import {
   effectiveTeam,
   nextObjective,
   loadPlaythroughs,
-  savePlaythroughs,
+  savePlaythroughsAsync,
   newPlaythroughId,
   type Playthrough,
   type Badge,
@@ -1316,7 +1316,7 @@ export function PlaythroughTracker({
           if (idx === -1) merged.push(rp);
           else if (rp.updatedAt > merged[idx].updatedAt) merged[idx] = rp;
         }
-        savePlaythroughs(merged);
+        void savePlaythroughsAsync(merged);
         return merged;
       });
     });
@@ -1346,7 +1346,7 @@ export function PlaythroughTracker({
 
   const persist = useCallback((next: Playthrough[], changed?: Playthrough, deletedId?: string) => {
     setPlaythroughs(next);
-    savePlaythroughs(next);
+    void savePlaythroughsAsync(next);
     if (user) {
       if (deletedId) deletePlaythrough(deletedId);
       if (changed) upsertPlaythrough(user.id, changed);

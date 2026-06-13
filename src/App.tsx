@@ -37,6 +37,7 @@ const TypeChartPage = React.lazy(() => import("@/components/TypeChartPage").then
 import { WelcomeModal, shouldShowWelcome, markWelcomed } from "@/components/WelcomeModal";
 import { PWAStatus } from "@/components/PWAStatus";
 import { GameProvider } from "@/lib/game-context";
+import { migrateFromLocalStorage, dbSet } from "@/lib/db";
 
 type ThemeMode = "light" | "dark" | "system";
 
@@ -603,6 +604,9 @@ function MobileTabBar({ onOpenMore }: { onOpenMore: () => void }) {
 
 export function App() {
   const { isDark, mode, setMode } = useTheme();
+
+  // One-time migration: copy localStorage data into IndexedDB on first boot
+  useEffect(() => { migrateFromLocalStorage(); }, []);
   const [showAbout, setShowAbout] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
   const [showAccountSettings, setShowAccountSettings] = useState(false);
@@ -636,7 +640,9 @@ export function App() {
   });
   useEffect(() => {
     const timer = setTimeout(() => {
-      localStorage.setItem("porylist-caught", JSON.stringify(caught));
+      const json = JSON.stringify(caught);
+      localStorage.setItem("porylist-caught", json);
+      dbSet("porylist-caught", json);
     }, 300);
     return () => clearTimeout(timer);
   }, [caught]);
@@ -685,7 +691,9 @@ export function App() {
   });
   useEffect(() => {
     const timer = setTimeout(() => {
-      localStorage.setItem("porylist-game", selectedGame?.value ?? "");
+      const val = selectedGame?.value ?? "";
+      localStorage.setItem("porylist-game", val);
+      dbSet("porylist-game", val);
     }, 300);
     return () => clearTimeout(timer);
   }, [selectedGame]);
@@ -710,7 +718,9 @@ export function App() {
   });
   useEffect(() => {
     const timer = setTimeout(() => {
-      localStorage.setItem("porylist-team", JSON.stringify(team));
+      const json = JSON.stringify(team);
+      localStorage.setItem("porylist-team", json);
+      dbSet("porylist-team", json);
     }, 300);
     return () => clearTimeout(timer);
   }, [team]);

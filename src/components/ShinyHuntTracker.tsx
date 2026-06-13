@@ -11,8 +11,9 @@ import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { PokemonSearch } from "@/components/PokemonSearch";
 import { EmptyState } from "@/components/EmptyState";
 import { Tooltip } from "@/components/ui/tooltip";
+import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, ReferenceLine } from "recharts";
 import {
-  loadHunts, saveHunts, newHuntId,
+  loadHunts, saveHuntsAsync, newHuntId,
   shinyRate, cumulativeProb, expectedEncounters,
   METHOD_LABELS,
   type ShinyHunt, type ShinyMethod,
@@ -124,6 +125,79 @@ function HuntListItem({
         )}
       </div>
     </button>
+  );
+}
+
+// ─── Shiny probability curve ─────────────────────────────────────────────────
+
+function ShinyProbChart({ p, count }: { p: number; count: number }) {
+  const expected = expectedEncounters(p);
+  const xMax = Math.min(Math.max(count * 1.5, expected * 2), expected * 4);
+  const step = Math.max(1, Math.round(xMax / 40));
+
+  const data = useMemo(() => {
+    const pts = [];
+    for (let n = 0; n <= xMax; n += step) {
+      pts.push({ n, pct: +(100 * cumulativeProb(p, n)).toFixed(3) });
+    }
+    return pts;
+  }, [p, xMax, step]);
+
+  const isDark = document.documentElement.classList.contains("dark");
+  const lineColor = isDark ? "hsl(192, 80%, 58%)" : "hsl(192, 89%, 45%)";
+  const mutedColor = isDark ? "hsl(0,0%,45%)" : "hsl(0,0%,60%)";
+  const gridColor = isDark ? "hsl(0,0%,25%)" : "hsl(0,0%,88%)";
+  const refColor = isDark ? "hsl(45,90%,55%)" : "hsl(38,92%,45%)";
+
+  function formatN(n: number) {
+    if (n >= 10000) return `${(n / 1000).toFixed(0)}k`;
+    if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
+    return String(n);
+  }
+
+  return (
+    <div className="w-full rounded-lg bg-muted/60 p-3">
+      <p className="text-xs font-medium text-foreground mb-2">Probability curve</p>
+      <ResponsiveContainer width="100%" height={120}>
+        <LineChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -16 }}>
+          <XAxis
+            dataKey="n"
+            tick={{ fontSize: 9, fill: mutedColor }}
+            tickLine={false}
+            axisLine={{ stroke: gridColor }}
+            tickFormatter={formatN}
+          />
+          <YAxis
+            tick={{ fontSize: 9, fill: mutedColor }}
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={(v: number) => `${v}%`}
+            domain={[0, 100]}
+          />
+          <RechartsTooltip
+            formatter={(v: unknown) => [`${Number(v).toFixed(2)}%`, "cumul. chance"]}
+            labelFormatter={(n: unknown) => `${Number(n).toLocaleString()} encounters`}
+          />
+          {count > 0 && (
+            <ReferenceLine
+              x={count}
+              stroke={refColor}
+              strokeWidth={1.5}
+              strokeDasharray="3 3"
+              label={{ value: count.toLocaleString(), position: "top", fontSize: 8, fill: refColor }}
+            />
+          )}
+          <Line
+            type="monotone"
+            dataKey="pct"
+            stroke={lineColor}
+            strokeWidth={2}
+            dot={false}
+            activeDot={{ r: 3, fill: lineColor }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
 
@@ -272,6 +346,9 @@ function HuntDetail({
 
         {/* Luck meter */}
         {hunt.count > 0 && <LuckMeter p={p} count={hunt.count} />}
+
+        {/* Probability curve */}
+        {p > 0 && <ShinyProbChart p={p} count={hunt.count} />}
 
         {/* Notes */}
         <div className="rounded-xl border p-3">
@@ -568,7 +645,7 @@ export function ShinyHuntTracker({ user }: { user: User | null }) {
           if (idx === -1) merged.push(rh);
           else if (rh.updatedAt > merged[idx].updatedAt) merged[idx] = rh;
         }
-        saveHunts(merged);
+        void saveHuntsAsync(merged);
         return merged;
       });
     });
@@ -581,7 +658,7 @@ export function ShinyHuntTracker({ user }: { user: User | null }) {
 
   const persist = useCallback((next: ShinyHunt[], changed?: ShinyHunt, deletedId?: string) => {
     setHunts(next);
-    saveHunts(next);
+    void saveHuntsAsync(next);
     if (user) {
       if (deletedId) deleteShinyHunt(deletedId);
       if (changed) upsertShinyHunt(user.id, changed);

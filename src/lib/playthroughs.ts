@@ -654,6 +654,13 @@ export function savePlaythroughs(list: Playthrough[]): void {
   } catch {}
 }
 
+export async function savePlaythroughsAsync(list: Playthrough[]): Promise<void> {
+  const json = JSON.stringify(list);
+  try { localStorage.setItem(STORAGE_KEY, json); } catch {}
+  const { dbSet } = await import("./db");
+  await dbSet(STORAGE_KEY, json);
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 export function newPlaythroughId(): string {

@@ -24,7 +24,7 @@ import {
   type GenderTarget,
   type BreedingStep,
   loadProjects,
-  saveProjects,
+  saveProjectsAsync,
   generateBreedingPlan,
   shinyOdds,
   eggsForOdds,
@@ -1245,7 +1245,7 @@ export function BreedingTracker({ user }: { user: User | null }) {
           if (idx === -1) merged.push(rp);
           else if (rp.updatedAt > merged[idx].updatedAt) merged[idx] = rp;
         }
-        saveProjects(merged);
+        void saveProjectsAsync(merged);
         return merged;
       });
     });
@@ -1258,7 +1258,7 @@ export function BreedingTracker({ user }: { user: User | null }) {
 
   const persist = useCallback((next: BreedingProject[], changed?: BreedingProject, deletedId?: string) => {
     setProjects(next);
-    saveProjects(next);
+    void saveProjectsAsync(next);
     if (user) {
       if (deletedId) deleteBreedingProject(deletedId);
       if (changed) upsertBreedingProject(user.id, changed);
